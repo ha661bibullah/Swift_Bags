@@ -98,6 +98,81 @@
         .sidebar-item:hover { background: rgba(212, 175, 55, 0.1); }
         .sidebar-item.active { background: #D4AF37; color: #0A1F44; }
         
+        /* Mobile Sidebar (Hamburger Menu) */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            z-index: 1001;
+            transition: left 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .mobile-sidebar.open {
+            left: 0;
+        }
+        
+        .mobile-sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .mobile-sidebar-overlay.open {
+            display: block;
+        }
+        
+        .mobile-sidebar-header {
+            background: #0A1F44;
+            color: white;
+            padding: 20px 16px;
+            text-align: center;
+        }
+        
+        .mobile-sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .mobile-sidebar-item:hover {
+            background: #f9f9f9;
+        }
+        
+        .mobile-sidebar-item.active {
+            background: #D4AF37;
+            color: #0A1F44;
+            font-weight: 600;
+        }
+        
+        .mobile-sidebar-item i {
+            width: 28px;
+            font-size: 18px;
+        }
+        
+        .mobile-sidebar-badge {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            min-width: 20px;
+            text-align: center;
+            margin-left: auto;
+        }
+        
         /* Cards & Animations */
         .stat-card {
             transition: all 0.3s;
@@ -236,6 +311,21 @@
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 12px;
         }
+        
+        /* Hamburger Menu Button */
+        .hamburger-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .hamburger-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -279,11 +369,14 @@
 <!-- Admin Dashboard -->
 <div id="dashboardPage" class="hidden min-h-screen bg-gray-100 pb-20 md:pb-0">
     
-    <!-- Mobile Header -->
+    <!-- Mobile Header with Hamburger Menu -->
     <div class="mobile-header md:hidden">
         <div class="flex items-center space-x-2">
+            <button id="mobileSidebarToggle" class="hamburger-btn mr-2">
+                <i class="fas fa-bars"></i>
+            </button>
             <img src="https://via.placeholder.com/32x32/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-8 h-8 rounded-lg">
-            <span class="font-bold text-gold">SwiftBags Admin</span>
+            <span class="font-bold text-gold">SwiftBags</span>
         </div>
         <div class="flex items-center space-x-3">
             <!-- Notifications -->
@@ -294,6 +387,52 @@
                 </button>
             </div>
             <span id="mobileAdminName" class="text-sm">Admin</span>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar (Hamburger Menu) -->
+    <div id="mobileSidebarOverlay" class="mobile-sidebar-overlay"></div>
+    <div id="mobileSidebar" class="mobile-sidebar">
+        <div class="mobile-sidebar-header">
+            <img src="https://via.placeholder.com/60x60/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-16 h-16 mx-auto rounded-lg mb-2">
+            <h3 class="font-bold text-gold">SwiftBags Admin</h3>
+            <p id="mobileSidebarAdminName" class="text-sm text-gray-300">Admin</p>
+        </div>
+        <div class="py-2">
+            <div class="mobile-sidebar-item active" data-section="dashboard">
+                <i class="fas fa-home"></i>
+                <span>ড্যাশবোর্ড</span>
+            </div>
+            <div class="mobile-sidebar-item" data-section="sliders">
+                <i class="fas fa-images"></i>
+                <span>স্লাইডার</span>
+            </div>
+            <div class="mobile-sidebar-item" data-section="categories">
+                <i class="fas fa-tags"></i>
+                <span>ক্যাটাগরি</span>
+            </div>
+            <div class="mobile-sidebar-item" data-section="products">
+                <i class="fas fa-box"></i>
+                <span>পণ্য</span>
+            </div>
+            <div class="mobile-sidebar-item" data-section="orders">
+                <i class="fas fa-shopping-cart"></i>
+                <span>অর্ডার</span>
+                <span id="mobileSidebarOrdersBadge" class="mobile-sidebar-badge hidden">0</span>
+            </div>
+            <div class="mobile-sidebar-item" data-section="reviews">
+                <i class="fas fa-star"></i>
+                <span>রিভিউ</span>
+                <span id="mobileSidebarReviewsBadge" class="mobile-sidebar-badge hidden">0</span>
+            </div>
+            <div class="mobile-sidebar-item" data-section="content">
+                <i class="fas fa-edit"></i>
+                <span>কন্টেন্ট</span>
+            </div>
+            <div class="mobile-sidebar-item" data-section="settings">
+                <i class="fas fa-cog"></i>
+                <span>সেটিংস</span>
+            </div>
         </div>
     </div>
 
@@ -468,6 +607,34 @@
                             </div>
                             <div class="bg-gold text-primary p-3 rounded-full">
                                 <i class="fas fa-calendar-day"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Stats Row: Revenue & Pending Reviews -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="stat-card bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-xs">মোট বিক্রয় (টাকা)</p>
+                                <h3 class="text-xl md:text-2xl font-bold text-green-600" id="totalRevenue">৳0</h3>
+                                <p class="text-xs text-gray-500">ডেলিভারড অর্ডার</p>
+                            </div>
+                            <div class="bg-green-500 text-white p-3 rounded-full">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-xs">পেন্ডিং রিভিউ</p>
+                                <h3 class="text-xl md:text-2xl font-bold text-yellow-500" id="pendingReviews">0</h3>
+                                <p class="text-xs text-gray-500">অপেক্ষমাণ</p>
+                            </div>
+                            <div class="bg-yellow-500 text-white p-3 rounded-full">
+                                <i class="fas fa-star"></i>
                             </div>
                         </div>
                     </div>
@@ -826,8 +993,19 @@
                     <input type="number" id="productStock" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0" required>
                 </div>
                 <div>
+                    <label class="block font-medium mb-2">বিক্রি হয়েছে</label>
+                    <input type="number" id="productSold" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                     <label class="block font-medium mb-2">ডিসকাউন্ট</label>
                     <input type="text" id="productDiscount" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="যেমন: 20% Off">
+                </div>
+                <div>
+                    <label class="block font-medium mb-2">রেটিং</label>
+                    <input type="number" id="productRating" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" step="0.1" min="0" max="5" value="4.5">
                 </div>
             </div>
 
@@ -884,7 +1062,10 @@
             <h3 class="text-xl font-bold text-primary">রিভিউ বিস্তারিত</h3>
         </div>
         <div id="reviewDetails" class="p-4"></div>
-        <div class="p-4 border-t border-gray-200 flex justify-end">
+        <div class="p-4 border-t border-gray-200 flex justify-end gap-2">
+            <button id="deleteReviewBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition hidden">
+                <i class="fas fa-trash mr-2"></i> ডিলিট
+            </button>
             <button id="closeReviewModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বন্ধ</button>
         </div>
     </div>
@@ -933,7 +1114,57 @@
             validateToken();
         }
         updateLastUpdateTime();
+        
+        // Mobile sidebar toggle
+        setupMobileSidebar();
     });
+
+    // Setup Mobile Sidebar
+    function setupMobileSidebar() {
+        const toggleBtn = document.getElementById('mobileSidebarToggle');
+        const sidebar = document.getElementById('mobileSidebar');
+        const overlay = document.getElementById('mobileSidebarOverlay');
+        
+        if (toggleBtn && sidebar && overlay) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.add('open');
+                overlay.classList.add('open');
+            });
+            
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+            
+            // Mobile sidebar navigation
+            document.querySelectorAll('.mobile-sidebar-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    if (section) {
+                        // Update active state
+                        document.querySelectorAll('.mobile-sidebar-item').forEach(i => i.classList.remove('active'));
+                        item.classList.add('active');
+                        
+                        // Update bottom nav active
+                        document.querySelectorAll('.bottom-nav-item').forEach(b => {
+                            b.classList.toggle('active', b.dataset.section === section);
+                        });
+                        
+                        // Show section
+                        document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+                        document.getElementById(section + 'Section').classList.remove('hidden');
+                        currentSection = section;
+                        
+                        loadSectionData(currentSection);
+                        
+                        // Close sidebar
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('open');
+                    }
+                });
+            });
+        }
+    }
 
     // Update last update time
     function updateLastUpdateTime() {
@@ -969,6 +1200,7 @@
         const username = localStorage.getItem('adminUsername') || 'Admin';
         document.getElementById('adminName').textContent = username;
         document.getElementById('mobileAdminName').textContent = username;
+        document.getElementById('mobileSidebarAdminName').textContent = username;
         loadDashboard();
         startNotificationPolling();
     }
@@ -1116,6 +1348,11 @@
             currentSection = btn.dataset.section;
             
             loadSectionData(currentSection);
+            
+            // Update mobile sidebar active
+            document.querySelectorAll('.mobile-sidebar-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.section === currentSection);
+            });
         });
     });
 
@@ -1172,12 +1409,23 @@
                 document.getElementById('pendingOrders').textContent = data.data.pendingOrders;
                 document.getElementById('totalProducts').textContent = data.data.totalProducts;
                 document.getElementById('todayOrders').textContent = data.data.todayOrders;
+                document.getElementById('pendingReviews').textContent = data.data.pendingReviews;
+                document.getElementById('totalRevenue').textContent = '৳' + data.data.revenue;
                 
                 // Update badges
                 document.getElementById('pendingOrdersBadge').textContent = data.data.pendingOrders;
                 document.getElementById('pendingOrdersBadge').classList.toggle('hidden', data.data.pendingOrders === 0);
                 document.getElementById('mobilePendingOrdersBadge').textContent = data.data.pendingOrders;
                 document.getElementById('mobilePendingOrdersBadge').classList.toggle('hidden', data.data.pendingOrders === 0);
+                document.getElementById('mobileSidebarOrdersBadge').textContent = data.data.pendingOrders;
+                document.getElementById('mobileSidebarOrdersBadge').classList.toggle('hidden', data.data.pendingOrders === 0);
+                
+                document.getElementById('pendingReviewsBadge').textContent = data.data.pendingReviews;
+                document.getElementById('pendingReviewsBadge').classList.toggle('hidden', data.data.pendingReviews === 0);
+                document.getElementById('mobilePendingReviewsBadge').textContent = data.data.pendingReviews;
+                document.getElementById('mobilePendingReviewsBadge').classList.toggle('hidden', data.data.pendingReviews === 0);
+                document.getElementById('mobileSidebarReviewsBadge').textContent = data.data.pendingReviews;
+                document.getElementById('mobileSidebarReviewsBadge').classList.toggle('hidden', data.data.pendingReviews === 0);
                 
                 // Calculate growth (mock data)
                 const growth = Math.floor(Math.random() * 20) + 5;
@@ -1276,10 +1524,6 @@
             const data = await response.json();
             if (data.success) {
                 const list = document.getElementById('pendingReviewsList');
-                document.getElementById('pendingReviewsBadge').textContent = data.data.length;
-                document.getElementById('pendingReviewsBadge').classList.toggle('hidden', data.data.length === 0);
-                document.getElementById('mobilePendingReviewsBadge').textContent = data.data.length;
-                document.getElementById('mobilePendingReviewsBadge').classList.toggle('hidden', data.data.length === 0);
                 
                 if (data.data.length === 0) {
                     list.innerHTML = '<p class="text-gray-500 text-center py-4">কোন পেন্ডিং রিভিউ নেই</p>';
@@ -1295,6 +1539,7 @@
                         <div class="flex justify-end gap-2 mt-2">
                             <button onclick="approveReview('${review._id}')" class="text-green-600 text-xs hover:underline">অ্যাপ্রুভ</button>
                             <button onclick="rejectReview('${review._id}')" class="text-red-600 text-xs hover:underline">রিজেক্ট</button>
+                            <button onclick="deleteReview('${review._id}')" class="text-red-600 text-xs hover:underline">ডিলিট</button>
                         </div>
                     </div>
                 `).join('');
@@ -1749,9 +1994,11 @@
             originalPrice: parseInt(document.getElementById('productOriginalPrice').value),
             variants: [{
                 stock: parseInt(document.getElementById('productStock').value) || 0,
+                sold: parseInt(document.getElementById('productSold').value) || 0,
                 discount: document.getElementById('productDiscount').value,
                 color: document.getElementById('productColor').value,
-                size: document.getElementById('productSize').value
+                size: document.getElementById('productSize').value,
+                rating: parseFloat(document.getElementById('productRating').value) || 4.5
             }],
             featured: document.getElementById('productFeatured').checked,
             trending: document.getElementById('productTrending').checked,
@@ -1806,9 +2053,11 @@
                 document.getElementById('productPrice').value = product.price;
                 document.getElementById('productOriginalPrice').value = product.originalPrice;
                 document.getElementById('productStock').value = variant.stock || 0;
+                document.getElementById('productSold').value = variant.sold || 0;
                 document.getElementById('productDiscount').value = variant.discount || '';
                 document.getElementById('productColor').value = variant.color || '';
                 document.getElementById('productSize').value = variant.size || '';
+                document.getElementById('productRating').value = variant.rating || 4.5;
                 document.getElementById('productFeatured').checked = product.featured;
                 document.getElementById('productTrending').checked = product.trending;
                 document.getElementById('productActive').checked = product.active;
@@ -1926,6 +2175,8 @@
                 document.getElementById('pendingOrdersBadge').classList.toggle('hidden', pendingCount === 0);
                 document.getElementById('mobilePendingOrdersBadge').textContent = pendingCount;
                 document.getElementById('mobilePendingOrdersBadge').classList.toggle('hidden', pendingCount === 0);
+                document.getElementById('mobileSidebarOrdersBadge').textContent = pendingCount;
+                document.getElementById('mobileSidebarOrdersBadge').classList.toggle('hidden', pendingCount === 0);
 
                 // Pagination
                 const pagination = document.getElementById('ordersPagination');
@@ -2086,6 +2337,9 @@
                                 <button onclick="viewReview('${review._id}')" class="bg-primary text-white px-3 py-1 rounded-lg text-sm hover:bg-gold hover:text-primary transition">
                                     <i class="fas fa-eye mr-1"></i> বিস্তারিত
                                 </button>
+                                <button onclick="deleteReview('${review._id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition">
+                                    <i class="fas fa-trash mr-1"></i> ডিলিট
+                                </button>
                             </div>
                         </div>
                         ${review.status !== 'pending' ? `
@@ -2155,6 +2409,30 @@
         }
     };
 
+    window.deleteReview = async (id) => {
+        showConfirm('রিভিউ ডিলিট করবেন?', async () => {
+            if (!token) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/reviews/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showToast('রিভিউ ডিলিট হয়েছে', 'success');
+                    loadReviews();
+                    loadDashboard();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('সমস্যা হয়েছে', 'error');
+            }
+        });
+    };
+
     window.viewReview = async (id) => {
         if (!token) return;
         
@@ -2182,6 +2460,10 @@
                     </div>
                 `;
                 
+                const deleteBtn = document.getElementById('deleteReviewBtn');
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.onclick = () => deleteReview(review._id);
+                
                 document.getElementById('reviewModal').classList.remove('hidden');
                 document.getElementById('reviewModal').classList.add('flex');
             }
@@ -2194,6 +2476,7 @@
     document.getElementById('closeReviewModal').addEventListener('click', () => {
         document.getElementById('reviewModal').classList.add('hidden');
         document.getElementById('reviewModal').classList.remove('flex');
+        document.getElementById('deleteReviewBtn').classList.add('hidden');
     });
 
     // Content
