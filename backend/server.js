@@ -22,12 +22,10 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// CORS configuration for production
+// CORS configuration
 const allowedOrigins = [
-  'https://swift-bags-t1u3.vercel.app',
   'https://swift-bags-gad3.vercel.app',
-  'https://swift-bags-admin.vercel.app', // অ্যাডমিন প্যানেল যোগ করুন
-  'https://swift-bags-frontend.vercel.app', // ফ্রন্টএন্ড যোগ করুন
+  'https://swift-bags-t1u3.vercel.app',
   'http://localhost:3000',
   'http://localhost:5000',
   'http://127.0.0.1:5500'
@@ -35,12 +33,10 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback) {
-    // ডেভেলপমেন্টের জন্য অনুমতি দিন
     if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
-      console.log('CORS blocked origin:', origin);
-      callback(null, true); // প্রোডাকশনেও সব অনুমতি দিন আপাতত
+      callback(null, true);
     }
   },
   credentials: true,
@@ -74,7 +70,8 @@ const adminSchema = new mongoose.Schema({
   password: { type: String, required: true },
   lastLogin: { type: Date },
   lastPasswordChange: { type: Date },
-  sessions: [{ token: String, device: String, lastActive: Date }]
+  sessions: [{ token: String, device: String, lastActive: Date }],
+  createdAt: { type: Date, default: Date.now }
 });
 
 // Slider Schema
@@ -271,23 +268,21 @@ const upload = multer({
 
 // ============= DATABASE CONNECTION =============
 
-// MongoDB Connection with better error handling
+// MongoDB Connection
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
     });
-    console.log('MongoDB Connected Successfully');
+    console.log('✅ MongoDB Connected Successfully');
     
-    // ডাটাবেস কানেক্ট হওয়ার পর ইনিশিয়াল ডাটা তৈরি করুন
+    // Initialize data after successful connection
     await initializeData();
     
   } catch (err) {
-    console.error('MongoDB Connection Error:', err);
-    // কানেক্ট না হলে আবার চেষ্টা করুন
+    console.error('❌ MongoDB Connection Error:', err.message);
+    // Don't exit, just retry
     setTimeout(connectDB, 5000);
   }
 };
@@ -309,36 +304,44 @@ async function initializeData() {
     await createInitialAdmin();
     await createInitialCategories();
     await createInitialContent();
-    console.log('Initial data setup completed');
+    console.log('✅ Initial data setup completed');
   } catch (error) {
-    console.error('Error in initial data setup:', error);
+    console.error('❌ Error in initial data setup:', error);
   }
 }
 
 async function createInitialAdmin() {
   try {
-    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
+    const adminUsername = 'admin'; // Hardcode for safety
+    const adminPassword = 'Admin@123'; // Hardcode for safety
     
+    // Check if admin exists
     const adminExists = await Admin.findOne({ username: adminUsername });
+    
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
-      await Admin.create({
+      const newAdmin = await Admin.create({
         username: adminUsername,
         password: hashedPassword,
         sessions: [],
         lastLogin: null,
         lastPasswordChange: new Date()
       });
+      
       console.log('✅ Initial admin created successfully');
       console.log(`   Username: ${adminUsername}`);
       console.log(`   Password: ${adminPassword}`);
+      console.log(`   Admin ID: ${newAdmin._id}`);
     } else {
-      console.log('✅ Admin already exists');
+      console.log('✅ Admin already exists with username:', adminExists.username);
+      console.log(`   Admin ID: ${adminExists._id}`);
+      
+      // Verify password (optional)
+      const isValid = await bcrypt.compare(adminPassword, adminExists.password);
+      console.log(`   Password valid: ${isValid}`);
     }
   } catch (error) {
     console.error('❌ Error creating admin:', error);
-    throw error;
   }
 }
 
@@ -391,17 +394,17 @@ app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
-    console.log(`Login attempt: ${username}`);
+    console.log(`🔐 Login attempt: ${username}`);
     
     const admin = await Admin.findOne({ username });
     if (!admin) {
-      console.log(`Admin not found: ${username}`);
+      console.log(`❌ Admin not found: ${username}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     const isValid = await bcrypt.compare(password, admin.password);
     if (!isValid) {
-      console.log(`Invalid password for: ${username}`);
+      console.log(`❌ Invalid password for: ${username}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
@@ -421,10 +424,14 @@ app.post('/api/admin/login', async (req, res) => {
     res.json({
       success: true,
       token,
-      admin: { username: admin.username, lastLogin: admin.lastLogin }
+      admin: { 
+        username: admin.username, 
+        lastLogin: admin.lastLogin,
+        id: admin._id
+      }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -460,20 +467,51 @@ app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
   }
 });
 
-// Test route to check admin (শুধুমাত্র ডেভেলপমেন্টের জন্য)
+// Test route to check admin
 app.get('/api/admin/check', async (req, res) => {
   try {
-    const admin = await Admin.findOne({});
-    if (admin) {
-      res.json({ 
-        success: true, 
-        message: 'Admin exists',
-        username: admin.username,
-        passwordHash: admin.password.substring(0, 20) + '...'
-      });
-    } else {
-      res.json({ success: false, message: 'No admin found' });
-    }
+    const admins = await Admin.find({}).select('-password');
+    const count = await Admin.countDocuments();
+    
+    res.json({ 
+      success: true, 
+      message: 'Admin check',
+      totalAdmins: count,
+      admins: admins.map(a => ({
+        id: a._id,
+        username: a.username,
+        lastLogin: a.lastLogin,
+        sessionCount: a.sessions.length
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Force create admin (for debugging)
+app.get('/api/admin/force-create', async (req, res) => {
+  try {
+    // Delete existing admin
+    await Admin.deleteMany({});
+    
+    const hashedPassword = await bcrypt.hash('Admin@123', 10);
+    const newAdmin = await Admin.create({
+      username: 'admin',
+      password: hashedPassword,
+      sessions: [],
+      lastLogin: null,
+      lastPasswordChange: new Date()
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Admin created successfully',
+      admin: {
+        id: newAdmin._id,
+        username: newAdmin.username
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -940,7 +978,8 @@ app.get('/api/health', (req, res) => {
     message: 'Swift Bags API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    database: mongoose.connection.name || 'unknown'
   });
 });
 
@@ -953,6 +992,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/api/health',
       admin: '/api/admin/check',
+      forceCreate: '/api/admin/force-create',
       products: '/api/products',
       categories: '/api/categories',
       sliders: '/api/sliders',
@@ -983,7 +1023,7 @@ app.use((err, req, res, next) => {
 
 // ============= START SERVER =============
 
-// ডাটাবেস কানেক্ট করুন এবং সার্ভার শুরু করুন
+// Connect to database
 connectDB();
 
 // Vercel export
@@ -993,8 +1033,9 @@ module.exports = app;
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Health check: http://localhost:${PORT}/api/health`);
-    console.log(`Admin check: http://localhost:${PORT}/api/admin/check`);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`📍 Admin check: http://localhost:${PORT}/api/admin/check`);
+    console.log(`📍 Force create: http://localhost:${PORT}/api/admin/force-create`);
   });
 }
