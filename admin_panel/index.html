@@ -200,6 +200,8 @@
         .quick-action-btn {
             transition: all 0.3s;
             border: 1px solid #e5e7eb;
+            background: white;
+            color: #1a1a1a;
         }
         .quick-action-btn:hover {
             border-color: #D4AF37;
@@ -293,6 +295,7 @@
                 left: 10px;
                 width: auto;
                 max-width: none;
+                z-index: 1002; /* increased z-index to appear above sidebar overlay */
             }
         }
     </style>
@@ -480,7 +483,7 @@
         <!-- Main Content -->
         <div class="flex-1 p-3 md:p-6">
             
-            <!-- Quick Actions (Mobile) -->
+            <!-- Quick Actions (Mobile) - এখন দৃশ্যমান এবং সঠিকভাবে কাজ করবে -->
             <div class="md:hidden mb-4 overflow-x-auto whitespace-nowrap pb-2">
                 <div class="flex space-x-2">
                     <button onclick="quickAction('addProduct')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
@@ -1070,7 +1073,7 @@
         setupNotificationToggles();
     });
 
-    // Setup Notification Toggles (FIXED)
+    // Setup Notification Toggles (FIXED for mobile)
     function setupNotificationToggles() {
         const notificationBtn = document.getElementById('notificationBtn');
         const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
@@ -1436,7 +1439,7 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,  // <-- এখানে true করা হয়েছে
+                maintainAspectRatio: true,
                 plugins: {
                     legend: {
                         position: 'bottom',
