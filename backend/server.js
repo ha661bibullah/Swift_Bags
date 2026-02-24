@@ -24,8 +24,8 @@ app.use(compression());
 
 // CORS configuration for production
 const allowedOrigins = [
-  'https://swift-bags.vercel.app',
-  'https://swift-bags-admin.vercel.app',
+  'https://swift-bags-t1u3.vercel.app',
+  'https://swift-bags-gad3.vercel.app',
   'http://localhost:3000',
   'http://localhost:5000'
 ];
