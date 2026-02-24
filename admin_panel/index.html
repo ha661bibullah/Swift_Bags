@@ -13,7 +13,22 @@
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Copperplate Gothic for Swift Bags logo */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&display=swap');
+        
         * { font-family: 'Hind Siliguri', sans-serif; }
+        
+        .copperplate-logo {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-style: italic;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #D4AF37 0%, #F5E7A3 50%, #D4AF37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -35,27 +50,40 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        /* Desktop Sidebar */
+        /* Desktop Sidebar - Full Height Fixed */
         .sidebar {
             transition: all 0.3s;
             height: calc(100vh - 60px);
             overflow-y: auto;
-            position: sticky;
+            position: fixed;
             top: 60px;
+            left: 0;
+            width: 240px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 100;
         }
         
         .sidebar-item {
             transition: all 0.2s;
             cursor: pointer;
             border-radius: 8px;
-            margin: 2px 8px;
-            padding: 10px 12px;
+            margin: 4px 8px;
+            padding: 12px 16px;
         }
         
         .sidebar-item:hover { background: rgba(212, 175, 55, 0.1); }
-        .sidebar-item.active { background: #D4AF37; color: #0A1F44; }
+        .sidebar-item.active { background: #D4AF37; color: #0A1F44; font-weight: 600; }
         
-        /* Mobile Sidebar (Hamburger Menu) */
+        /* Main Content Adjustment for Desktop */
+        .main-content {
+            margin-left: 240px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #f3f4f6;
+        }
+        
+        /* Mobile Sidebar */
         .mobile-sidebar {
             position: fixed;
             top: 0;
@@ -255,6 +283,7 @@
                 content: attr(data-label);
                 font-weight: 600;
                 color: #0A1F44;
+                margin-right: 10px;
             }
         }
         
@@ -286,17 +315,52 @@
             background: rgba(212, 175, 55, 0.2);
         }
 
-        /* Notification Dropdown for Mobile */
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 1002;
+            display: none;
+        }
+        
+        .notification-dropdown.show {
+            display: block;
+        }
+        
         @media (max-width: 768px) {
-            #notificationDropdown {
+            .notification-dropdown {
                 position: fixed;
                 top: 70px;
-                right: 10px;
                 left: 10px;
+                right: 10px;
                 width: auto;
                 max-width: none;
-                z-index: 1002; /* increased z-index to appear above sidebar overlay */
             }
+        }
+        
+        /* Modal Responsive */
+        @media (max-width: 640px) {
+            .modal .bg-white {
+                margin: 10px;
+                width: calc(100% - 20px);
+                max-height: calc(100vh - 20px);
+            }
+        }
+        
+        /* Content Form */
+        .content-form input, .content-form textarea {
+            transition: all 0.3s;
+        }
+        .content-form input:focus, .content-form textarea:focus {
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
         }
     </style>
 </head>
@@ -307,7 +371,7 @@
     <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 w-full max-w-md transform transition-all hover:scale-105">
         <div class="text-center mb-6">
             <img src="https://via.placeholder.com/80x80/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-20 h-20 mx-auto rounded-lg animate-pulse">
-            <h2 class="text-2xl font-bold text-primary mt-2">Swift Bags Admin</h2>
+            <h2 class="text-2xl font-bold text-primary mt-2 copperplate-logo">Swift Bags Admin</h2>
             <p class="text-gray-600">অ্যাডমিন প্যানেলে লগইন করুন</p>
         </div>
         <div id="loginError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden text-sm"></div>
@@ -339,7 +403,7 @@
 </div>
 
 <!-- Admin Dashboard -->
-<div id="dashboardPage" class="hidden min-h-screen bg-gray-100 pb-6">
+<div id="dashboardPage" class="hidden min-h-screen bg-gray-100">
     
     <!-- Mobile Header with Hamburger Menu -->
     <div class="mobile-header md:hidden">
@@ -348,7 +412,7 @@
                 <i class="fas fa-bars"></i>
             </button>
             <img src="https://via.placeholder.com/32x32/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-8 h-8 rounded-lg">
-            <span class="font-bold text-gold">SwiftBags</span>
+            <span class="font-bold copperplate-logo">Swift Bags</span>
         </div>
         <div class="flex items-center space-x-3">
             <!-- Notifications -->
@@ -362,12 +426,12 @@
         </div>
     </div>
 
-    <!-- Mobile Sidebar (Hamburger Menu) - ONLY mobile navigation -->
+    <!-- Mobile Sidebar (Hamburger Menu) -->
     <div id="mobileSidebarOverlay" class="mobile-sidebar-overlay"></div>
     <div id="mobileSidebar" class="mobile-sidebar">
         <div class="mobile-sidebar-header">
             <img src="https://via.placeholder.com/60x60/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-16 h-16 mx-auto rounded-lg mb-2">
-            <h3 class="font-bold text-gold">SwiftBags Admin</h3>
+            <h3 class="font-bold copperplate-logo">Swift Bags</h3>
             <p id="mobileSidebarAdminName" class="text-sm text-gray-300">Admin</p>
         </div>
         <div class="py-2">
@@ -416,10 +480,10 @@
 
     <!-- Desktop Top Navigation -->
     <nav class="bg-primary text-white sticky top-0 z-50 shadow-lg hidden md:block">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center" style="margin-left: 240px; max-width: calc(100% - 240px);">
             <div class="flex items-center space-x-3">
                 <img src="https://via.placeholder.com/32x32/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-8 h-8 rounded-lg">
-                <span class="text-xl font-bold text-gold">SwiftBags Admin</span>
+                <span class="text-xl font-bold copperplate-logo">Swift Bags Admin</span>
             </div>
             <div class="flex items-center space-x-4">
                 <!-- Notifications -->
@@ -428,11 +492,11 @@
                         <i class="fas fa-bell"></i>
                         <span id="notificationCount" class="notification-badge hidden">0</span>
                     </button>
-                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                    <div id="notificationDropdown" class="notification-dropdown">
                         <div class="p-3 border-b border-gray-200 sticky top-0 bg-white">
                             <h3 class="font-bold text-primary">নোটিফিকেশন</h3>
                         </div>
-                        <div id="notificationList" class="divide-y divide-gray-100">
+                        <div id="notificationList" class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
                             <!-- Notifications will be loaded here -->
                         </div>
                     </div>
@@ -445,369 +509,373 @@
         </div>
     </nav>
 
-    <div class="flex flex-col md:flex-row">
-        <!-- Desktop Sidebar -->
-        <div class="sidebar hidden md:block md:w-64 bg-white shadow-lg">
-            <div class="p-4">
-                <div class="space-y-1">
-                    <button class="sidebar-item w-full text-left flex items-center active" data-section="dashboard">
-                        <i class="fas fa-home mr-3 w-5"></i> ড্যাশবোর্ড
-                    </button>
-                    <button class="sidebar-item w-full text-left flex items-center" data-section="sliders">
-                        <i class="fas fa-images mr-3 w-5"></i> স্লাইডার
-                    </button>
-                    <button class="sidebar-item w-full text-left flex items-center" data-section="categories">
-                        <i class="fas fa-tags mr-3 w-5"></i> ক্যাটাগরি
-                    </button>
-                    <button class="sidebar-item w-full text-left flex items-center" data-section="products">
-                        <i class="fas fa-box mr-3 w-5"></i> পণ্য
-                    </button>
-                    <button class="sidebar-item w-full text-left flex items-center justify-between" data-section="orders">
-                        <span><i class="fas fa-shopping-cart mr-3 w-5"></i> অর্ডার</span>
-                        <span id="pendingOrdersBadge" class="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs hidden">0</span>
-                    </button>
-                    <button class="sidebar-item w-full text-left flex items-center justify-between" data-section="reviews">
-                        <span><i class="fas fa-star mr-3 w-5"></i> রিভিউ</span>
-                        <span id="pendingReviewsBadge" class="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs hidden">0</span>
-                    </button>
-                    <button class="sidebar-item w-full text-left flex items-center" data-section="content">
-                        <i class="fas fa-edit mr-3 w-5"></i> কন্টেন্ট
-                    </button>
-                    <button class="sidebar-item w-full text-left flex items-center" data-section="settings">
-                        <i class="fas fa-cog mr-3 w-5"></i> সেটিংস
-                    </button>
+    <!-- Desktop Sidebar -->
+    <div class="sidebar hidden md:block">
+        <div class="p-4">
+            <div class="space-y-1">
+                <button class="sidebar-item w-full text-left flex items-center active" data-section="dashboard">
+                    <i class="fas fa-home mr-3 w-5"></i> ড্যাশবোর্ড
+                </button>
+                <button class="sidebar-item w-full text-left flex items-center" data-section="sliders">
+                    <i class="fas fa-images mr-3 w-5"></i> স্লাইডার
+                </button>
+                <button class="sidebar-item w-full text-left flex items-center" data-section="categories">
+                    <i class="fas fa-tags mr-3 w-5"></i> ক্যাটাগরি
+                </button>
+                <button class="sidebar-item w-full text-left flex items-center" data-section="products">
+                    <i class="fas fa-box mr-3 w-5"></i> পণ্য
+                </button>
+                <button class="sidebar-item w-full text-left flex items-center justify-between" data-section="orders">
+                    <span><i class="fas fa-shopping-cart mr-3 w-5"></i> অর্ডার</span>
+                    <span id="pendingOrdersBadge" class="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs hidden">0</span>
+                </button>
+                <button class="sidebar-item w-full text-left flex items-center justify-between" data-section="reviews">
+                    <span><i class="fas fa-star mr-3 w-5"></i> রিভিউ</span>
+                    <span id="pendingReviewsBadge" class="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs hidden">0</span>
+                </button>
+                <button class="sidebar-item w-full text-left flex items-center" data-section="content">
+                    <i class="fas fa-edit mr-3 w-5"></i> কন্টেন্ট
+                </button>
+                <button class="sidebar-item w-full text-left flex items-center" data-section="settings">
+                    <i class="fas fa-cog mr-3 w-5"></i> সেটিংস
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Quick Actions (Mobile & Desktop) -->
+        <div class="mb-4 overflow-x-auto whitespace-nowrap pb-2">
+            <div class="flex space-x-2">
+                <button onclick="quickAction('addProduct')" class="quick-action-btn px-4 py-2 rounded-lg text-sm flex items-center">
+                    <i class="fas fa-plus-circle text-gold mr-1"></i> নতুন পণ্য
+                </button>
+                <button onclick="quickAction('addSlider')" class="quick-action-btn px-4 py-2 rounded-lg text-sm flex items-center">
+                    <i class="fas fa-image text-gold mr-1"></i> নতুন স্লাইডার
+                </button>
+                <button onclick="quickAction('addCategory')" class="quick-action-btn px-4 py-2 rounded-lg text-sm flex items-center">
+                    <i class="fas fa-tag text-gold mr-1"></i> নতুন ক্যাটাগরি
+                </button>
+                <button onclick="quickAction('refresh')" class="quick-action-btn px-4 py-2 rounded-lg text-sm flex items-center">
+                    <i class="fas fa-sync-alt text-gold mr-1"></i> রিফ্রেশ
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="section active">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl md:text-2xl font-bold text-primary copperplate-logo">ড্যাশবোর্ড</h2>
+                <span class="text-sm text-gray-500" id="lastUpdate"></span>
+            </div>
+            
+            <!-- Quick Stats Cards -->
+            <div class="quick-stats mb-6">
+                <div class="stat-card bg-white rounded-lg shadow p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-xs">মোট অর্ডার</p>
+                            <h3 class="text-xl md:text-2xl font-bold" id="totalOrders">0</h3>
+                            <p class="text-xs text-green-600" id="orderGrowth">+0%</p>
+                        </div>
+                        <div class="bg-primary text-white p-3 rounded-full">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card bg-white rounded-lg shadow p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-xs">পেন্ডিং অর্ডার</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-red-500" id="pendingOrders">0</h3>
+                            <p class="text-xs text-gray-500">অপেক্ষমাণ</p>
+                        </div>
+                        <div class="bg-red-500 text-white p-3 rounded-full">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card bg-white rounded-lg shadow p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-xs">মোট পণ্য</p>
+                            <h3 class="text-xl md:text-2xl font-bold" id="totalProducts">0</h3>
+                            <p class="text-xs text-gray-500">স্টকে আছে</p>
+                        </div>
+                        <div class="bg-green-500 text-white p-3 rounded-full">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card bg-white rounded-lg shadow p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-xs">আজকের অর্ডার</p>
+                            <h3 class="text-xl md:text-2xl font-bold" id="todayOrders">0</h3>
+                            <p class="text-xs text-gold">আজ</p>
+                        </div>
+                        <div class="bg-gold text-primary p-3 rounded-full">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Stats Row: Revenue & Pending Reviews -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="stat-card bg-white rounded-lg shadow p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-xs">মোট বিক্রয় (টাকা)</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-green-600" id="totalRevenue">৳0</h3>
+                            <p class="text-xs text-gray-500">ডেলিভারড অর্ডার</p>
+                        </div>
+                        <div class="bg-green-500 text-white p-3 rounded-full">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card bg-white rounded-lg shadow p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-xs">পেন্ডিং রিভিউ</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-yellow-500" id="pendingReviews">0</h3>
+                            <p class="text-xs text-gray-500">অপেক্ষমাণ</p>
+                        </div>
+                        <div class="bg-yellow-500 text-white p-3 rounded-full">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="font-bold text-primary mb-4">অর্ডার স্ট্যাটাস</h3>
+                    <div style="height: 220px;">
+                        <canvas id="orderChart" style="width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="font-bold text-primary mb-4">সাম্প্রতিক কার্যক্রম</h3>
+                    <div id="recentActivities" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                        <!-- Activities will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-primary">সাম্প্রতিক অর্ডার</h3>
+                        <button onclick="loadOrders()" class="text-gold hover:text-primary transition text-sm">
+                            সব দেখুন <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div id="recentOrdersList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                        <!-- Recent orders will be loaded here -->
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-primary">পেন্ডিং রিভিউ</h3>
+                        <button onclick="loadReviews()" class="text-gold hover:text-primary transition text-sm">
+                            সব দেখুন <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div id="pendingReviewsList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                        <!-- Pending reviews will be loaded here -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="flex-1 p-3 md:p-6">
+        <!-- Sliders Section -->
+        <div id="slidersSection" class="section hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                <h2 class="text-xl md:text-2xl font-bold text-primary copperplate-logo">স্লাইডার ম্যানেজমেন্ট</h2>
+                <button id="addSliderBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
+                    <i class="fas fa-plus mr-2"></i>নতুন স্লাইডার
+                </button>
+            </div>
+            <div id="slidersList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Sliders will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Categories Section -->
+        <div id="categoriesSection" class="section hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                <h2 class="text-xl md:text-2xl font-bold text-primary copperplate-logo">ক্যাটাগরি ম্যানেজমেন্ট</h2>
+                <button id="addCategoryBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
+                    <i class="fas fa-plus mr-2"></i>নতুন ক্যাটাগরি
+                </button>
+            </div>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ক্রম</th>
+                            <th>নাম (ইংরেজি)</th>
+                            <th>নাম (বাংলা)</th>
+                            <th>স্লাগ</th>
+                            <th>স্ট্যাটাস</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoriesTableBody">
+                        <!-- Categories will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div id="productsSection" class="section hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                <h2 class="text-xl md:text-2xl font-bold text-primary copperplate-logo">পণ্য ম্যানেজমেন্ট</h2>
+                <button id="addProductBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
+                    <i class="fas fa-plus mr-2"></i>নতুন পণ্য
+                </button>
+            </div>
             
-            <!-- Quick Actions (Mobile) - এখন দৃশ্যমান এবং সঠিকভাবে কাজ করবে -->
-            <div class="md:hidden mb-4 overflow-x-auto whitespace-nowrap pb-2">
-                <div class="flex space-x-2">
-                    <button onclick="quickAction('addProduct')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
-                        <i class="fas fa-plus-circle text-gold mr-1"></i> নতুন পণ্য
-                    </button>
-                    <button onclick="quickAction('addSlider')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
-                        <i class="fas fa-image text-gold mr-1"></i> নতুন স্লাইডার
-                    </button>
-                    <button onclick="quickAction('addCategory')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
-                        <i class="fas fa-tag text-gold mr-1"></i> নতুন ক্যাটাগরি
-                    </button>
-                    <button onclick="quickAction('refresh')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
-                        <i class="fas fa-sync-alt text-gold mr-1"></i> রিফ্রেশ
+            <!-- Product Filters -->
+            <div class="bg-white p-4 rounded-lg shadow mb-4">
+                <div class="flex flex-col md:flex-row gap-3">
+                    <select id="productCategoryFilter" class="border rounded-lg p-2 flex-1">
+                        <option value="all">সব ক্যাটাগরি</option>
+                    </select>
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="productSearch" placeholder="পণ্য খুঁজুন..." class="w-full pl-10 border rounded-lg p-2">
+                    </div>
+                    <button onclick="loadProducts()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                        <i class="fas fa-search mr-1"></i> খুঁজুন
                     </button>
                 </div>
             </div>
 
-            <!-- Dashboard Section -->
-            <div id="dashboardSection" class="section active">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl md:text-2xl font-bold text-primary">ড্যাশবোর্ড</h2>
-                    <span class="text-sm text-gray-500" id="lastUpdate"></span>
-                </div>
-                
-                <!-- Quick Stats Cards -->
-                <div class="quick-stats mb-6">
-                    <div class="stat-card bg-white rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs">মোট অর্ডার</p>
-                                <h3 class="text-xl md:text-2xl font-bold" id="totalOrders">0</h3>
-                                <p class="text-xs text-green-600" id="orderGrowth">+0%</p>
-                            </div>
-                            <div class="bg-primary text-white p-3 rounded-full">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="stat-card bg-white rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs">পেন্ডিং অর্ডার</p>
-                                <h3 class="text-xl md:text-2xl font-bold text-red-500" id="pendingOrders">0</h3>
-                                <p class="text-xs text-gray-500">অপেক্ষমাণ</p>
-                            </div>
-                            <div class="bg-red-500 text-white p-3 rounded-full">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="stat-card bg-white rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs">মোট পণ্য</p>
-                                <h3 class="text-xl md:text-2xl font-bold" id="totalProducts">0</h3>
-                                <p class="text-xs text-gray-500">স্টকে আছে</p>
-                            </div>
-                            <div class="bg-green-500 text-white p-3 rounded-full">
-                                <i class="fas fa-box"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="stat-card bg-white rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs">আজকের অর্ডার</p>
-                                <h3 class="text-xl md:text-2xl font-bold" id="todayOrders">0</h3>
-                                <p class="text-xs text-gold">আজ</p>
-                            </div>
-                            <div class="bg-gold text-primary p-3 rounded-full">
-                                <i class="fas fa-calendar-day"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- New Stats Row: Revenue & Pending Reviews -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div class="stat-card bg-white rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs">মোট বিক্রয় (টাকা)</p>
-                                <h3 class="text-xl md:text-2xl font-bold text-green-600" id="totalRevenue">৳0</h3>
-                                <p class="text-xs text-gray-500">ডেলিভারড অর্ডার</p>
-                            </div>
-                            <div class="bg-green-500 text-white p-3 rounded-full">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="stat-card bg-white rounded-lg shadow p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs">পেন্ডিং রিভিউ</p>
-                                <h3 class="text-xl md:text-2xl font-bold text-yellow-500" id="pendingReviews">0</h3>
-                                <p class="text-xs text-gray-500">অপেক্ষমাণ</p>
-                            </div>
-                            <div class="bg-yellow-500 text-white p-3 rounded-full">
-                                <i class="fas fa-star"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts Row -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                    <!-- Order Status Chart - Fixed Height Container Added -->
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <h3 class="font-bold text-primary mb-4">অর্ডার স্ট্যাটাস</h3>
-                        <div style="height: 220px;">
-                            <canvas id="orderChart" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <h3 class="font-bold text-primary mb-4">সাম্প্রতিক কার্যক্রম</h3>
-                        <div id="recentActivities" class="space-y-3 max-h-64 overflow-y-auto pr-2">
-                            <!-- Activities will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-primary">সাম্প্রতিক অর্ডার</h3>
-                            <button onclick="loadOrders()" class="text-gold hover:text-primary transition text-sm">
-                                সব দেখুন <i class="fas fa-arrow-right ml-1"></i>
-                            </button>
-                        </div>
-                        <div id="recentOrdersList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                            <!-- Recent orders will be loaded here -->
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-primary">পেন্ডিং রিভিউ</h3>
-                            <button onclick="loadReviews()" class="text-gold hover:text-primary transition text-sm">
-                                সব দেখুন <i class="fas fa-arrow-right ml-1"></i>
-                            </button>
-                        </div>
-                        <div id="pendingReviewsList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                            <!-- Pending reviews will be loaded here -->
-                        </div>
-                    </div>
-                </div>
+            <div id="productsList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Products will be loaded here -->
             </div>
+        </div>
 
-            <!-- Sliders Section -->
-            <div id="slidersSection" class="section hidden">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
-                    <h2 class="text-xl md:text-2xl font-bold text-primary">স্লাইডার ম্যানেজমেন্ট</h2>
-                    <button id="addSliderBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
-                        <i class="fas fa-plus mr-2"></i>নতুন স্লাইডার
+        <!-- Orders Section -->
+        <div id="ordersSection" class="section hidden">
+            <h2 class="text-xl md:text-2xl font-bold text-primary mb-4 copperplate-logo">অর্ডার ম্যানেজমেন্ট</h2>
+            
+            <!-- Order Filters -->
+            <div class="bg-white p-4 rounded-lg shadow mb-4">
+                <div class="flex flex-col md:flex-row gap-3">
+                    <select id="orderStatusFilter" class="border rounded-lg p-2 flex-1">
+                        <option value="all">সব স্ট্যাটাস</option>
+                        <option value="pending">পেন্ডিং</option>
+                        <option value="confirmed">কনফার্মড</option>
+                        <option value="processing">প্রসেসিং</option>
+                        <option value="shipped">শিপড</option>
+                        <option value="delivered">ডেলিভারড</option>
+                        <option value="cancelled">ক্যান্সেলড</option>
+                    </select>
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="orderSearch" placeholder="অর্ডার আইডি বা ফোন নম্বর..." class="w-full pl-10 border rounded-lg p-2">
+                    </div>
+                    <button onclick="loadOrders()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                        <i class="fas fa-search mr-1"></i> খুঁজুন
                     </button>
                 </div>
-                <div id="slidersList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Sliders will be loaded here -->
-                </div>
             </div>
 
-            <!-- Categories Section -->
-            <div id="categoriesSection" class="section hidden">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
-                    <h2 class="text-xl md:text-2xl font-bold text-primary">ক্যাটাগরি ম্যানেজমেন্ট</h2>
-                    <button id="addCategoryBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
-                        <i class="fas fa-plus mr-2"></i>নতুন ক্যাটাগরি
+            <div id="ordersList" class="space-y-4">
+                <!-- Orders will be loaded here -->
+            </div>
+            <div id="ordersPagination" class="flex justify-center gap-2 mt-4 flex-wrap"></div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div id="reviewsSection" class="section hidden">
+            <h2 class="text-xl md:text-2xl font-bold text-primary mb-4 copperplate-logo">রিভিউ ম্যানেজমেন্ট</h2>
+            
+            <!-- Review Filters -->
+            <div class="bg-white p-4 rounded-lg shadow mb-4">
+                <div class="flex gap-3">
+                    <select id="reviewStatusFilter" class="border rounded-lg p-2 flex-1">
+                        <option value="all">সব রিভিউ</option>
+                        <option value="pending">পেন্ডিং</option>
+                        <option value="approved">অ্যাপ্রুভড</option>
+                        <option value="rejected">রিজেক্টেড</option>
+                    </select>
+                    <button onclick="loadReviews()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                        <i class="fas fa-filter mr-1"></i> ফিল্টার
                     </button>
                 </div>
-                <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ক্রম</th>
-                                <th>নাম (ইংরেজি)</th>
-                                <th>নাম (বাংলা)</th>
-                                <th>স্লাগ</th>
-                                <th>স্ট্যাটাস</th>
-                                <th>অ্যাকশন</th>
-                            </tr>
-                        </thead>
-                        <tbody id="categoriesTableBody">
-                            <!-- Categories will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
             </div>
 
-            <!-- Products Section -->
-            <div id="productsSection" class="section hidden">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
-                    <h2 class="text-xl md:text-2xl font-bold text-primary">পণ্য ম্যানেজমেন্ট</h2>
-                    <button id="addProductBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
-                        <i class="fas fa-plus mr-2"></i>নতুন পণ্য
+            <div id="reviewsList" class="space-y-4">
+                <!-- Reviews will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div id="contentSection" class="section hidden">
+            <h2 class="text-xl md:text-2xl font-bold text-primary mb-4 copperplate-logo">কন্টেন্ট ম্যানেজমেন্ট</h2>
+            <div class="bg-white rounded-lg shadow p-4 md:p-6">
+                <form id="contentForm" class="space-y-4 content-form">
+                    <div>
+                        <label class="block font-medium mb-2">ফুটার টেক্সট</label>
+                        <input type="text" id="footerText" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="Swift Bags - সর্বস্বত্ব সংরক্ষিত">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">ফোন নম্বর</label>
+                        <input type="text" id="phoneNumber" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="০১৩২৬-১৯৮৪৫৬">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">ইমেইল</label>
+                        <input type="email" id="email" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="info@swiftbags.com">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">ঠিকানা</label>
+                        <textarea id="address" rows="3" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="১২৩/৪, গুলশান, ঢাকা - ১২১২, বাংলাদেশ"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">কোম্পানির নাম (লোগোর জন্য)</label>
+                        <input type="text" id="companyName" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="Swift Bags">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">সাবটাইটেল</label>
+                        <input type="text" id="companySubtitle" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="Premium Quality Bags">
+                    </div>
+                    <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
+                        <i class="fas fa-save mr-2"></i> সংরক্ষণ করুন
                     </button>
-                </div>
-                
-                <!-- Product Filters -->
-                <div class="bg-white p-4 rounded-lg shadow mb-4">
-                    <div class="flex flex-col md:flex-row gap-3">
-                        <select id="productCategoryFilter" class="border rounded-lg p-2 flex-1">
-                            <option value="all">সব ক্যাটাগরি</option>
-                        </select>
-                        <div class="relative flex-1">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                            <input type="text" id="productSearch" placeholder="পণ্য খুঁজুন..." class="w-full pl-10 border rounded-lg p-2">
-                        </div>
-                        <button onclick="loadProducts()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
-                            <i class="fas fa-search mr-1"></i> খুঁজুন
-                        </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settingsSection" class="section hidden">
+            <h2 class="text-xl md:text-2xl font-bold text-primary mb-4 copperplate-logo">সেটিংস</h2>
+            <div class="bg-white rounded-lg shadow p-4 md:p-6">
+                <h3 class="font-bold text-lg mb-4">পাসওয়ার্ড পরিবর্তন</h3>
+                <form id="changePasswordForm" class="space-y-4 max-w-md">
+                    <div>
+                        <label class="block font-medium mb-2">বর্তমান পাসওয়ার্ড</label>
+                        <input type="password" id="currentPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                     </div>
-                </div>
-
-                <div id="productsList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <!-- Products will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Orders Section -->
-            <div id="ordersSection" class="section hidden">
-                <h2 class="text-xl md:text-2xl font-bold text-primary mb-4">অর্ডার ম্যানেজমেন্ট</h2>
-                
-                <!-- Order Filters -->
-                <div class="bg-white p-4 rounded-lg shadow mb-4">
-                    <div class="flex flex-col md:flex-row gap-3">
-                        <select id="orderStatusFilter" class="border rounded-lg p-2 flex-1">
-                            <option value="all">সব স্ট্যাটাস</option>
-                            <option value="pending">পেন্ডিং</option>
-                            <option value="confirmed">কনফার্মড</option>
-                            <option value="processing">প্রসেসিং</option>
-                            <option value="shipped">শিপড</option>
-                            <option value="delivered">ডেলিভারড</option>
-                            <option value="cancelled">ক্যান্সেলড</option>
-                        </select>
-                        <div class="relative flex-1">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                            <input type="text" id="orderSearch" placeholder="অর্ডার আইডি বা ফোন নম্বর..." class="w-full pl-10 border rounded-lg p-2">
-                        </div>
-                        <button onclick="loadOrders()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
-                            <i class="fas fa-search mr-1"></i> খুঁজুন
-                        </button>
+                    <div>
+                        <label class="block font-medium mb-2">নতুন পাসওয়ার্ড</label>
+                        <input type="password" id="newPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                     </div>
-                </div>
-
-                <div id="ordersList" class="space-y-4">
-                    <!-- Orders will be loaded here -->
-                </div>
-                <div id="ordersPagination" class="flex justify-center gap-2 mt-4 flex-wrap"></div>
-            </div>
-
-            <!-- Reviews Section -->
-            <div id="reviewsSection" class="section hidden">
-                <h2 class="text-xl md:text-2xl font-bold text-primary mb-4">রিভিউ ম্যানেজমেন্ট</h2>
-                
-                <!-- Review Filters -->
-                <div class="bg-white p-4 rounded-lg shadow mb-4">
-                    <div class="flex gap-3">
-                        <select id="reviewStatusFilter" class="border rounded-lg p-2 flex-1">
-                            <option value="all">সব রিভিউ</option>
-                            <option value="pending">পেন্ডিং</option>
-                            <option value="approved">অ্যাপ্রুভড</option>
-                            <option value="rejected">রিজেক্টেড</option>
-                        </select>
-                        <button onclick="loadReviews()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
-                            <i class="fas fa-filter mr-1"></i> ফিল্টার
-                        </button>
+                    <div>
+                        <label class="block font-medium mb-2">নতুন পাসওয়ার্ড (আবার)</label>
+                        <input type="password" id="confirmPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                     </div>
-                </div>
-
-                <div id="reviewsList" class="space-y-4">
-                    <!-- Reviews will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Content Section -->
-            <div id="contentSection" class="section hidden">
-                <h2 class="text-xl md:text-2xl font-bold text-primary mb-4">কন্টেন্ট ম্যানেজমেন্ট</h2>
-                <div class="bg-white rounded-lg shadow p-4 md:p-6">
-                    <form id="contentForm" class="space-y-4">
-                        <div>
-                            <label class="block font-medium mb-2">ফুটার টেক্সট</label>
-                            <input type="text" id="footerText" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-2">ফোন নম্বর</label>
-                            <input type="text" id="phoneNumber" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-2">ইমেইল</label>
-                            <input type="email" id="email" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-2">ঠিকানা</label>
-                            <textarea id="address" rows="3" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold"></textarea>
-                        </div>
-                        <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
-                            <i class="fas fa-save mr-2"></i> সংরক্ষণ করুন
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Settings Section -->
-            <div id="settingsSection" class="section hidden">
-                <h2 class="text-xl md:text-2xl font-bold text-primary mb-4">সেটিংস</h2>
-                <div class="bg-white rounded-lg shadow p-4 md:p-6">
-                    <h3 class="font-bold text-lg mb-4">পাসওয়ার্ড পরিবর্তন</h3>
-                    <form id="changePasswordForm" class="space-y-4 max-w-md">
-                        <div>
-                            <label class="block font-medium mb-2">বর্তমান পাসওয়ার্ড</label>
-                            <input type="password" id="currentPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-2">নতুন পাসওয়ার্ড</label>
-                            <input type="password" id="newPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-2">নতুন পাসওয়ার্ড (আবার)</label>
-                            <input type="password" id="confirmPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
-                        </div>
-                        <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105">
-                            <i class="fas fa-key mr-2"></i> পাসওয়ার্ড পরিবর্তন করুন
-                        </button>
-                    </form>
-                </div>
+                    <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105">
+                        <i class="fas fa-key mr-2"></i> পাসওয়ার্ড পরিবর্তন করুন
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -815,11 +883,11 @@
 
 <!-- Modals -->
 
-<!-- Slider Modal (Updated) -->
+<!-- Slider Modal -->
 <div id="sliderModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4 pt-8 md:pt-4 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl my-8 md:my-0 max-h-[calc(100vh-6rem)] md:max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
         <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
-            <h3 id="sliderModalTitle" class="text-xl font-bold text-primary">নতুন স্লাইডার</h3>
+            <h3 id="sliderModalTitle" class="text-xl font-bold text-primary copperplate-logo">নতুন স্লাইডার</h3>
         </div>
         <form id="sliderForm" class="p-4 space-y-4">
             <input type="hidden" id="sliderId">
@@ -843,6 +911,10 @@
                 <input type="text" id="sliderButtonText" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="এখনই কিনুন">
             </div>
             <div>
+                <label class="block font-medium mb-2">পণ্য আইডি (অর্ডার লিংকের জন্য)</label>
+                <input type="text" id="sliderProductId" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="যদি থাকে">
+            </div>
+            <div>
                 <label class="block font-medium mb-2">অর্ডার</label>
                 <input type="number" id="sliderOrder" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0">
             </div>
@@ -858,11 +930,11 @@
     </div>
 </div>
 
-<!-- Category Modal (Updated) -->
+<!-- Category Modal -->
 <div id="categoryModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4 pt-8 md:pt-4 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md my-8 md:my-0 max-h-[calc(100vh-6rem)] md:max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
         <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
-            <h3 id="categoryModalTitle" class="text-xl font-bold text-primary">নতুন ক্যাটাগরি</h3>
+            <h3 id="categoryModalTitle" class="text-xl font-bold text-primary copperplate-logo">নতুন ক্যাটাগরি</h3>
         </div>
         <form id="categoryForm" class="p-4 space-y-4">
             <input type="hidden" id="categoryId">
@@ -894,11 +966,11 @@
     </div>
 </div>
 
-<!-- Product Modal (Updated) -->
+<!-- Product Modal -->
 <div id="productModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4 pt-8 md:pt-4 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8 md:my-0 max-h-[calc(100vh-6rem)] md:max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
         <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
-            <h3 id="productModalTitle" class="text-xl font-bold text-primary">নতুন পণ্য</h3>
+            <h3 id="productModalTitle" class="text-xl font-bold text-primary copperplate-logo">নতুন পণ্য</h3>
         </div>
         <form id="productForm" class="p-4 space-y-4">
             <input type="hidden" id="productId">
@@ -938,7 +1010,7 @@
                 <div id="productImagePreviews" class="flex flex-wrap gap-2 mt-2"></div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block font-medium mb-2">স্টক *</label>
                     <input type="number" id="productStock" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0" required>
@@ -946,6 +1018,10 @@
                 <div>
                     <label class="block font-medium mb-2">বিক্রি হয়েছে</label>
                     <input type="number" id="productSold" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0">
+                </div>
+                <div>
+                    <label class="block font-medium mb-2">রেটিং</label>
+                    <input type="number" id="productRating" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" step="0.1" min="0" max="5" value="4.5">
                 </div>
             </div>
 
@@ -955,19 +1031,20 @@
                     <input type="text" id="productDiscount" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="যেমন: 20% Off">
                 </div>
                 <div>
-                    <label class="block font-medium mb-2">রেটিং</label>
-                    <input type="number" id="productRating" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" step="0.1" min="0" max="5" value="4.5">
+                    <label class="block font-medium mb-2">রঙ</label>
+                    <input type="text" id="productColor" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
                 </div>
             </div>
 
-            <div>
-                <label class="block font-medium mb-2">রঙ</label>
-                <input type="text" id="productColor" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
-            </div>
-
-            <div>
-                <label class="block font-medium mb-2">সাইজ</label>
-                <input type="text" id="productSize" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-medium mb-2">সাইজ</label>
+                    <input type="text" id="productSize" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block font-medium mb-2">ভ্যারিয়েন্ট (বিকল্প)</label>
+                    <input type="text" id="productVariant" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="যদি একাধিক ভ্যারিয়েন্ট থাকে">
+                </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-4">
@@ -993,11 +1070,11 @@
     </div>
 </div>
 
-<!-- Order Details Modal (Updated) -->
+<!-- Order Details Modal -->
 <div id="orderModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4 pt-8 md:pt-4 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl my-8 md:my-0 max-h-[calc(100vh-6rem)] md:max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
         <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
-            <h3 class="text-xl font-bold text-primary">অর্ডার বিস্তারিত</h3>
+            <h3 class="text-xl font-bold text-primary copperplate-logo">অর্ডার বিস্তারিত</h3>
         </div>
         <div id="orderDetails" class="p-4"></div>
         <div class="p-4 border-t border-gray-200 flex justify-end">
@@ -1006,11 +1083,11 @@
     </div>
 </div>
 
-<!-- Review Modal (Updated) -->
+<!-- Review Modal -->
 <div id="reviewModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4 pt-8 md:pt-4 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl my-8 md:my-0 max-h-[calc(100vh-6rem)] md:max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
         <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
-            <h3 class="text-xl font-bold text-primary">রিভিউ বিস্তারিত</h3>
+            <h3 class="text-xl font-bold text-primary copperplate-logo">রিভিউ বিস্তারিত</h3>
         </div>
         <div id="reviewDetails" class="p-4"></div>
         <div class="p-4 border-t border-gray-200 flex justify-end gap-2">
@@ -1025,11 +1102,11 @@
 <!-- Toast Notification -->
 <div id="toast" class="toast hidden bg-white border-l-4 border-green-500 shadow-lg rounded-lg p-4 min-w-[300px]"></div>
 
-<!-- Confirmation Modal (Updated) -->
+<!-- Confirmation Modal -->
 <div id="confirmModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4 pt-8 md:pt-4 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md my-8 md:my-0 max-h-[calc(100vh-6rem)] md:max-h-[90vh] overflow-y-auto transform transition-all scale-95">
         <div class="p-4 border-b border-gray-200">
-            <h3 class="text-xl font-bold text-primary">নিশ্চিতকরণ</h3>
+            <h3 class="text-xl font-bold text-primary copperplate-logo">নিশ্চিতকরণ</h3>
         </div>
         <div class="p-4">
             <p id="confirmMessage" class="text-center"></p>
@@ -1071,9 +1148,12 @@
         
         // Notification dropdown toggles
         setupNotificationToggles();
+        
+        // Initialize content form
+        loadContent();
     });
 
-    // Setup Notification Toggles (FIXED for mobile)
+    // Setup Notification Toggles
     function setupNotificationToggles() {
         const notificationBtn = document.getElementById('notificationBtn');
         const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
@@ -1082,14 +1162,14 @@
         if (notificationBtn) {
             notificationBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                dropdown.classList.toggle('hidden');
+                dropdown.classList.toggle('show');
             });
         }
         
         if (mobileNotificationBtn) {
             mobileNotificationBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                dropdown.classList.toggle('hidden');
+                dropdown.classList.toggle('show');
             });
         }
         
@@ -1098,7 +1178,7 @@
             if (!dropdown.contains(e.target) && 
                 !notificationBtn?.contains(e.target) && 
                 !mobileNotificationBtn?.contains(e.target)) {
-                dropdown.classList.add('hidden');
+                dropdown.classList.remove('show');
             }
         });
         
@@ -1134,6 +1214,11 @@
                         // Update active state
                         document.querySelectorAll('.mobile-sidebar-item').forEach(i => i.classList.remove('active'));
                         item.classList.add('active');
+                        
+                        // Update desktop sidebar active state
+                        document.querySelectorAll('.sidebar-item').forEach(i => {
+                            i.classList.toggle('active', i.dataset.section === section);
+                        });
                         
                         // Show section
                         document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -1619,7 +1704,11 @@
             subtitle: document.getElementById('sliderSubtitle').value,
             buttonText: document.getElementById('sliderButtonText').value,
             order: parseInt(document.getElementById('sliderOrder').value) || 0,
-            active: document.getElementById('sliderActive').checked
+            active: document.getElementById('sliderActive').checked,
+            productData: {
+                id: document.getElementById('sliderProductId').value,
+                name: document.getElementById('sliderTitle').value
+            }
         };
         
         formData.append('data', JSON.stringify(data));
@@ -1665,6 +1754,7 @@
                 document.getElementById('sliderTitle').value = slider.title;
                 document.getElementById('sliderSubtitle').value = slider.subtitle || '';
                 document.getElementById('sliderButtonText').value = slider.buttonText || 'এখনই কিনুন';
+                document.getElementById('sliderProductId').value = slider.productData?.id || '';
                 document.getElementById('sliderOrder').value = slider.order || 0;
                 document.getElementById('sliderActive').checked = slider.active;
                 
@@ -2469,6 +2559,8 @@
                 document.getElementById('phoneNumber').value = data.data.phoneNumber || '';
                 document.getElementById('email').value = data.data.email || '';
                 document.getElementById('address').value = data.data.address || '';
+                document.getElementById('companyName').value = data.data.companyName || 'Swift Bags';
+                document.getElementById('companySubtitle').value = data.data.companySubtitle || 'Premium Quality Bags';
             }
         } catch (error) {
             console.error('Error loading content:', error);
@@ -2485,7 +2577,9 @@
             { key: 'footerText', value: document.getElementById('footerText').value },
             { key: 'phoneNumber', value: document.getElementById('phoneNumber').value },
             { key: 'email', value: document.getElementById('email').value },
-            { key: 'address', value: document.getElementById('address').value }
+            { key: 'address', value: document.getElementById('address').value },
+            { key: 'companyName', value: document.getElementById('companyName').value },
+            { key: 'companySubtitle', value: document.getElementById('companySubtitle').value }
         ];
 
         try {

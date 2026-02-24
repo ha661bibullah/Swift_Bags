@@ -8,13 +8,39 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Hind Siliguri Font -->
+    <!-- Hind Siliguri Font for Bengali -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* আপনার বিদ্যমান সব স্টাইল এখানে থাকবে - অপরিবর্তিত */
+        /* Copperplate Gothic for Swift Bags logo */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&display=swap');
+        
         * {
             font-family: 'Hind Siliguri', sans-serif;
         }
+        
+        /* Custom Copperplate Gothic style for Swift Bags */
+        .copperplate-logo {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-style: italic;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #D4AF37 0%, #F5E7A3 50%, #D4AF37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .copperplate-subtitle {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            color: #D4AF37;
+            margin-top: -5px;
+        }
+        
         body {
             color: #1C1E21;
             background-color: #F5F7FA;
@@ -27,6 +53,7 @@
         .bg-light { background-color: #F5F7FA; }
         .text-dark { color: #1A1A1A; }
         
+        /* Mobile Menu */
         .mobile-top-menu {
             display: none;
             position: absolute;
@@ -63,6 +90,7 @@
             margin-top: 10px;
         }
         
+        /* Logo Animation */
         .logo-animation {
             border-radius: 7%;
             animation: pulse 2s infinite;
@@ -74,6 +102,7 @@
             100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
         }
         
+        /* Popup */
         .popup {
             position: fixed;
             top: 50%;
@@ -81,6 +110,8 @@
             transform: translate(-50%, -50%) scale(0);
             transition: transform 0.3s ease;
             z-index: 1000;
+            max-width: 90%;
+            width: 400px;
         }
         .popup.active {
             transform: translate(-50%, -50%) scale(1);
@@ -99,6 +130,7 @@
             display: block;
         }
         
+        /* Product Card */
         .product-card {
             transition: all 0.3s;
             position: relative;
@@ -123,24 +155,42 @@
             background: #dc2626;
             color: white;
         }
+        
+        /* Thumbnail Container */
         .thumbnail-container {
             display: flex;
             gap: 5px;
             margin-top: 5px;
             overflow-x: auto;
             padding: 0 5px;
+            scrollbar-width: thin;
+            scrollbar-color: #D4AF37 #e5e7eb;
         }
+        .thumbnail-container::-webkit-scrollbar {
+            height: 4px;
+        }
+        .thumbnail-container::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+        .thumbnail-container::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+        
         .thumbnail {
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             object-fit: cover;
             border-radius: 4px;
             cursor: pointer;
             border: 2px solid transparent;
             flex-shrink: 0;
+            transition: all 0.2s;
         }
         .thumbnail.active {
             border-color: #D4AF37;
+            transform: scale(1.05);
         }
         .thumbnail.sold-out-thumb {
             opacity: 0.6;
@@ -159,6 +209,7 @@
             border-radius: 0 0 4px 4px;
         }
         
+        /* Category Buttons */
         .cat-btn {
             padding: 8px 16px;
             border-radius: 30px;
@@ -175,6 +226,7 @@
             color: #1a1a1a;
         }
         
+        /* WhatsApp Button */
         .whatsapp-btn {
             position: fixed;
             bottom: 20px;
@@ -196,11 +248,13 @@
             transform: scale(1.1);
         }
         
+        /* Selected Products Container - Improved for Mobile */
         #selectedProducts {
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: #D4AF37 #e5e7eb;
+            padding: 4px;
         }
         #selectedProducts::-webkit-scrollbar {
             width: 4px;
@@ -217,39 +271,90 @@
         .selected-product-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: white;
-            padding: 6px 8px;
-            border-radius: 6px;
+            padding: 6px;
+            border-radius: 8px;
             margin-bottom: 6px;
             border: 1px solid #e5e7eb;
+            width: 100%;
         }
+        
+        /* Mobile Responsive Selected Products */
+        @media (max-width: 640px) {
+            .selected-product-item {
+                flex-wrap: wrap;
+                padding: 8px;
+            }
+            
+            .selected-product-item img {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .product-info {
+                flex: 1;
+                min-width: 150px;
+            }
+            
+            .product-name {
+                font-size: 12px;
+                white-space: normal;
+                word-break: break-word;
+            }
+            
+            .quantity-control {
+                flex-wrap: wrap;
+            }
+            
+            .price-info {
+                min-width: 60px;
+            }
+            
+            .remove-item {
+                margin-left: auto;
+            }
+        }
+        
         .selected-product-item img {
             width: 45px;
             height: 45px;
             object-fit: cover;
             border-radius: 4px;
+            border: 1px solid #D4AF37;
         }
+        
         .product-info {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 4px;
+            flex-wrap: wrap;
         }
+        
         .product-name {
             font-weight: 600;
-            font-size: 13px;
-            min-width: 80px;
+            font-size: 12px;
+            min-width: 70px;
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
+        
         .quantity-control {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            padding: 2px;
         }
+        
         .quantity-btn {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             border-radius: 4px;
             background: #0A1F44;
             color: white;
@@ -257,7 +362,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             transition: all 0.2s;
         }
@@ -266,26 +371,26 @@
             color: #0A1F44;
         }
         .quantity-value {
-            min-width: 24px;
+            min-width: 20px;
             text-align: center;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
         }
         .price-info {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            min-width: 70px;
+            min-width: 60px;
         }
         .current-price {
             color: #D4AF37;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
         }
         .original-price-small {
             text-decoration: line-through;
             color: #9ca3af;
-            font-size: 11px;
+            font-size: 10px;
         }
         .remove-item {
             color: #ef4444;
@@ -293,6 +398,7 @@
             padding: 4px;
         }
         
+        /* Slider */
         .slider-item {
             background-size: cover;
             background-position: center;
@@ -342,12 +448,6 @@
             border-color: #D4AF37;
             box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
         }
-        .delivery-select option {
-            color: #1a1a1a;
-        }
-        .delivery-select option:first-child {
-            color: #6b7280;
-        }
         
         .order-now-btn {
             width: 100%;
@@ -360,6 +460,7 @@
             transition: all 0.3s;
             border: none;
             cursor: pointer;
+            font-size: 13px;
         }
         .order-now-btn:hover:not(:disabled) {
             background-color: #D4AF37;
@@ -433,6 +534,24 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Star Rating */
+        .star-rating i {
+            transition: all 0.2s;
+        }
+        .star-rating i:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Responsive Text */
+        @media (max-width: 640px) {
+            h2 {
+                font-size: 1.5rem;
+            }
+            .text-sm {
+                font-size: 0.75rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -443,7 +562,10 @@
             <!-- লোগো - এনিমেশন সহ -->
             <div class="flex items-center space-x-2">
                 <img src="img/SwiftBags.jpeg" alt="Swift Bags Logo" class="w-10 h-10 logo-animation" onerror="this.src='https://via.placeholder.com/40x40/D4AF37/0A1F44?text=SB'">
-                <span class="text-2xl font-bold text-gold">SwiftBags</span>
+                <div>
+                    <span class="text-2xl font-bold copperplate-logo">Swift Bags</span>
+                    <p class="copperplate-subtitle">Premium Quality Bags</p>
+                </div>
             </div>
             
             <!-- ডেস্কটপ মেনু -->
@@ -494,7 +616,7 @@
     <!-- ২ ও ৩. ক্যাটাগরি ও প্রোডাক্ট কার্ড -->
     <section id="products" class="py-6">
         <div class="container-custom">
-            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-4 text-center">আমাদের পণ্য</h2>
+            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-4 text-center copperplate-logo">আমাদের পণ্য</h2>
             
             <!-- ক্যাটাগরি বাটন -->
             <div id="categoryButtons" class="flex justify-center gap-2 md:gap-4 mb-6 overflow-x-auto pb-2 px-2">
@@ -516,7 +638,7 @@
             <div class="flex flex-col md:flex-row gap-6">
                 <!-- অর্ডার ফর্ম (বামে) -->
                 <div class="md:w-1/2 bg-light p-4 md:p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">অর্ডার ফর্ম</h3>
+                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4 copperplate-logo">অর্ডার ফর্ম</h3>
                     
                     <!-- সিলেক্টেড প্রোডাক্টস - স্ক্রলবার কাস্টমাইজড -->
                     <div id="selectedProductsContainer" class="mb-4">
@@ -568,7 +690,7 @@
 
                 <!-- ট্রেন্ডিং স্লাইডার (ডানে) - মোবাইলে হিডেন -->
                 <div class="hidden md:block md:w-1/2 bg-primary p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-2xl font-bold text-gold mb-4">ট্রেন্ডিং এখন</h3>
+                    <h3 class="text-2xl font-bold text-gold mb-4 copperplate-logo">ট্রেন্ডিং এখন</h3>
                     <div id="trendingItems" class="trending-slider space-y-4 max-h-[500px] overflow-y-auto pr-2">
                         <!-- ট্রেন্ডিং আইটেম ডায়নামিক হবে -->
                         <div class="loader"></div>
@@ -584,7 +706,7 @@
             <div class="flex flex-col md:flex-row gap-6">
                 <!-- রিভিউ ফর্ম (বামে) -->
                 <div class="md:w-1/2 bg-white p-4 md:p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">আপনার মতামত দিন</h3>
+                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4 copperplate-logo">আপনার মতামত দিন</h3>
                     <form id="reviewForm">
                         <input type="text" id="reviewName" placeholder="আপনার নাম *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required>
                         <input type="text" id="reviewAddress" placeholder="ঠিকানা *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required>
@@ -610,7 +732,7 @@
                 
                 <!-- কাস্টমার রিভিউ (ডানে) -->
                 <div class="md:w-1/2 bg-light p-4 md:p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">গ্রাহক রিভিউ</h3>
+                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4 copperplate-logo">গ্রাহক রিভিউ</h3>
                     <div id="customerReviews" class="space-y-4 max-h-96 overflow-y-auto pr-2">
                         <!-- ডায়নামিক রিভিউ আসবে -->
                         <div class="loader"></div>
@@ -623,7 +745,7 @@
     <!-- ৬. ফুটার -->
     <footer class="bg-primary text-white py-4 mt-6">
         <div class="container-custom text-center">
-            <p id="footerText" class="text-sm md:text-base">&copy; 2025 Swift Bags. সর্বস্বত্ব সংরক্ষিত।</p>
+            <p id="footerText" class="text-sm md:text-base copperplate-logo">&copy; 2025 Swift Bags. সর্বস্বত্ব সংরক্ষিত।</p>
             <p id="footerAddress" class="text-xs text-gray-400 mt-1">১২৩/৪, গুলশান, ঢাকা - ১২১২, বাংলাদেশ</p>
         </div>
     </footer>
@@ -643,8 +765,10 @@
     </div>
 
     <script>
-        // API Configuration - Update this with your actual Vercel backend URL
-        const API_URL = 'https://swift-bags.onrender.com/api'; // CHANGE THIS TO YOUR ACTUAL BACKEND URL
+        // API Configuration - Update this with your actual backend URL
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:5000/api' 
+            : 'https://swift-bags.onrender.com/api';
         
         // State
         let currentCat = 'all';
@@ -656,6 +780,7 @@
         let allTrending = [];
         let currentSlide = 0;
         let slideInterval;
+        let allContent = {};
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -686,7 +811,7 @@
                 }
             } catch (error) {
                 console.error('Error loading sliders:', error);
-                showPopup('দুঃখিত!', 'স্লাইডার লোড করতে সমস্যা হয়েছে', 'error');
+                document.getElementById('slider').innerHTML = '<div class="text-center text-white p-12">স্লাইডার লোড করতে সমস্যা হয়েছে</div>';
             }
         }
 
@@ -720,7 +845,7 @@
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
-                showPopup('দুঃখিত!', 'পণ্য লোড করতে সমস্যা হয়েছে', 'error');
+                document.getElementById('productGrid').innerHTML = '<div class="col-span-full text-center py-8">পণ্য লোড করতে সমস্যা হয়েছে</div>';
             }
         }
 
@@ -757,10 +882,26 @@
                 const response = await fetch(`${API_URL}/contents`);
                 const data = await response.json();
                 if (data.success) {
+                    allContent = data.data;
                     updateContent(data.data);
                 }
             } catch (error) {
                 console.error('Error loading content:', error);
+            }
+        }
+
+        // Update Site Content
+        function updateContent(content) {
+            if (content.footerText) {
+                document.getElementById('footerText').innerHTML = `&copy; 2025 ${content.footerText}`;
+            }
+            if (content.address) {
+                document.getElementById('footerAddress').textContent = content.address;
+            }
+            if (content.phoneNumber) {
+                document.querySelectorAll('a[href^="tel:"]').forEach(el => {
+                    el.href = `tel:${content.phoneNumber.replace(/[^0-9]/g, '')}`;
+                });
             }
         }
 
@@ -777,12 +918,20 @@
             sliderContainer.innerHTML = allSliders.map((slider, index) => `
                 <div class="slider-item absolute inset-0 ${index === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 flex items-center justify-between p-6 md:p-12" style="background-image: url('${slider.image}'); background-size: cover; background-position: center;">
                     <div class="relative z-10 text-white max-w-lg">
-                        <h2 class="text-2xl md:text-4xl font-bold text-gold">${slider.title}</h2>
+                        <h2 class="text-2xl md:text-4xl font-bold text-gold copperplate-logo">${slider.title}</h2>
                         ${slider.subtitle ? `<p class="text-sm md:text-base my-3">${slider.subtitle}</p>` : ''}
-                        <a href="#order" class="slider-order-btn inline-block bg-gold text-primary px-4 py-2 md:px-6 md:py-3 rounded-lg font-bold hover:bg-yellow-500 transition text-sm md:text-base" 
-                           data-product='${JSON.stringify(slider.productData || {})}'>
+                        <button class="slider-order-btn inline-block bg-gold text-primary px-4 py-2 md:px-6 md:py-3 rounded-lg font-bold hover:bg-yellow-500 transition text-sm md:text-base" 
+                                data-product='${JSON.stringify({
+                                    id: slider.productData?.id || '',
+                                    name: slider.productData?.name || slider.title,
+                                    img: slider.image,
+                                    price: slider.productData?.price || 0,
+                                    originalPrice: slider.productData?.originalPrice || 0,
+                                    discount: slider.productData?.discount || '',
+                                    variantStock: slider.productData?.variantStock || 0
+                                })}'>
                             ${slider.buttonText || 'এখনই কিনুন'}
-                        </a>
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -830,23 +979,31 @@
             }
 
             grid.innerHTML = allProducts.map(product => {
-                const variant = product.variants[0] || {};
-                const primaryImage = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
-                const hasStock = variant.stock > 0;
-                const discount = variant.discount || '';
+                const variants = product.variants || [];
+                const primaryVariant = variants[0] || {};
+                const primaryImage = primaryVariant.images && primaryVariant.images[0] ? primaryVariant.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+                const hasStock = primaryVariant.stock > 0;
+                const discount = primaryVariant.discount || '';
 
                 return `
                     <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" data-product-id="${product._id}">
                         ${discount && hasStock ? `<span class="product-badge">${discount}</span>` : ''}
                         
                         <div class="relative">
-                            <img src="${primaryImage}" alt="${product.name}" class="main-image w-full h-36 md:h-48 object-cover" data-product-id="${product._id}" data-variant-index="0">
+                            <img src="${primaryImage}" alt="${product.name}" class="main-image w-full h-36 md:h-48 object-cover cursor-pointer" data-product-id="${product._id}" data-variant-index="0">
                         </div>
                         
-                        ${variant.images && variant.images.length > 1 ? `
+                        ${variants.length > 0 && variants[0].images && variants[0].images.length > 1 ? `
                             <div class="thumbnail-container px-2 pb-1">
-                                ${variant.images.map((img, idx) => `
-                                    <img src="${img.url}" alt="thumb" class="thumbnail ${idx === 0 ? 'active' : ''} ${variant.stock === 0 ? 'sold-out-thumb' : ''}" data-product-id="${product._id}" data-variant-index="${idx}" data-stock="${variant.stock}">
+                                ${variants[0].images.map((img, idx) => `
+                                    <img src="${img.url}" alt="thumb" class="thumbnail ${idx === 0 ? 'active' : ''} ${variants[0].stock === 0 ? 'sold-out-thumb' : ''}" 
+                                         data-product-id="${product._id}" 
+                                         data-variant-index="0" 
+                                         data-image-index="${idx}"
+                                         data-stock="${variants[0].stock}"
+                                         data-sold="${variants[0].sold || 0}"
+                                         data-rating="${variants[0].rating || 4.5}"
+                                         data-discount="${variants[0].discount || ''}">
                                 `).join('')}
                             </div>
                         ` : ''}
@@ -856,11 +1013,11 @@
                             <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
                             
                             <div class="flex items-center justify-between mt-1">
-                                <div class="flex text-yellow-500 text-xs">
-                                    ${getStarRating(variant.rating || 4.5)}
-                                    <span class="rating-value text-gray-500 ml-1">(${variant.rating || 4.5})</span>
+                                <div class="flex text-yellow-500 text-xs rating-stars">
+                                    ${getStarRating(primaryVariant.rating || 4.5)}
                                 </div>
-                                <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}টি</span>
+                                <span class="rating-value text-gray-500 ml-1">(${primaryVariant.rating || 4.5})</span>
+                                <span class="sold-count text-xs text-gray-500">বিক্রি: ${primaryVariant.sold || 0}টি</span>
                             </div>
                             
                             <div class="flex items-center gap-2 mt-1">
@@ -869,7 +1026,10 @@
                             </div>
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
-                                    data-product-id="${product._id}" data-variant-index="0" ${!hasStock ? 'disabled' : ''}>
+                                    data-product-id="${product._id}" 
+                                    data-variant-index="0" 
+                                    data-stock="${primaryVariant.stock}"
+                                    ${!hasStock ? 'disabled' : ''}>
                                 ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
                             </button>
                         </div>
@@ -888,7 +1048,12 @@
             const thumb = e.currentTarget;
             const productId = thumb.dataset.productId;
             const variantIndex = parseInt(thumb.dataset.variantIndex);
+            const imageIndex = parseInt(thumb.dataset.imageIndex);
             const variantStock = parseInt(thumb.dataset.stock);
+            const variantSold = parseInt(thumb.dataset.sold);
+            const variantRating = parseFloat(thumb.dataset.rating);
+            const variantDiscount = thumb.dataset.discount;
+            
             const productCard = thumb.closest('.product-card');
             const mainImg = productCard.querySelector('.main-image');
             
@@ -904,9 +1069,13 @@
                 
                 // Update discount badge
                 const discountBadge = productCard.querySelector('.product-badge:not(.sold-out-badge)');
-                if (discountBadge && variant.discount) {
-                    discountBadge.innerText = variant.discount;
-                    discountBadge.style.display = variant.stock > 0 ? 'block' : 'none';
+                if (discountBadge) {
+                    if (variantDiscount && variant.stock > 0) {
+                        discountBadge.innerText = variantDiscount;
+                        discountBadge.style.display = 'block';
+                    } else {
+                        discountBadge.style.display = 'none';
+                    }
                 }
                 
                 // Update rating
@@ -933,6 +1102,8 @@
                 const orderBtn = productCard.querySelector('.order-now-btn');
                 if (orderBtn) {
                     orderBtn.dataset.variantIndex = variantIndex;
+                    orderBtn.dataset.stock = variant.stock;
+                    
                     if (variant.stock > 0) {
                         orderBtn.disabled = false;
                         orderBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
@@ -964,14 +1135,14 @@
                 
                 return `
                     <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4">
-                        <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
+                        <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover border-2 border-gold">
                         <div class="flex-1">
                             <h4 class="font-bold text-primary">${product.name}</h4>
                             <div class="flex items-center text-yellow-500 text-xs md:text-sm">
                                 ${getStarRating(variant.rating || 4.5)}
                                 <span class="text-gray-600 ml-2">(${variant.rating || 4.5})</span>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">${variant.sold || 0} জন Recently Viewed</p>
+                            <p class="text-xs text-gray-500 mt-1">বিক্রি: ${variant.sold || 0}টি</p>
                             <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
                                     data-product='${JSON.stringify({
                                         id: product._id,
@@ -1003,20 +1174,10 @@
             container.innerHTML = reviews.map(review => `
                 <div class="bg-white p-3 rounded-lg shadow">
                     <p class="font-bold">${review.customerName} (${review.customerAddress})</p>
-                    <div class="text-yellow-500">${getStars(review.rating)}</div>
+                    <div class="text-yellow-500 text-lg">${getStars(review.rating)}</div>
                     <p class="text-gray-700 text-sm">${review.review}</p>
                 </div>
             `).join('');
-        }
-
-        // Update Site Content
-        function updateContent(content) {
-            if (content.footerText) {
-                document.getElementById('footerText').textContent = content.footerText;
-            }
-            if (content.address) {
-                document.getElementById('footerAddress').textContent = content.address;
-            }
         }
 
         // Submit Order
@@ -1202,17 +1363,22 @@
                 return;
             }
             
+            if (!product.price || product.price === 0) {
+                showPopup('দুঃখিত!', 'এই পণ্যের মূল্য নির্ধারণ করা হয়নি', 'error');
+                return;
+            }
+            
             const orderProduct = {
-                id: product.id,
+                id: product.id || 'slider-' + Date.now(),
                 name: product.name,
                 img: product.img,
                 price: product.price,
-                originalPrice: product.originalPrice,
+                originalPrice: product.originalPrice || product.price,
                 variantIndex: 0,
                 quantity: 1
             };
             
-            const existing = selectedForOrder.find(p => p.id === product.id);
+            const existing = selectedForOrder.find(p => p.id === orderProduct.id);
             if (!existing) {
                 selectedForOrder.push(orderProduct);
             } else {
@@ -1364,7 +1530,7 @@
                 itemDiv.innerHTML = `
                     <img src="${p.img}" alt="${p.name}">
                     <div class="product-info">
-                        <span class="product-name">${p.name}</span>
+                        <span class="product-name" title="${p.name}">${p.name}</span>
                         <div class="quantity-control">
                             <span class="quantity-btn" onclick="changeQuantity(${index}, -1)">−</span>
                             <span class="quantity-value">${p.quantity}</span>
