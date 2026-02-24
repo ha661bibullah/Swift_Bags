@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Swift Bags - আপনার স্বপ্নের ব্যাগ</title>
+    <meta name="description" content="Swift Bags - প্রিমিয়াম কোয়ালিটির ব্যাগ ও এক্সেসরিজ। অর্ডার করুন এখনই।">
+    <meta name="keywords" content="bag, backpack, ladies bag, men bag, swift bags, ব্যাগ">
+    <title id="siteTitleTag">Swift Bags - আপনার স্বপ্নের ব্যাগ</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -11,7 +13,7 @@
     <!-- Hind Siliguri Font -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* আপনার বিদ্যমান সব স্টাইল এখানে থাকবে - অপরিবর্তিত */
+        /* সমস্ত স্টাইল পূর্বের মতোই থাকবে, অপরিবর্তিত */
         * {
             font-family: 'Hind Siliguri', sans-serif;
         }
@@ -202,6 +204,12 @@
             scrollbar-width: thin;
             scrollbar-color: #D4AF37 #e5e7eb;
         }
+        @media (max-width: 768px) {
+            #selectedProducts {
+                max-height: none;
+                overflow-y: visible;
+            }
+        }
         #selectedProducts::-webkit-scrollbar {
             width: 4px;
         }
@@ -223,6 +231,7 @@
             border-radius: 6px;
             margin-bottom: 6px;
             border: 1px solid #e5e7eb;
+            flex-wrap: wrap;
         }
         .selected-product-item img {
             width: 45px;
@@ -236,6 +245,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
+            flex-wrap: wrap;
         }
         .product-name {
             font-weight: 600;
@@ -440,10 +450,13 @@
     <!-- নেভবার -->
     <nav class="bg-primary text-white sticky top-0 z-50 shadow-lg">
         <div class="container-custom py-3 flex justify-between items-center">
-            <!-- লোগো - এনিমেশন সহ -->
+            <!-- লোগো - এনিমেশন সহ ও সাবটাইটেল -->
             <div class="flex items-center space-x-2">
                 <img src="img/SwiftBags.jpeg" alt="Swift Bags Logo" class="w-10 h-10 logo-animation" onerror="this.src='https://via.placeholder.com/40x40/D4AF37/0A1F44?text=SB'">
-                <span class="text-2xl font-bold text-gold">SwiftBags</span>
+                <div class="flex flex-col">
+                    <span class="text-2xl font-bold text-gold leading-tight">Swift Bags</span>
+                    <span class="text-xs text-gray-300" id="siteSubtitle">প্রিমিয়াম কোয়ালিটির ব্যাগ</span>
+                </div>
             </div>
             
             <!-- ডেস্কটপ মেনু -->
@@ -452,13 +465,12 @@
                 <a href="#products" class="hover:text-gold transition">পণ্য</a>
                 <a href="#order" class="hover:text-gold transition">অর্ডার</a>
                 <a href="#reviews" class="hover:text-gold transition">রিভিউ</a>
-                <!-- কল করুন বাটন (ডেস্কটপ) -->
                 <a href="tel:01326198456" class="bg-gold text-primary px-4 py-2 rounded-lg font-bold hover:bg-yellow-500 transition flex items-center gap-2">
                     <i class="fas fa-phone-alt"></i> কল করুন
                 </a>
             </div>
             
-            <!-- মোবাইল মেনু বাটন (থ্রি লাইন) -->
+            <!-- মোবাইল মেনু বাটন -->
             <button id="menuBtn" class="md:hidden text-2xl text-gold">
                 <i class="fas fa-bars"></i>
             </button>
@@ -484,7 +496,6 @@
                     <!-- স্লাইডার আইটেম ডায়নামিক হবে -->
                     <div class="loader" id="sliderLoader"></div>
                 </div>
-                <!-- স্লাইডার কন্ট্রোল -->
                 <button id="prevSlide" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-left text-sm md:text-base"></i></button>
                 <button id="nextSlide" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-right text-sm md:text-base"></i></button>
             </div>
@@ -498,13 +509,11 @@
             
             <!-- ক্যাটাগরি বাটন -->
             <div id="categoryButtons" class="flex justify-center gap-2 md:gap-4 mb-6 overflow-x-auto pb-2 px-2">
-                <!-- ক্যাটাগরি বাটন ডায়নামিক হবে -->
                 <div class="loader" style="width: 20px; height: 20px;"></div>
             </div>
 
             <!-- প্রোডাক্ট গ্রিড -->
             <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                <!-- প্রোডাক্ট কার্ডগুলো ডায়নামিকভাবে লোড হবে -->
                 <div class="loader"></div>
             </div>
         </div>
@@ -518,16 +527,15 @@
                 <div class="md:w-1/2 bg-light p-4 md:p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">অর্ডার ফর্ম</h3>
                     
-                    <!-- সিলেক্টেড প্রোডাক্টস - স্ক্রলবার কাস্টমাইজড -->
+                    <!-- সিলেক্টেড প্রোডাক্টস -->
                     <div id="selectedProductsContainer" class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">আপনার নির্বাচিত পণ্য:</label>
                         <div id="selectedProducts" class="p-2 border border-gray-300 rounded-lg bg-white">
-                            <!-- সিলেক্টেড আইটেম এখানে দেখাবে -->
                             <p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>
                         </div>
                     </div>
                     
-                    <!-- ডেলিভারি চার্জ সিলেক্ট অপশন (ডিফল্ট আনসিলেক্টেড) -->
+                    <!-- ডেলিভারি চার্জ সিলেক্ট -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">ডেলিভারি এলাকা *</label>
                         <select id="deliveryArea" class="delivery-select" required>
@@ -546,7 +554,6 @@
                         <input type="tel" id="phone" placeholder="মোবাইল নম্বর *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required>
                         <textarea id="address" placeholder="ঠিকানা *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required rows="3"></textarea>
                         
-                        <!-- অর্ডার টোটাল -->
                         <div class="flex justify-between items-center mb-3 font-bold">
                             <span>মোট মূল্য (পণ্য):</span>
                             <span id="subtotalPrice" class="text-xl text-gold">০ টাকা</span>
@@ -566,11 +573,10 @@
                     </form>
                 </div>
 
-                <!-- ট্রেন্ডিং স্লাইডার (ডানে) - মোবাইলে হিডেন -->
+                <!-- ট্রেন্ডিং স্লাইডার (ডানে) -->
                 <div class="hidden md:block md:w-1/2 bg-primary p-6 rounded-2xl shadow-lg">
                     <h3 class="text-2xl font-bold text-gold mb-4">ট্রেন্ডিং এখন</h3>
                     <div id="trendingItems" class="trending-slider space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                        <!-- ট্রেন্ডিং আইটেম ডায়নামিক হবে -->
                         <div class="loader"></div>
                     </div>
                 </div>
@@ -582,7 +588,7 @@
     <section id="reviews" class="py-6">
         <div class="container-custom">
             <div class="flex flex-col md:flex-row gap-6">
-                <!-- রিভিউ ফর্ম (বামে) -->
+                <!-- রিভিউ ফর্ম -->
                 <div class="md:w-1/2 bg-white p-4 md:p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">আপনার মতামত দিন</h3>
                     <form id="reviewForm">
@@ -608,11 +614,10 @@
                     </form>
                 </div>
                 
-                <!-- কাস্টমার রিভিউ (ডানে) -->
+                <!-- কাস্টমার রিভিউ -->
                 <div class="md:w-1/2 bg-light p-4 md:p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">গ্রাহক রিভিউ</h3>
                     <div id="customerReviews" class="space-y-4 max-h-96 overflow-y-auto pr-2">
-                        <!-- ডায়নামিক রিভিউ আসবে -->
                         <div class="loader"></div>
                     </div>
                 </div>
@@ -643,8 +648,8 @@
     </div>
 
     <script>
-        // API Configuration - Update this with your actual Vercel backend URL
-        const API_URL = 'https://swift-bags.onrender.com/api'; // CHANGE THIS TO YOUR ACTUAL BACKEND URL
+        // API Configuration
+        const API_URL = 'https://swift-bags.onrender.com/api'; // আপনার ব্যাকএন্ড URL (প্রোডাকশন)
         
         // State
         let currentCat = 'all';
@@ -787,7 +792,6 @@
                 </div>
             `).join('');
 
-            // Start slideshow
             currentSlide = 0;
             if (slideInterval) clearInterval(slideInterval);
             startSlideshow();
@@ -807,7 +811,6 @@
                 `).join('')}
             `;
 
-            // Add event listeners
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
@@ -837,7 +840,7 @@
 
                 return `
                     <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" data-product-id="${product._id}">
-                        ${discount && hasStock ? `<span class="product-badge">${discount}</span>` : ''}
+                        ${discount && hasStock ? `<span class="product-badge" data-badge>${discount}</span>` : ''}
                         
                         <div class="relative">
                             <img src="${primaryImage}" alt="${product.name}" class="main-image w-full h-36 md:h-48 object-cover" data-product-id="${product._id}" data-variant-index="0">
@@ -845,9 +848,10 @@
                         
                         ${variant.images && variant.images.length > 1 ? `
                             <div class="thumbnail-container px-2 pb-1">
-                                ${variant.images.map((img, idx) => `
-                                    <img src="${img.url}" alt="thumb" class="thumbnail ${idx === 0 ? 'active' : ''} ${variant.stock === 0 ? 'sold-out-thumb' : ''}" data-product-id="${product._id}" data-variant-index="${idx}" data-stock="${variant.stock}">
-                                `).join('')}
+                                ${variant.images.map((img, idx) => {
+                                    const v = product.variants[idx] || variant;
+                                    return `<img src="${img.url}" alt="thumb" class="thumbnail ${idx === 0 ? 'active' : ''}" data-product-id="${product._id}" data-variant-index="${idx}" data-stock="${v.stock}" data-sold="${v.sold}" data-rating="${v.rating}" data-discount="${v.discount || ''}">`;
+                                }).join('')}
                             </div>
                         ` : ''}
                         
@@ -856,10 +860,10 @@
                             <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
                             
                             <div class="flex items-center justify-between mt-1">
-                                <div class="flex text-yellow-500 text-xs">
+                                <div class="flex text-yellow-500 text-xs rating-stars">
                                     ${getStarRating(variant.rating || 4.5)}
-                                    <span class="rating-value text-gray-500 ml-1">(${variant.rating || 4.5})</span>
                                 </div>
+                                <span class="rating-value text-gray-500 ml-1">(${variant.rating || 4.5})</span>
                                 <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}টি</span>
                             </div>
                             
@@ -877,7 +881,6 @@
                 `;
             }).join('');
 
-            // Add thumbnail click handlers
             document.querySelectorAll('.thumbnail').forEach(thumb => {
                 thumb.addEventListener('click', handleThumbnailClick);
             });
@@ -888,62 +891,65 @@
             const thumb = e.currentTarget;
             const productId = thumb.dataset.productId;
             const variantIndex = parseInt(thumb.dataset.variantIndex);
-            const variantStock = parseInt(thumb.dataset.stock);
             const productCard = thumb.closest('.product-card');
-            const mainImg = productCard.querySelector('.main-image');
             
-            // Find product in allProducts
+            // Find product
             const product = allProducts.find(p => p._id === productId);
             if (!product) return;
             
             const variant = product.variants[variantIndex];
+            if (!variant) return;
             
+            // Update main image
+            const mainImg = productCard.querySelector('.main-image');
             if (mainImg) {
                 mainImg.src = thumb.src;
                 mainImg.dataset.variantIndex = variantIndex;
-                
-                // Update discount badge
-                const discountBadge = productCard.querySelector('.product-badge:not(.sold-out-badge)');
-                if (discountBadge && variant.discount) {
-                    discountBadge.innerText = variant.discount;
-                    discountBadge.style.display = variant.stock > 0 ? 'block' : 'none';
+            }
+            
+            // Update discount badge
+            const badge = productCard.querySelector('[data-badge]');
+            if (badge) {
+                if (variant.discount && variant.stock > 0) {
+                    badge.innerText = variant.discount;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
                 }
-                
-                // Update rating
-                const ratingStars = productCard.querySelector('.rating-stars');
-                const ratingValue = productCard.querySelector('.rating-value');
-                if (ratingStars && ratingValue) {
-                    ratingStars.innerHTML = getStarRating(variant.rating || 4.5);
-                    ratingValue.innerText = `(${variant.rating || 4.5})`;
-                }
-                
-                // Update sold count
-                const soldSpan = productCard.querySelector('.sold-count');
-                if (soldSpan) {
-                    soldSpan.innerText = `বিক্রি: ${variant.sold || 0}টি`;
-                }
-                
-                // Update active thumbnail
-                productCard.querySelectorAll('.thumbnail').forEach(t => {
-                    t.classList.remove('active');
-                });
-                thumb.classList.add('active');
-                
-                // Update order button
-                const orderBtn = productCard.querySelector('.order-now-btn');
-                if (orderBtn) {
-                    orderBtn.dataset.variantIndex = variantIndex;
-                    if (variant.stock > 0) {
-                        orderBtn.disabled = false;
-                        orderBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                        orderBtn.classList.add('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
-                        orderBtn.innerText = 'অর্ডার করুন';
-                    } else {
-                        orderBtn.disabled = true;
-                        orderBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-                        orderBtn.classList.remove('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
-                        orderBtn.innerText = 'Sold Out';
-                    }
+            }
+            
+            // Update rating stars and value
+            const ratingStars = productCard.querySelector('.rating-stars');
+            const ratingValue = productCard.querySelector('.rating-value');
+            if (ratingStars && ratingValue) {
+                ratingStars.innerHTML = getStarRating(variant.rating || 4.5);
+                ratingValue.innerText = `(${variant.rating || 4.5})`;
+            }
+            
+            // Update sold count
+            const soldSpan = productCard.querySelector('.sold-count');
+            if (soldSpan) {
+                soldSpan.innerText = `বিক্রি: ${variant.sold || 0}টি`;
+            }
+            
+            // Update active thumbnail
+            productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+            
+            // Update order button
+            const orderBtn = productCard.querySelector('.order-now-btn');
+            if (orderBtn) {
+                orderBtn.dataset.variantIndex = variantIndex;
+                if (variant.stock > 0) {
+                    orderBtn.disabled = false;
+                    orderBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    orderBtn.classList.add('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
+                    orderBtn.innerText = 'অর্ডার করুন';
+                } else {
+                    orderBtn.disabled = true;
+                    orderBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    orderBtn.classList.remove('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
+                    orderBtn.innerText = 'Sold Out';
                 }
             }
         }
@@ -1017,6 +1023,12 @@
             if (content.address) {
                 document.getElementById('footerAddress').textContent = content.address;
             }
+            if (content.siteTitle) {
+                document.getElementById('siteTitleTag').textContent = content.siteTitle;
+            }
+            if (content.siteSubtitle) {
+                document.getElementById('siteSubtitle').textContent = content.siteSubtitle;
+            }
         }
 
         // Submit Order
@@ -1027,7 +1039,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderData)
                 });
-
                 const data = await response.json();
                 return data;
             } catch (error) {
@@ -1044,7 +1055,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(reviewData)
                 });
-
                 const data = await response.json();
                 return data;
             } catch (error) {
@@ -1055,7 +1065,6 @@
 
         // Event Listeners Setup
         function setupEventListeners() {
-            // Mobile Menu
             const menuBtn = document.getElementById('menuBtn');
             const mobileTopMenu = document.getElementById('mobileTopMenu');
             
@@ -1063,14 +1072,12 @@
                 mobileTopMenu?.classList.toggle('active');
             });
 
-            // Close mobile menu on link click
             document.querySelectorAll('.mobile-top-menu a').forEach(link => {
                 link.addEventListener('click', () => {
                     mobileTopMenu?.classList.remove('active');
                 });
             });
 
-            // Slider Controls
             document.getElementById('prevSlide')?.addEventListener('click', () => {
                 moveSlide(-1);
             });
@@ -1079,44 +1086,32 @@
                 moveSlide(1);
             });
 
-            // Delivery Area Change
             document.getElementById('deliveryArea')?.addEventListener('change', function(e) {
                 currentDeliveryCharge = parseInt(e.target.value) || 0;
                 updateTotal();
             });
 
-            // Order Form Submit
             document.getElementById('orderForm')?.addEventListener('submit', handleOrderSubmit);
-
-            // Review Form Submit
             document.getElementById('reviewForm')?.addEventListener('submit', handleReviewSubmit);
 
-            // Star Rating
             document.querySelectorAll('.star-rating i').forEach(star => {
                 star.addEventListener('click', handleStarClick);
             });
 
-            // Popup Close
             document.getElementById('closePopup')?.addEventListener('click', closePopup);
             document.getElementById('popupOverlay')?.addEventListener('click', closePopup);
 
-            // Global Click for Order Buttons
             document.addEventListener('click', handleGlobalClick);
         }
 
-        // Handle Global Clicks (Order Buttons)
+        // Handle Global Clicks
         function handleGlobalClick(e) {
-            // Product Card Order Button
             if (e.target.classList.contains('order-now-btn') && !e.target.disabled) {
                 handleProductOrder(e.target);
             }
-
-            // Trending Order Button
             if (e.target.classList.contains('trending-order-btn') && !e.target.disabled) {
                 handleTrendingOrder(e.target);
             }
-
-            // Slider Order Button
             if (e.target.classList.contains('slider-order-btn') && !e.target.disabled) {
                 e.preventDefault();
                 handleSliderOrder(e.target);
@@ -1196,6 +1191,11 @@
         // Handle Slider Order
         function handleSliderOrder(btn) {
             const product = JSON.parse(btn.dataset.product);
+            
+            if (!product.id) {
+                showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোনো পণ্য সংযুক্ত নেই', 'error');
+                return;
+            }
             
             if (product.variantStock === 0) {
                 showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
@@ -1280,7 +1280,6 @@
                 if (result.success) {
                     showPopup('অর্ডার সফল!', 'আপনার অর্ডার নেওয়া হয়েছে', 'success', 'খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
                     
-                    // Reset form
                     e.target.reset();
                     selectedForOrder = [];
                     currentDeliveryCharge = 0;
@@ -1320,7 +1319,6 @@
                 if (result.success) {
                     showPopup('ধন্যবাদ!', 'আপনার রিভিউ জমা হয়েছে', 'success', 'এডমিন অ্যাপ্রুভ করার পর দেখানো হবে।');
                     
-                    // Reset form
                     e.target.reset();
                     document.getElementById('rating').value = 0;
                     document.querySelectorAll('.star-rating i').forEach(i => i.className = 'far fa-star');
