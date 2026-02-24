@@ -16,6 +16,10 @@ dotenv.config();
 
 const app = express();
 
+// Constants
+const JWT_SECRET = process.env.JWT_SECRET || 'MySuperSecretKey123!@#$%^&*';
+const PORT = process.env.PORT || 5000;
+
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
@@ -28,21 +32,31 @@ const allowedOrigins = [
   'https://swift-bags-t1u3.vercel.app',
   'http://localhost:3000',
   'http://localhost:5000',
-  'http://127.0.0.1:5500'
+  'http://127.0.0.1:5500',
+  'https://swift-bags.onrender.com'
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    // Allow requests with no origin (like mobile apps, curl, etc)
+    if (!origin || process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(null, true);
+      console.log('Blocked origin:', origin);
+      callback(null, true); // Temporarily allow all for debugging
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -70,7 +84,11 @@ const adminSchema = new mongoose.Schema({
   password: { type: String, required: true },
   lastLogin: { type: Date },
   lastPasswordChange: { type: Date },
-  sessions: [{ token: String, device: String, lastActive: Date }],
+  sessions: [{
+    token: String,
+    device: String,
+    lastActive: { type: Date, default: Date.now }
+  }],
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -124,8 +142,7 @@ const productSchema = new mongoose.Schema({
     stock: { type: Number, default: 0 },
     sold: { type: Number, default: 0 },
     discount: String,
-    rating: { type: Number, default: 4.5 },
-    reviews: [{ text: String, rating: Number }]
+    rating: { type: Number, default: 4.5 }
   }],
   featured: { type: Boolean, default: false },
   trending: { type: Boolean, default: false },
@@ -231,7 +248,7 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     const admin = await Admin.findById(decoded.userId);
     
     if (!admin) {
@@ -276,6 +293,7 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log('✅ MongoDB Connected Successfully');
+    console.log('📊 Database:', mongoose.connection.name);
     
     // Initialize data after successful connection
     await initializeData();
@@ -312,8 +330,8 @@ async function initializeData() {
 
 async function createInitialAdmin() {
   try {
-    const adminUsername = 'admin'; // Hardcode for safety
-    const adminPassword = 'Admin@123'; // Hardcode for safety
+    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
     
     // Check if admin exists
     const adminExists = await Admin.findOne({ username: adminUsername });
@@ -334,11 +352,18 @@ async function createInitialAdmin() {
       console.log(`   Admin ID: ${newAdmin._id}`);
     } else {
       console.log('✅ Admin already exists with username:', adminExists.username);
-      console.log(`   Admin ID: ${adminExists._id}`);
       
       // Verify password (optional)
       const isValid = await bcrypt.compare(adminPassword, adminExists.password);
       console.log(`   Password valid: ${isValid}`);
+      
+      if (!isValid) {
+        // Update password if it doesn't match
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+        adminExists.password = hashedPassword;
+        await adminExists.save();
+        console.log('   Password updated to match .env');
+      }
     }
   } catch (error) {
     console.error('❌ Error creating admin:', error);
@@ -389,28 +414,69 @@ async function createInitialContent() {
 
 // ============= API ROUTES =============
 
+// Test Routes
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'API is working',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV
+  });
+});
+
+// Health check route
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Swift Bags API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    database: mongoose.connection.name || 'unknown'
+  });
+});
+
 // Auth Routes
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
-    console.log(`🔐 Login attempt: ${username}`);
+    console.log('🔐 Login attempt:', { username, password: '***' });
+    console.log('Request body:', req.body);
+    console.log('Headers:', req.headers);
     
-    const admin = await Admin.findOne({ username });
-    if (!admin) {
-      console.log(`❌ Admin not found: ${username}`);
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    if (!username || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Username and password are required' 
+      });
     }
 
+    const admin = await Admin.findOne({ username });
+    if (!admin) {
+      console.log('❌ Admin not found:', username);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid username or password' 
+      });
+    }
+
+    console.log('Admin found:', admin.username);
+    console.log('Stored password hash:', admin.password.substring(0, 20) + '...');
+
     const isValid = await bcrypt.compare(password, admin.password);
+    console.log('Password valid:', isValid);
+    
     if (!isValid) {
-      console.log(`❌ Invalid password for: ${username}`);
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid username or password' 
+      });
     }
 
     const token = jwt.sign(
       { userId: admin._id, username: admin.username },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
 
@@ -419,7 +485,7 @@ app.post('/api/admin/login', async (req, res) => {
     admin.lastLogin = new Date();
     await admin.save();
 
-    console.log(`✅ Login successful: ${username}`);
+    console.log('✅ Login successful:', username);
 
     res.json({
       success: true,
@@ -432,7 +498,73 @@ app.post('/api/admin/login', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Login error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error: ' + error.message 
+    });
+  }
+});
+
+// Test login route (for debugging)
+app.post('/api/admin/test-login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    console.log('Test login attempt:', username);
+    
+    const admin = await Admin.findOne({ username });
+    if (!admin) {
+      return res.json({ 
+        success: false, 
+        message: 'Admin not found',
+        exists: false 
+      });
+    }
+
+    const isValid = await bcrypt.compare(password, admin.password);
+    
+    res.json({ 
+      success: isValid,
+      message: isValid ? 'Password correct' : 'Password incorrect',
+      adminExists: true,
+      passwordValid: isValid,
+      adminId: admin._id,
+      storedHash: admin.password.substring(0, 20) + '...'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Reset admin (temporary for debugging)
+app.get('/api/admin/reset', async (req, res) => {
+  try {
+    // Delete existing admin
+    await Admin.deleteMany({});
+    
+    // Create new admin
+    const hashedPassword = await bcrypt.hash('Admin@123', 10);
+    const newAdmin = await Admin.create({
+      username: 'admin',
+      password: hashedPassword,
+      sessions: [],
+      lastLogin: null,
+      lastPasswordChange: new Date()
+    });
+    
+    console.log('✅ Admin reset successful');
+    
+    res.json({ 
+      success: true, 
+      message: 'Admin reset successful',
+      admin: {
+        username: newAdmin.username,
+        id: newAdmin._id,
+        password: 'Admin@123'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
@@ -467,7 +599,7 @@ app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
   }
 });
 
-// Test route to check admin
+// Check admin route
 app.get('/api/admin/check', async (req, res) => {
   try {
     const admins = await Admin.find({}).select('-password');
@@ -483,34 +615,6 @@ app.get('/api/admin/check', async (req, res) => {
         lastLogin: a.lastLogin,
         sessionCount: a.sessions.length
       }))
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Force create admin (for debugging)
-app.get('/api/admin/force-create', async (req, res) => {
-  try {
-    // Delete existing admin
-    await Admin.deleteMany({});
-    
-    const hashedPassword = await bcrypt.hash('Admin@123', 10);
-    const newAdmin = await Admin.create({
-      username: 'admin',
-      password: hashedPassword,
-      sessions: [],
-      lastLogin: null,
-      lastPasswordChange: new Date()
-    });
-    
-    res.json({ 
-      success: true, 
-      message: 'Admin created successfully',
-      admin: {
-        id: newAdmin._id,
-        username: newAdmin.username
-      }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -696,6 +800,7 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
     const productData = JSON.parse(req.body.data);
     
     if (req.files && req.files.length > 0) {
+      // Delete old images
       for (const variant of product.variants) {
         for (const image of variant.images) {
           if (image.cloudinaryId) {
@@ -971,18 +1076,6 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
   }
 });
 
-// Health check route
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Swift Bags API is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    database: mongoose.connection.name || 'unknown'
-  });
-});
-
 // Root route
 app.get('/', (req, res) => {
   res.json({ 
@@ -991,8 +1084,9 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
+      test: '/api/test',
       admin: '/api/admin/check',
-      forceCreate: '/api/admin/force-create',
+      reset: '/api/admin/reset',
       products: '/api/products',
       categories: '/api/categories',
       sliders: '/api/sliders',
@@ -1013,7 +1107,7 @@ app.use('*', (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Server error:', err.stack);
   res.status(500).json({ 
     success: false, 
     message: 'Something went wrong!',
@@ -1031,11 +1125,11 @@ module.exports = app;
 
 // For local development
 if (require.main === module) {
-  const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`📍 Test: http://localhost:${PORT}/api/test`);
+    console.log(`📍 Health: http://localhost:${PORT}/api/health`);
     console.log(`📍 Admin check: http://localhost:${PORT}/api/admin/check`);
-    console.log(`📍 Force create: http://localhost:${PORT}/api/admin/force-create`);
+    console.log(`📍 Reset admin: http://localhost:${PORT}/api/admin/reset`);
   });
 }

@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Swift Bags - অ্যাডমিন প্যানেল</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -10,23 +10,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Hind Siliguri Font -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { font-family: 'Hind Siliguri', sans-serif; }
         .sidebar { transition: all 0.3s; }
-        .sidebar-item { transition: all 0.2s; }
+        .sidebar-item { transition: all 0.2s; cursor: pointer; }
         .sidebar-item:hover { background: rgba(212, 175, 55, 0.1); }
         .sidebar-item.active { background: #D4AF37; color: #0A1F44; }
         .notification-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; }
         .modal { transition: all 0.3s; }
         .image-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #D4AF37; }
-        .product-variant-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
         .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(212,175,55,.3); border-radius: 50%; border-top-color: #D4AF37; animation: spin 1s ease-in-out infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .toast { position: fixed; bottom: 20px; right: 20px; z-index: 9999; animation: slideIn 0.3s; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .sold-out-badge { background: #dc2626; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+        .bg-primary { background-color: #0A1F44; }
+        .text-primary { color: #0A1F44; }
+        .bg-gold { background-color: #D4AF37; }
+        .text-gold { color: #D4AF37; }
+        .border-gold { border-color: #D4AF37; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -35,10 +37,11 @@
 <div id="loginPage" class="min-h-screen flex items-center justify-center bg-primary p-4">
     <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 w-full max-w-md">
         <div class="text-center mb-6">
-            <img src="../frontend/img/SwiftBags.jpeg" alt="Swift Bags" class="w-20 h-20 mx-auto rounded-lg">
+            <img src="https://via.placeholder.com/80x80/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-20 h-20 mx-auto rounded-lg">
             <h2 class="text-2xl font-bold text-primary mt-2">Swift Bags Admin</h2>
             <p class="text-gray-600">অ্যাডমিন প্যানেলে লগইন করুন</p>
         </div>
+        <div id="loginError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"></div>
         <form id="loginForm">
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">ইউজারনেম</label>
@@ -48,10 +51,13 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2">পাসওয়ার্ড</label>
                 <input type="password" id="password" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gold" required>
             </div>
-            <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-gold hover:text-primary transition">
+            <button type="submit" id="loginBtn" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-gold hover:text-primary transition">
                 লগইন
             </button>
         </form>
+        <div class="mt-4 text-center">
+            <button onclick="testConnection()" class="text-sm text-gray-500 hover:text-primary">কানেকশন টেস্ট করুন</button>
+        </div>
     </div>
 </div>
 
@@ -61,7 +67,7 @@
     <nav class="bg-primary text-white sticky top-0 z-50 shadow-lg">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <img src="../frontend/img/SwiftBags.jpeg" alt="Swift Bags" class="w-8 h-8 rounded-lg">
+                <img src="https://via.placeholder.com/32x32/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-8 h-8 rounded-lg">
                 <span class="text-xl font-bold text-gold">SwiftBags Admin</span>
             </div>
             <div class="flex items-center space-x-4">
@@ -212,7 +218,7 @@
                         <i class="fas fa-plus mr-2"></i>নতুন ক্যাটাগরি
                     </button>
                 </div>
-                <div id="categoriesList" class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="bg-white rounded-lg shadow overflow-hidden">
                     <table class="w-full">
                         <thead class="bg-primary text-white">
                             <tr>
@@ -307,14 +313,6 @@
                 <h2 class="text-2xl font-bold text-primary mb-4">কন্টেন্ট ম্যানেজমেন্ট</h2>
                 <div class="bg-white rounded-lg shadow p-4">
                     <form id="contentForm" class="space-y-4">
-                        <div>
-                            <label class="block font-medium mb-2">হোম পেজ টাইটেল</label>
-                            <input type="text" id="homeTitle" class="w-full border rounded-lg p-2">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-2">হোম পেজ সাবটাইটেল</label>
-                            <input type="text" id="homeSubtitle" class="w-full border rounded-lg p-2">
-                        </div>
                         <div>
                             <label class="block font-medium mb-2">ফুটার টেক্সট</label>
                             <input type="text" id="footerText" class="w-full border rounded-lg p-2">
@@ -563,66 +561,160 @@
 <div id="toast" class="toast hidden bg-white border-l-4 border-green-500 shadow-lg rounded-lg p-4 min-w-[300px]"></div>
 
 <script>
-    // API Configuration - Update with your actual backend URL
-    const API_URL = 'https://swift-bags.onrender.com/api'; // CHANGE THIS TO YOUR ACTUAL BACKEND URL
+    // API Configuration
+    const API_URL = (() => {
+        // যদি লোকালহোস্টে চলছে
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost:5000/api';
+        }
+        // Render URL
+        return 'https://swift-bags.onrender.com/api';
+    })();
+
+    console.log('API URL:', API_URL);
+    
     let token = localStorage.getItem('adminToken');
     let currentSection = 'dashboard';
     let notifications = [];
     let notificationInterval;
 
-    // Check authentication
-    if (token) {
+    // Check authentication on load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (token) {
+            validateToken();
+        }
+    });
+
+    // Validate token
+    async function validateToken() {
+        try {
+            const response = await fetch(`${API_URL}/admin/check`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showDashboard();
+            } else {
+                localStorage.removeItem('adminToken');
+                token = null;
+                showLogin();
+            }
+        } catch (error) {
+            console.error('Token validation error:', error);
+            localStorage.removeItem('adminToken');
+            token = null;
+            showLogin();
+        }
+    }
+
+    function showDashboard() {
         document.getElementById('loginPage').classList.add('hidden');
         document.getElementById('dashboardPage').classList.remove('hidden');
+        document.getElementById('adminName').textContent = localStorage.getItem('adminUsername') || 'Admin';
         loadDashboard();
         startNotificationPolling();
     }
 
+    function showLogin() {
+        document.getElementById('loginPage').classList.remove('hidden');
+        document.getElementById('dashboardPage').classList.add('hidden');
+    }
+
+    // Test connection
+    window.testConnection = async function() {
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.classList.add('hidden');
+        
+        try {
+            const response = await fetch(`${API_URL}/test`);
+            const data = await response.json();
+            showToast('কানেকশন সফল: ' + data.message, 'success');
+        } catch (error) {
+            errorDiv.classList.remove('hidden');
+            errorDiv.innerHTML = 'কানেকশন ব্যর্থ: ' + error.message;
+        }
+    };
+
     // Login Form
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const errorDiv = document.getElementById('loginError');
+        const submitBtn = document.getElementById('loginBtn');
+        
+        errorDiv.classList.add('hidden');
+        
+        if (!username || !password) {
+            errorDiv.classList.remove('hidden');
+            errorDiv.innerHTML = 'ইউজারনেম এবং পাসওয়ার্ড দিন';
+            return;
+        }
+
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading"></span> লগইন হচ্ছে...';
 
         try {
+            console.log('Attempting login with:', { username, password: '***' });
+
             const response = await fetch(`${API_URL}/admin/login`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
                 body: JSON.stringify({ username, password })
             });
 
             const data = await response.json();
+            console.log('Login response:', data);
+
             if (data.success) {
                 token = data.token;
                 localStorage.setItem('adminToken', token);
-                document.getElementById('loginPage').classList.add('hidden');
-                document.getElementById('dashboardPage').classList.remove('hidden');
-                document.getElementById('adminName').textContent = data.admin.username;
-                loadDashboard();
-                startNotificationPolling();
+                
+                if (data.admin) {
+                    localStorage.setItem('adminUsername', data.admin.username);
+                    localStorage.setItem('adminId', data.admin.id);
+                }
+                
+                showDashboard();
                 showToast('লগইন সফল হয়েছে', 'success');
             } else {
-                showToast(data.message, 'error');
+                errorDiv.classList.remove('hidden');
+                errorDiv.innerHTML = data.message || 'ইউজারনেম বা পাসওয়ার্ড ভুল';
             }
         } catch (error) {
-            showToast('লগইন করতে সমস্যা হয়েছে', 'error');
+            console.error('Login error details:', error);
+            errorDiv.classList.remove('hidden');
+            errorDiv.innerHTML = 'লগইন করতে সমস্যা হয়েছে: ' + error.message;
+        } finally {
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'লগইন';
         }
     });
 
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
         try {
-            await fetch(`${API_URL}/admin/logout`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            if (token) {
+                await fetch(`${API_URL}/admin/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
         } catch (error) {}
         
         localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUsername');
+        localStorage.removeItem('adminId');
         token = null;
         clearInterval(notificationInterval);
-        document.getElementById('dashboardPage').classList.add('hidden');
-        document.getElementById('loginPage').classList.remove('hidden');
+        showLogin();
     });
 
     // Sidebar Navigation
@@ -641,6 +733,8 @@
 
     // Load section data
     function loadSectionData(section) {
+        if (!token) return;
+        
         switch(section) {
             case 'sliders': loadSliders(); break;
             case 'categories': loadCategories(); break;
@@ -653,6 +747,8 @@
 
     // Dashboard
     async function loadDashboard() {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/stats`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -673,6 +769,8 @@
     }
 
     async function loadRecentOrders() {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/orders?limit=5`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -680,6 +778,11 @@
             const data = await response.json();
             if (data.success) {
                 const list = document.getElementById('recentOrdersList');
+                if (data.data.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-4">কোন অর্ডার নেই</p>';
+                    return;
+                }
+                
                 list.innerHTML = data.data.map(order => `
                     <div class="border rounded-lg p-3">
                         <div class="flex justify-between items-start">
@@ -699,6 +802,8 @@
     }
 
     async function loadPendingReviews() {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/reviews?status=pending`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -709,13 +814,18 @@
                 document.getElementById('pendingReviewsBadge').classList.toggle('hidden', data.data.length === 0);
                 document.getElementById('pendingReviewsBadge').textContent = data.data.length;
                 
+                if (data.data.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-4">কোন পেন্ডিং রিভিউ নেই</p>';
+                    return;
+                }
+                
                 list.innerHTML = data.data.map(review => `
                     <div class="border rounded-lg p-3">
                         <p class="font-bold">${review.customerName}</p>
                         <p class="text-sm">${review.review.substring(0, 50)}...</p>
                         <div class="flex justify-end gap-2 mt-2">
-                            <button onclick="approveReview('${review._id}')" class="text-green-600 text-sm">অ্যাপ্রুভ</button>
-                            <button onclick="rejectReview('${review._id}')" class="text-red-600 text-sm">রিজেক্ট</button>
+                            <button onclick="approveReview('${review._id}')" class="text-green-600 text-sm hover:underline">অ্যাপ্রুভ</button>
+                            <button onclick="rejectReview('${review._id}')" class="text-red-600 text-sm hover:underline">রিজেক্ট</button>
                         </div>
                     </div>
                 `).join('');
@@ -727,11 +837,19 @@
 
     // Sliders
     async function loadSliders() {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/sliders`);
             const data = await response.json();
             if (data.success) {
                 const list = document.getElementById('slidersList');
+                
+                if (data.data.length === 0) {
+                    list.innerHTML = '<p class="col-span-full text-center py-8">কোন স্লাইডার নেই</p>';
+                    return;
+                }
+                
                 list.innerHTML = data.data.map(slider => `
                     <div class="bg-white rounded-lg shadow overflow-hidden">
                         <img src="${slider.image}" alt="${slider.title}" class="w-full h-48 object-cover">
@@ -752,6 +870,7 @@
             }
         } catch (error) {
             console.error('Error loading sliders:', error);
+            showToast('স্লাইডার লোড করতে সমস্যা হয়েছে', 'error');
         }
     }
 
@@ -777,7 +896,7 @@
             title: document.getElementById('sliderTitle').value,
             subtitle: document.getElementById('sliderSubtitle').value,
             buttonText: document.getElementById('sliderButtonText').value,
-            order: parseInt(document.getElementById('sliderOrder').value),
+            order: parseInt(document.getElementById('sliderOrder').value) || 0,
             active: document.getElementById('sliderActive').checked
         };
         
@@ -826,13 +945,18 @@
                 document.getElementById('sliderButtonText').value = slider.buttonText || 'এখনই কিনুন';
                 document.getElementById('sliderOrder').value = slider.order || 0;
                 document.getElementById('sliderActive').checked = slider.active;
-                document.getElementById('sliderImagePreview').src = slider.image;
-                document.getElementById('sliderImagePreview').classList.remove('hidden');
+                
+                if (slider.image) {
+                    document.getElementById('sliderImagePreview').src = slider.image;
+                    document.getElementById('sliderImagePreview').classList.remove('hidden');
+                }
+                
                 document.getElementById('sliderModal').classList.remove('hidden');
                 document.getElementById('sliderModal').classList.add('flex');
             }
         } catch (error) {
             console.error('Error editing slider:', error);
+            showToast('সমস্যা হয়েছে', 'error');
         }
     };
 
@@ -859,11 +983,19 @@
 
     // Categories
     async function loadCategories() {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/categories`);
             const data = await response.json();
             if (data.success) {
                 const tbody = document.getElementById('categoriesTableBody');
+                
+                if (data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">কোন ক্যাটাগরি নেই</td></tr>';
+                    return;
+                }
+                
                 tbody.innerHTML = data.data.map((cat, index) => `
                     <tr class="border-b">
                         <td class="p-3">${index + 1}</td>
@@ -889,6 +1021,7 @@
             }
         } catch (error) {
             console.error('Error loading categories:', error);
+            showToast('ক্যাটাগরি লোড করতে সমস্যা হয়েছে', 'error');
         }
     }
 
@@ -913,7 +1046,7 @@
             name: document.getElementById('categoryName').value,
             nameBn: document.getElementById('categoryNameBn').value,
             slug: document.getElementById('categorySlug').value,
-            order: parseInt(document.getElementById('categoryOrder').value),
+            order: parseInt(document.getElementById('categoryOrder').value) || 0,
             active: document.getElementById('categoryActive').checked
         };
 
@@ -963,6 +1096,7 @@
             }
         } catch (error) {
             console.error('Error editing category:', error);
+            showToast('সমস্যা হয়েছে', 'error');
         }
     };
 
@@ -989,28 +1123,36 @@
 
     // Products
     async function loadProducts() {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/products`);
             const data = await response.json();
             if (data.success) {
                 const list = document.getElementById('productsList');
+                
+                if (data.data.length === 0) {
+                    list.innerHTML = '<p class="col-span-full text-center py-8">কোন পণ্য নেই</p>';
+                    return;
+                }
+                
                 list.innerHTML = data.data.map(product => {
                     const variant = product.variants[0] || {};
-                    const image = variant.images && variant.images[0] ? variant.images[0].url : '';
+                    const image = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
                     const hasStock = variant.stock > 0;
                     
                     return `
                     <div class="bg-white rounded-lg shadow overflow-hidden">
                         <div class="relative">
                             <img src="${image}" alt="${product.name}" class="w-full h-48 object-cover">
-                            ${!hasStock ? '<span class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded sold-out-badge">Sold Out</span>' : ''}
+                            ${!hasStock ? '<span class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded">Sold Out</span>' : ''}
                         </div>
                         <div class="p-3">
                             <h3 class="font-bold">${product.name}</h3>
                             <p class="text-sm text-gray-600">${product.description.substring(0, 50)}...</p>
                             <div class="flex justify-between items-center mt-2">
                                 <span class="text-gold font-bold">৳${product.price}</span>
-                                <span class="text-xs text-gray-500">স্ট্রাইক: ৳${product.originalPrice}</span>
+                                <span class="text-xs text-gray-500">মূল্য: ৳${product.originalPrice}</span>
                             </div>
                             <div class="flex justify-between items-center mt-1 text-sm">
                                 <span>স্টক: ${variant.stock || 0}</span>
@@ -1026,6 +1168,7 @@
             }
         } catch (error) {
             console.error('Error loading products:', error);
+            showToast('পণ্য লোড করতে সমস্যা হয়েছে', 'error');
         }
     }
 
@@ -1074,7 +1217,7 @@
             price: parseInt(document.getElementById('productPrice').value),
             originalPrice: parseInt(document.getElementById('productOriginalPrice').value),
             variants: [{
-                stock: parseInt(document.getElementById('productStock').value),
+                stock: parseInt(document.getElementById('productStock').value) || 0,
                 discount: document.getElementById('productDiscount').value,
                 color: document.getElementById('productColor').value,
                 size: document.getElementById('productSize').value
@@ -1156,6 +1299,7 @@
             }
         } catch (error) {
             console.error('Error editing product:', error);
+            showToast('সমস্যা হয়েছে', 'error');
         }
     };
 
@@ -1182,6 +1326,8 @@
 
     // Orders
     async function loadOrders(page = 1) {
+        if (!token) return;
+        
         try {
             const status = document.getElementById('orderStatusFilter').value;
             const search = document.getElementById('orderSearch').value;
@@ -1196,6 +1342,12 @@
             const data = await response.json();
             if (data.success) {
                 const list = document.getElementById('ordersList');
+                
+                if (data.data.length === 0) {
+                    list.innerHTML = '<p class="text-center py-8">কোন অর্ডার নেই</p>';
+                    return;
+                }
+                
                 list.innerHTML = data.data.map(order => `
                     <div class="bg-white rounded-lg shadow p-4">
                         <div class="flex flex-col md:flex-row justify-between items-start gap-4">
@@ -1226,23 +1378,31 @@
                     </div>
                 `).join('');
 
-                document.getElementById('pendingOrdersBadge').textContent = data.data.filter(o => o.status === 'pending').length;
-                document.getElementById('pendingOrdersBadge').classList.toggle('hidden', data.data.filter(o => o.status === 'pending').length === 0);
+                const pendingCount = data.data.filter(o => o.status === 'pending').length;
+                document.getElementById('pendingOrdersBadge').textContent = pendingCount;
+                document.getElementById('pendingOrdersBadge').classList.toggle('hidden', pendingCount === 0);
 
                 // Pagination
                 const pagination = document.getElementById('ordersPagination');
-                let pages = '';
-                for (let i = 1; i <= data.pages; i++) {
-                    pages += `<button onclick="loadOrders(${i})" class="px-3 py-1 border rounded-lg ${i === data.page ? 'bg-primary text-white' : 'hover:bg-gray-100'}">${i}</button>`;
+                if (data.pages > 1) {
+                    let pages = '';
+                    for (let i = 1; i <= data.pages; i++) {
+                        pages += `<button onclick="loadOrders(${i})" class="px-3 py-1 border rounded-lg ${i === data.page ? 'bg-primary text-white' : 'hover:bg-gray-100'}">${i}</button>`;
+                    }
+                    pagination.innerHTML = pages;
+                } else {
+                    pagination.innerHTML = '';
                 }
-                pagination.innerHTML = pages;
             }
         } catch (error) {
             console.error('Error loading orders:', error);
+            showToast('অর্ডার লোড করতে সমস্যা হয়েছে', 'error');
         }
     }
 
     window.updateOrderStatus = async (id, status) => {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/orders/${id}`, {
                 method: 'PUT',
@@ -1266,6 +1426,8 @@
     };
 
     window.viewOrderDetails = async (id) => {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/orders`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -1323,6 +1485,7 @@
             }
         } catch (error) {
             console.error('Error viewing order details:', error);
+            showToast('সমস্যা হয়েছে', 'error');
         }
     };
 
@@ -1333,6 +1496,8 @@
 
     // Reviews
     async function loadReviews() {
+        if (!token) return;
+        
         try {
             const status = document.getElementById('reviewStatusFilter').value;
             
@@ -1346,6 +1511,12 @@
             const data = await response.json();
             if (data.success) {
                 const list = document.getElementById('reviewsList');
+                
+                if (data.data.length === 0) {
+                    list.innerHTML = '<p class="text-center py-8">কোন রিভিউ নেই</p>';
+                    return;
+                }
+                
                 list.innerHTML = data.data.map(review => `
                     <div class="bg-white rounded-lg shadow p-4">
                         <div class="flex flex-col md:flex-row justify-between items-start gap-4">
@@ -1370,10 +1541,13 @@
             }
         } catch (error) {
             console.error('Error loading reviews:', error);
+            showToast('রিভিউ লোড করতে সমস্যা হয়েছে', 'error');
         }
     }
 
     window.approveReview = async (id) => {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/reviews/${id}`, {
                 method: 'PUT',
@@ -1398,6 +1572,8 @@
     };
 
     window.rejectReview = async (id) => {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/reviews/${id}`, {
                 method: 'PUT',
@@ -1422,6 +1598,8 @@
     };
 
     window.viewReview = async (id) => {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/reviews`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -1447,6 +1625,7 @@
             }
         } catch (error) {
             console.error('Error viewing review:', error);
+            showToast('সমস্যা হয়েছে', 'error');
         }
     };
 
@@ -1457,12 +1636,12 @@
 
     // Content
     async function loadContent() {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/contents`);
             const data = await response.json();
             if (data.success) {
-                document.getElementById('homeTitle').value = data.data.homeTitle || '';
-                document.getElementById('homeSubtitle').value = data.data.homeSubtitle || '';
                 document.getElementById('footerText').value = data.data.footerText || '';
                 document.getElementById('phoneNumber').value = data.data.phoneNumber || '';
                 document.getElementById('email').value = data.data.email || '';
@@ -1470,15 +1649,16 @@
             }
         } catch (error) {
             console.error('Error loading content:', error);
+            showToast('কন্টেন্ট লোড করতে সমস্যা হয়েছে', 'error');
         }
     }
 
     document.getElementById('contentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        if (!token) return;
+        
         const contents = [
-            { key: 'homeTitle', value: document.getElementById('homeTitle').value },
-            { key: 'homeSubtitle', value: document.getElementById('homeSubtitle').value },
             { key: 'footerText', value: document.getElementById('footerText').value },
             { key: 'phoneNumber', value: document.getElementById('phoneNumber').value },
             { key: 'email', value: document.getElementById('email').value },
@@ -1506,6 +1686,8 @@
     // Settings - Change Password
     document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        if (!token) return;
         
         const currentPassword = document.getElementById('currentPassword').value;
         const newPassword = document.getElementById('newPassword').value;
@@ -1545,6 +1727,8 @@
     }
 
     async function loadNotifications() {
+        if (!token) return;
+        
         try {
             const response = await fetch(`${API_URL}/admin/notifications`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -1573,8 +1757,14 @@
 
     function updateNotificationList() {
         const list = document.getElementById('notificationList');
+        
+        if (notifications.length === 0) {
+            list.innerHTML = '<div class="p-3 text-center text-gray-500">কোন নোটিফিকেশন নেই</div>';
+            return;
+        }
+        
         list.innerHTML = notifications.map(notif => `
-            <div class="p-3 hover:bg-gray-50 ${notif.read ? '' : 'bg-yellow-50'}" onclick="markNotificationRead('${notif._id}')">
+            <div class="p-3 hover:bg-gray-50 cursor-pointer ${notif.read ? '' : 'bg-yellow-50'}" onclick="markNotificationRead('${notif._id}')">
                 <p class="font-medium text-sm">${notif.title}</p>
                 <p class="text-xs text-gray-600">${notif.message}</p>
                 <p class="text-xs text-gray-400 mt-1">${timeAgo(notif.createdAt)}</p>
@@ -1583,6 +1773,8 @@
     }
 
     window.markNotificationRead = async (id) => {
+        if (!token) return;
+        
         try {
             await fetch(`${API_URL}/admin/notifications/${id}/read`, {
                 method: 'PUT',
@@ -1638,23 +1830,23 @@
 
     function timeAgo(date) {
         const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-        const intervals = {
-            year: 31536000,
-            month: 2592000,
-            week: 604800,
-            day: 86400,
-            hour: 3600,
-            minute: 60,
-            second: 1
-        };
         
-        for (let [unit, secondsInUnit] of Object.entries(intervals)) {
-            const interval = Math.floor(seconds / secondsInUnit);
-            if (interval >= 1) {
-                return `${interval} ${unit} আগে`;
-            }
-        }
-        return 'এখনই';
+        if (seconds < 60) return 'এখনই';
+        
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} মিনিট আগে`;
+        
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours} ঘন্টা আগে`;
+        
+        const days = Math.floor(hours / 24);
+        if (days < 30) return `${days} দিন আগে`;
+        
+        const months = Math.floor(days / 30);
+        if (months < 12) return `${months} মাস আগে`;
+        
+        const years = Math.floor(months / 12);
+        return `${years} বছর আগে`;
     }
 
     function debounce(func, wait) {
