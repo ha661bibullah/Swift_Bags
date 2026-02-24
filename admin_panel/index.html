@@ -1407,43 +1407,62 @@
         initOrderChart();
     }
 
-    function initOrderChart() {
-        const ctx = document.getElementById('orderChart').getContext('2d');
-        
-        if (chartInstance) {
-            chartInstance.destroy();
-        }
-        
-        chartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['পেন্ডিং', 'কনফার্মড', 'প্রসেসিং', 'শিপড', 'ডেলিভারড', 'ক্যান্সেলড'],
-                datasets: [{
-                    data: [12, 8, 5, 7, 15, 3],
-                    backgroundColor: [
-                        '#FBBF24',
-                        '#3B82F6',
-                        '#8B5CF6',
-                        '#6366F1',
-                        '#10B981',
-                        '#EF4444'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { font: { size: 10 } }
-                    }
+function initOrderChart() {
+    const ctx = document.getElementById('orderChart').getContext('2d');
+    
+    // যদি ইতিমধ্যে চার্ট থাকে, তবে কিছু করবো না (ডাটা আপডেট করার প্রয়োজন নেই)
+    if (chartInstance) {
+        return; 
+    }
+    
+    chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['পেন্ডিং', 'কনফার্মড', 'প্রসেসিং', 'শিপড', 'ডেলিভারড', 'ক্যান্সেলড'],
+            datasets: [{
+                data: [12, 8, 5, 7, 15, 3],
+                backgroundColor: [
+                    '#FBBF24',
+                    '#3B82F6',
+                    '#8B5CF6',
+                    '#6366F1',
+                    '#10B981',
+                    '#EF4444'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { size: 10 } }
                 }
             }
-        });
-    }
+        }
+    });
+}
 
+let dashboardLoaded = false; // চার্ট ইতিমধ্যে তৈরি হয়েছে কিনা
+
+function showDashboard() {
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('dashboardPage').classList.remove('hidden');
+    const username = localStorage.getItem('adminUsername') || 'Admin';
+    document.getElementById('adminName').textContent = username;
+    document.getElementById('mobileAdminName').textContent = username;
+    document.getElementById('mobileSidebarAdminName').textContent = username;
+    loadDashboard();
+    startNotificationPolling();
+
+    // প্রথমবার ড্যাশবোর্ড লোড হলে চার্ট তৈরি করি
+    if (!dashboardLoaded) {
+        initOrderChart();
+        dashboardLoaded = true;
+    }
+}
     async function loadRecentOrders() {
         if (!token) return;
         
