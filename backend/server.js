@@ -29,9 +29,9 @@ app.use(cors({
     'http://localhost:5000', 
     'http://localhost:3000', 
     'http://127.0.0.1:5500',
-    'https://swiftbags.vercel.app', 
-    'https://swiftbags-admin.vercel.app',
-    'https://swiftbags-backend.vercel.app'
+    'https://swift-bags-cpq4.vercel.app', 
+    'https://swift-bags.vercel.app',
+    'https://swift-bags-4iux.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
