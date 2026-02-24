@@ -10,20 +10,38 @@ const multer = require('multer');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 dotenv.config();
 
 const app = express();
 
+// Vercel এর জন্য পোর্ট কনফিগারেশন
+const PORT = process.env.PORT || 5000;
+
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(compression());
 app.use(cors({
-  origin: ['http://localhost:5000', 'http://127.0.0.1:5500', 'http://localhost:3000'],
-  credentials: true
+  origin: [
+    'http://localhost:5000', 
+    'http://localhost:3000', 
+    'http://127.0.0.1:5500',
+    'https://swiftbags.vercel.app', 
+    'https://swiftbags-admin.vercel.app',
+    'https://swiftbags-backend.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Vercel এর জন্য স্ট্যাটিক ফাইল সার্ভ করা
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -800,10 +818,10 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
       totalReviews: await Review.countDocuments(),
       pendingReviews: await Review.countDocuments({ status: 'pending' }),
       todayOrders: await Order.countDocuments({ createdAt: { $gte: today } }),
-      revenue: await Order.aggregate([
+      revenue: (await Order.aggregate([
         { $match: { status: 'delivered' } },
         { $group: { _id: null, total: { $sum: '$total' } } }
-      ])
+      ]))[0]?.total || 0
     };
 
     res.json({ success: true, data: stats });
@@ -812,7 +830,22 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Health check route
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, message: 'Swift Bags API is running' });
 });
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Swift Bags API', version: '1.0.0' });
+});
+
+// Vercel এর জন্য এক্সপোর্ট
+module.exports = app;
+
+// লোকাল ডেভেলপমেন্টের জন্য
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
