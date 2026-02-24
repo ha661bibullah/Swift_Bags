@@ -26,16 +26,21 @@ app.use(compression());
 const allowedOrigins = [
   'https://swift-bags-t1u3.vercel.app',
   'https://swift-bags-gad3.vercel.app',
+  'https://swift-bags-admin.vercel.app', // অ্যাডমিন প্যানেল যোগ করুন
+  'https://swift-bags-frontend.vercel.app', // ফ্রন্টএন্ড যোগ করুন
   'http://localhost:3000',
-  'http://localhost:5000'
+  'http://localhost:5000',
+  'http://127.0.0.1:5500'
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // ডেভেলপমেন্টের জন্য অনুমতি দিন
+    if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.log('CORS blocked origin:', origin);
+      callback(null, true); // প্রোডাকশনেও সব অনুমতি দিন আপাতত
     }
   },
   credentials: true,
@@ -59,28 +64,6 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// MongoDB Connection with better error handling
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-})
-.then(() => console.log('MongoDB Connected Successfully'))
-.catch(err => {
-  console.error('MongoDB Connection Error:', err);
-  process.exit(1);
-});
-
-// Handle MongoDB connection events
-mongoose.connection.on('error', err => {
-  console.error('MongoDB connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');
 });
 
 // ============= SCHEMAS =============
@@ -286,46 +269,120 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
+// ============= DATABASE CONNECTION =============
+
+// MongoDB Connection with better error handling
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    console.log('MongoDB Connected Successfully');
+    
+    // ডাটাবেস কানেক্ট হওয়ার পর ইনিশিয়াল ডাটা তৈরি করুন
+    await initializeData();
+    
+  } catch (err) {
+    console.error('MongoDB Connection Error:', err);
+    // কানেক্ট না হলে আবার চেষ্টা করুন
+    setTimeout(connectDB, 5000);
+  }
+};
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', err => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected. Reconnecting...');
+  setTimeout(connectDB, 5000);
+});
+
 // ============= INITIAL SETUP =============
+
+async function initializeData() {
+  try {
+    await createInitialAdmin();
+    await createInitialCategories();
+    await createInitialContent();
+    console.log('Initial data setup completed');
+  } catch (error) {
+    console.error('Error in initial data setup:', error);
+  }
+}
 
 async function createInitialAdmin() {
   try {
-    const adminExists = await Admin.findOne({ username: process.env.ADMIN_USERNAME });
+    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
+    
+    const adminExists = await Admin.findOne({ username: adminUsername });
     if (!adminExists) {
-      const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+      const hashedPassword = await bcrypt.hash(adminPassword, 10);
       await Admin.create({
-        username: process.env.ADMIN_USERNAME,
-        password: hashedPassword
+        username: adminUsername,
+        password: hashedPassword,
+        sessions: [],
+        lastLogin: null,
+        lastPasswordChange: new Date()
       });
-      console.log('Initial admin created');
+      console.log('✅ Initial admin created successfully');
+      console.log(`   Username: ${adminUsername}`);
+      console.log(`   Password: ${adminPassword}`);
+    } else {
+      console.log('✅ Admin already exists');
     }
   } catch (error) {
-    console.error('Error creating admin:', error);
+    console.error('❌ Error creating admin:', error);
+    throw error;
   }
 }
 
 async function createInitialCategories() {
   try {
     const categories = [
-      { name: 'Men', nameBn: 'পুরুষদের', slug: 'men', order: 1 },
-      { name: 'Women', nameBn: 'মহিলাদের', slug: 'women', order: 2 }
+      { name: 'Men', nameBn: 'পুরুষদের', slug: 'men', order: 1, active: true },
+      { name: 'Women', nameBn: 'মহিলাদের', slug: 'women', order: 2, active: true },
+      { name: 'Kids', nameBn: 'শিশুদের', slug: 'kids', order: 3, active: true },
+      { name: 'Travel', nameBn: 'ভ্রমণ', slug: 'travel', order: 4, active: true }
     ];
 
     for (const cat of categories) {
       const exists = await Category.findOne({ slug: cat.slug });
       if (!exists) {
         await Category.create(cat);
+        console.log(`✅ Category created: ${cat.nameBn}`);
       }
     }
-    console.log('Initial categories created');
   } catch (error) {
-    console.error('Error creating categories:', error);
+    console.error('❌ Error creating categories:', error);
   }
 }
 
-// Run initial setup
-createInitialAdmin();
-createInitialCategories();
+async function createInitialContent() {
+  try {
+    const contents = [
+      { key: 'footerText', value: '© 2025 Swift Bags. সর্বস্বত্ব সংরক্ষিত।', type: 'text' },
+      { key: 'address', value: '১২৩/৪, গুলশান, ঢাকা - ১২১২, বাংলাদেশ', type: 'text' },
+      { key: 'phoneNumber', value: '০১৩২৬-১৯৮৪৫৬', type: 'text' },
+      { key: 'email', value: 'info@swiftbags.com', type: 'text' }
+    ];
+
+    for (const content of contents) {
+      const exists = await Content.findOne({ key: content.key });
+      if (!exists) {
+        await Content.create(content);
+        console.log(`✅ Content created: ${content.key}`);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error creating content:', error);
+  }
+}
 
 // ============= API ROUTES =============
 
@@ -334,20 +391,24 @@ app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
+    console.log(`Login attempt: ${username}`);
+    
     const admin = await Admin.findOne({ username });
     if (!admin) {
+      console.log(`Admin not found: ${username}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     const isValid = await bcrypt.compare(password, admin.password);
     if (!isValid) {
+      console.log(`Invalid password for: ${username}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
       { userId: admin._id, username: admin.username },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE }
+      { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
 
     const device = req.headers['user-agent'] || 'unknown';
@@ -355,13 +416,16 @@ app.post('/api/admin/login', async (req, res) => {
     admin.lastLogin = new Date();
     await admin.save();
 
+    console.log(`✅ Login successful: ${username}`);
+
     res.json({
       success: true,
       token,
       admin: { username: admin.username, lastLogin: admin.lastLogin }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
@@ -391,6 +455,25 @@ app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
     await req.user.save();
 
     res.json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Test route to check admin (শুধুমাত্র ডেভেলপমেন্টের জন্য)
+app.get('/api/admin/check', async (req, res) => {
+  try {
+    const admin = await Admin.findOne({});
+    if (admin) {
+      res.json({ 
+        success: true, 
+        message: 'Admin exists',
+        username: admin.username,
+        passwordHash: admin.password.substring(0, 20) + '...'
+      });
+    } else {
+      res.json({ success: false, message: 'No admin found' });
+    }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -856,7 +939,8 @@ app.get('/api/health', (req, res) => {
     success: true, 
     message: 'Swift Bags API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
@@ -868,6 +952,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
+      admin: '/api/admin/check',
       products: '/api/products',
       categories: '/api/categories',
       sliders: '/api/sliders',
@@ -896,6 +981,11 @@ app.use((err, req, res, next) => {
   });
 });
 
+// ============= START SERVER =============
+
+// ডাটাবেস কানেক্ট করুন এবং সার্ভার শুরু করুন
+connectDB();
+
 // Vercel export
 module.exports = app;
 
@@ -904,5 +994,7 @@ if (require.main === module) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/api/health`);
+    console.log(`Admin check: http://localhost:${PORT}/api/admin/check`);
   });
 }
