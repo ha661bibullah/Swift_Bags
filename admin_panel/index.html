@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Swift Bags - অ্যাডমিন প্যানেল</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -10,61 +10,295 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Hind Siliguri Font -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { font-family: 'Hind Siliguri', sans-serif; }
-        .sidebar { transition: all 0.3s; }
-        .sidebar-item { transition: all 0.2s; cursor: pointer; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #b5942e; }
+
+        /* Mobile Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0A1F44;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 4px;
+            z-index: 1000;
+            border-top: 2px solid #D4AF37;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .bottom-nav-item {
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            flex: 1;
+            max-width: 70px;
+        }
+        
+        .bottom-nav-item i {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+        
+        .bottom-nav-item.active {
+            color: #D4AF37;
+            background: rgba(212, 175, 55, 0.1);
+        }
+        
+        .bottom-nav-item span {
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            background: #0A1F44;
+            color: white;
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Desktop Sidebar */
+        .sidebar {
+            transition: all 0.3s;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            position: sticky;
+            top: 60px;
+        }
+        
+        .sidebar-item {
+            transition: all 0.2s;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 2px 8px;
+            padding: 10px 12px;
+        }
+        
         .sidebar-item:hover { background: rgba(212, 175, 55, 0.1); }
         .sidebar-item.active { background: #D4AF37; color: #0A1F44; }
-        .notification-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; }
-        .modal { transition: all 0.3s; }
-        .image-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #D4AF37; }
-        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(212,175,55,.3); border-radius: 50%; border-top-color: #D4AF37; animation: spin 1s ease-in-out infinite; }
+        
+        /* Cards & Animations */
+        .stat-card {
+            transition: all 0.3s;
+            border-left: 4px solid #D4AF37;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        .modal {
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        
+        .image-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #D4AF37;
+            transition: all 0.3s;
+        }
+        .image-preview:hover {
+            transform: scale(1.05);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(212,175,55,.3);
+            border-radius: 50%;
+            border-top-color: #D4AF37;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
         @keyframes spin { to { transform: rotate(360deg); } }
-        .toast { position: fixed; bottom: 20px; right: 20px; z-index: 9999; animation: slideIn 0.3s; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .sold-out-badge { background: #dc2626; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 9999;
+            animation: slideIn 0.3s;
+            max-width: 350px;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Quick Actions */
+        .quick-action-btn {
+            transition: all 0.3s;
+            border: 1px solid #e5e7eb;
+        }
+        .quick-action-btn:hover {
+            border-color: #D4AF37;
+            background: #D4AF37;
+            color: #0A1F44;
+        }
+        
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: #0A1F44;
+            color: white;
+            padding: 12px;
+            font-weight: 500;
+        }
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        /* Mobile Responsive Table */
+        @media (max-width: 768px) {
+            .data-table thead {
+                display: none;
+            }
+            .data-table tr {
+                display: block;
+                margin-bottom: 16px;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 12px;
+            }
+            .data-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border: none;
+                border-bottom: 1px dashed #e5e7eb;
+            }
+            .data-table td:last-child {
+                border-bottom: none;
+            }
+            .data-table td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #0A1F44;
+            }
+        }
+        
         .bg-primary { background-color: #0A1F44; }
         .text-primary { color: #0A1F44; }
         .bg-gold { background-color: #D4AF37; }
         .text-gold { color: #D4AF37; }
         .border-gold { border-color: #D4AF37; }
+        
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
 
 <!-- Login Page -->
 <div id="loginPage" class="min-h-screen flex items-center justify-center bg-primary p-4">
-    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 w-full max-w-md">
+    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 w-full max-w-md transform transition-all hover:scale-105">
         <div class="text-center mb-6">
-            <img src="https://via.placeholder.com/80x80/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-20 h-20 mx-auto rounded-lg">
+            <img src="https://via.placeholder.com/80x80/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-20 h-20 mx-auto rounded-lg animate-pulse">
             <h2 class="text-2xl font-bold text-primary mt-2">Swift Bags Admin</h2>
             <p class="text-gray-600">অ্যাডমিন প্যানেলে লগইন করুন</p>
         </div>
-        <div id="loginError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"></div>
+        <div id="loginError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden text-sm"></div>
         <form id="loginForm">
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">ইউজারনেম</label>
-                <input type="text" id="username" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gold" required>
+                <div class="relative">
+                    <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
+                    <input type="text" id="username" class="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold" placeholder="ইউজারনেম দিন" required>
+                </div>
             </div>
             <div class="mb-6">
                 <label class="block text-gray-700 text-sm font-bold mb-2">পাসওয়ার্ড</label>
-                <input type="password" id="password" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gold" required>
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                    <input type="password" id="password" class="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold" placeholder="পাসওয়ার্ড দিন" required>
+                </div>
             </div>
-            <button type="submit" id="loginBtn" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-gold hover:text-primary transition">
-                লগইন
+            <button type="submit" id="loginBtn" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105">
+                লগইন করুন
             </button>
         </form>
         <div class="mt-4 text-center">
-            <button onclick="testConnection()" class="text-sm text-gray-500 hover:text-primary">কানেকশন টেস্ট করুন</button>
+            <button onclick="testConnection()" class="text-sm text-gray-500 hover:text-primary transition">
+                <i class="fas fa-plug mr-1"></i> কানেকশন টেস্ট করুন
+            </button>
         </div>
     </div>
 </div>
 
 <!-- Admin Dashboard -->
-<div id="dashboardPage" class="hidden min-h-screen bg-gray-100">
-    <!-- Top Navigation -->
-    <nav class="bg-primary text-white sticky top-0 z-50 shadow-lg">
+<div id="dashboardPage" class="hidden min-h-screen bg-gray-100 pb-20 md:pb-0">
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header md:hidden">
+        <div class="flex items-center space-x-2">
+            <img src="https://via.placeholder.com/32x32/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-8 h-8 rounded-lg">
+            <span class="font-bold text-gold">SwiftBags Admin</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <!-- Notifications -->
+            <div class="relative">
+                <button id="mobileNotificationBtn" class="text-2xl relative">
+                    <i class="fas fa-bell"></i>
+                    <span id="mobileNotificationCount" class="notification-badge hidden">0</span>
+                </button>
+            </div>
+            <span id="mobileAdminName" class="text-sm">Admin</span>
+        </div>
+    </div>
+
+    <!-- Desktop Top Navigation -->
+    <nav class="bg-primary text-white sticky top-0 z-50 shadow-lg hidden md:block">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <img src="https://via.placeholder.com/32x32/D4AF37/0A1F44?text=SB" alt="Swift Bags" class="w-8 h-8 rounded-lg">
@@ -78,7 +312,7 @@
                         <span id="notificationCount" class="notification-badge hidden">0</span>
                     </button>
                     <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-                        <div class="p-3 border-b border-gray-200">
+                        <div class="p-3 border-b border-gray-200 sticky top-0 bg-white">
                             <h3 class="font-bold text-primary">নোটিফিকেশন</h3>
                         </div>
                         <div id="notificationList" class="divide-y divide-gray-100">
@@ -87,92 +321,150 @@
                     </div>
                 </div>
                 <span class="hidden md:inline" id="adminName">Admin</span>
-                <button id="logoutBtn" class="bg-gold text-primary px-4 py-2 rounded-lg text-sm hover:bg-yellow-500 transition">
-                    লগআউট
+                <button id="logoutBtn" class="bg-gold text-primary px-4 py-2 rounded-lg text-sm hover:bg-yellow-500 transition transform hover:scale-105">
+                    <i class="fas fa-sign-out-alt mr-1"></i> লগআউট
                 </button>
             </div>
         </div>
     </nav>
 
+    <!-- Mobile Bottom Navigation -->
+    <div class="bottom-nav md:hidden">
+        <button class="bottom-nav-item active" data-section="dashboard">
+            <i class="fas fa-home"></i>
+            <span>ড্যাশবোর্ড</span>
+        </button>
+        <button class="bottom-nav-item" data-section="sliders">
+            <i class="fas fa-images"></i>
+            <span>স্লাইডার</span>
+        </button>
+        <button class="bottom-nav-item" data-section="categories">
+            <i class="fas fa-tags"></i>
+            <span>ক্যাটাগরি</span>
+        </button>
+        <button class="bottom-nav-item" data-section="products">
+            <i class="fas fa-box"></i>
+            <span>পণ্য</span>
+        </button>
+        <button class="bottom-nav-item" data-section="orders">
+            <i class="fas fa-shopping-cart"></i>
+            <span>অর্ডার</span>
+            <span id="mobilePendingOrdersBadge" class="hidden text-xs bg-red-500 text-white px-1 rounded-full">0</span>
+        </button>
+        <button class="bottom-nav-item" data-section="reviews">
+            <i class="fas fa-star"></i>
+            <span>রিভিউ</span>
+            <span id="mobilePendingReviewsBadge" class="hidden text-xs bg-red-500 text-white px-1 rounded-full">0</span>
+        </button>
+    </div>
+
     <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="sidebar md:w-64 bg-white shadow-lg min-h-screen">
+        <!-- Desktop Sidebar -->
+        <div class="sidebar hidden md:block md:w-64 bg-white shadow-lg">
             <div class="p-4">
                 <div class="space-y-1">
-                    <button class="sidebar-item w-full text-left px-4 py-3 rounded-lg active" data-section="dashboard">
-                        <i class="fas fa-home mr-3"></i> ড্যাশবোর্ড
+                    <button class="sidebar-item w-full text-left flex items-center active" data-section="dashboard">
+                        <i class="fas fa-home mr-3 w-5"></i> ড্যাশবোর্ড
                     </button>
-                    <button class="sidebar-item w-full text-left px-4 py-3 rounded-lg" data-section="sliders">
-                        <i class="fas fa-images mr-3"></i> স্লাইডার
+                    <button class="sidebar-item w-full text-left flex items-center" data-section="sliders">
+                        <i class="fas fa-images mr-3 w-5"></i> স্লাইডার
                     </button>
-                    <button class="sidebar-item w-full text-left px-4 py-3 rounded-lg" data-section="categories">
-                        <i class="fas fa-tags mr-3"></i> ক্যাটাগরি
+                    <button class="sidebar-item w-full text-left flex items-center" data-section="categories">
+                        <i class="fas fa-tags mr-3 w-5"></i> ক্যাটাগরি
                     </button>
-                    <button class="sidebar-item w-full text-left px-4 py-3 rounded-lg" data-section="products">
-                        <i class="fas fa-box mr-3"></i> পণ্য
+                    <button class="sidebar-item w-full text-left flex items-center" data-section="products">
+                        <i class="fas fa-box mr-3 w-5"></i> পণ্য
                     </button>
-                    <button class="sidebar-item w-full text-left px-4 py-3 rounded-lg" data-section="orders">
-                        <i class="fas fa-shopping-cart mr-3"></i> অর্ডার
-                        <span id="pendingOrdersBadge" class="float-right bg-red-500 text-white px-2 py-0.5 rounded-full text-xs hidden">0</span>
+                    <button class="sidebar-item w-full text-left flex items-center justify-between" data-section="orders">
+                        <span><i class="fas fa-shopping-cart mr-3 w-5"></i> অর্ডার</span>
+                        <span id="pendingOrdersBadge" class="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs hidden">0</span>
                     </button>
-                    <button class="sidebar-item w-full text-left px-4 py-3 rounded-lg" data-section="reviews">
-                        <i class="fas fa-star mr-3"></i> রিভিউ
-                        <span id="pendingReviewsBadge" class="float-right bg-red-500 text-white px-2 py-0.5 rounded-full text-xs hidden">0</span>
+                    <button class="sidebar-item w-full text-left flex items-center justify-between" data-section="reviews">
+                        <span><i class="fas fa-star mr-3 w-5"></i> রিভিউ</span>
+                        <span id="pendingReviewsBadge" class="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs hidden">0</span>
                     </button>
-                    <button class="sidebar-item w-full text-left px-4 py-3 rounded-lg" data-section="content">
-                        <i class="fas fa-edit mr-3"></i> কন্টেন্ট
+                    <button class="sidebar-item w-full text-left flex items-center" data-section="content">
+                        <i class="fas fa-edit mr-3 w-5"></i> কন্টেন্ট
                     </button>
-                    <button class="sidebar-item w-full text-left px-4 py-3 rounded-lg" data-section="settings">
-                        <i class="fas fa-cog mr-3"></i> সেটিংস
+                    <button class="sidebar-item w-full text-left flex items-center" data-section="settings">
+                        <i class="fas fa-cog mr-3 w-5"></i> সেটিংস
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 p-4 md:p-6">
+        <div class="flex-1 p-3 md:p-6 pb-24 md:pb-6">
+            
+            <!-- Quick Actions (Mobile) -->
+            <div class="md:hidden mb-4 overflow-x-auto whitespace-nowrap pb-2">
+                <div class="flex space-x-2">
+                    <button onclick="quickAction('addProduct')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
+                        <i class="fas fa-plus-circle text-gold mr-1"></i> নতুন পণ্য
+                    </button>
+                    <button onclick="quickAction('addSlider')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
+                        <i class="fas fa-image text-gold mr-1"></i> নতুন স্লাইডার
+                    </button>
+                    <button onclick="quickAction('addCategory')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
+                        <i class="fas fa-tag text-gold mr-1"></i> নতুন ক্যাটাগরি
+                    </button>
+                    <button onclick="quickAction('refresh')" class="quick-action-btn bg-white px-4 py-2 rounded-lg text-sm flex items-center">
+                        <i class="fas fa-sync-alt text-gold mr-1"></i> রিফ্রেশ
+                    </button>
+                </div>
+            </div>
+
             <!-- Dashboard Section -->
             <div id="dashboardSection" class="section active">
-                <h2 class="text-2xl font-bold text-primary mb-4">ড্যাশবোর্ড</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white rounded-lg shadow p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl md:text-2xl font-bold text-primary">ড্যাশবোর্ড</h2>
+                    <span class="text-sm text-gray-500" id="lastUpdate"></span>
+                </div>
+                
+                <!-- Quick Stats Cards -->
+                <div class="quick-stats mb-6">
+                    <div class="stat-card bg-white rounded-lg shadow p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-gray-500 text-sm">মোট অর্ডার</p>
-                                <h3 class="text-2xl font-bold" id="totalOrders">0</h3>
+                                <p class="text-gray-500 text-xs">মোট অর্ডার</p>
+                                <h3 class="text-xl md:text-2xl font-bold" id="totalOrders">0</h3>
+                                <p class="text-xs text-green-600" id="orderGrowth">+0%</p>
                             </div>
                             <div class="bg-primary text-white p-3 rounded-full">
                                 <i class="fas fa-shopping-cart"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg shadow p-4">
+                    <div class="stat-card bg-white rounded-lg shadow p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-gray-500 text-sm">পেন্ডিং অর্ডার</p>
-                                <h3 class="text-2xl font-bold text-red-500" id="pendingOrders">0</h3>
+                                <p class="text-gray-500 text-xs">পেন্ডিং অর্ডার</p>
+                                <h3 class="text-xl md:text-2xl font-bold text-red-500" id="pendingOrders">0</h3>
+                                <p class="text-xs text-gray-500">অপেক্ষমাণ</p>
                             </div>
                             <div class="bg-red-500 text-white p-3 rounded-full">
                                 <i class="fas fa-clock"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg shadow p-4">
+                    <div class="stat-card bg-white rounded-lg shadow p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-gray-500 text-sm">মোট পণ্য</p>
-                                <h3 class="text-2xl font-bold" id="totalProducts">0</h3>
+                                <p class="text-gray-500 text-xs">মোট পণ্য</p>
+                                <h3 class="text-xl md:text-2xl font-bold" id="totalProducts">0</h3>
+                                <p class="text-xs text-gray-500">স্টকে আছে</p>
                             </div>
                             <div class="bg-green-500 text-white p-3 rounded-full">
                                 <i class="fas fa-box"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg shadow p-4">
+                    <div class="stat-card bg-white rounded-lg shadow p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-gray-500 text-sm">আজকের অর্ডার</p>
-                                <h3 class="text-2xl font-bold" id="todayOrders">0</h3>
+                                <p class="text-gray-500 text-xs">আজকের অর্ডার</p>
+                                <h3 class="text-xl md:text-2xl font-bold" id="todayOrders">0</h3>
+                                <p class="text-xs text-gold">আজ</p>
                             </div>
                             <div class="bg-gold text-primary p-3 rounded-full">
                                 <i class="fas fa-calendar-day"></i>
@@ -181,16 +473,40 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                     <div class="bg-white rounded-lg shadow p-4">
-                        <h3 class="font-bold text-primary mb-4">সাম্প্রতিক অর্ডার</h3>
-                        <div id="recentOrdersList" class="space-y-3 max-h-96 overflow-y-auto">
+                        <h3 class="font-bold text-primary mb-4">অর্ডার স্ট্যাটাস</h3>
+                        <canvas id="orderChart" height="200"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <h3 class="font-bold text-primary mb-4">সাম্প্রতিক কার্যক্রম</h3>
+                        <div id="recentActivities" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                            <!-- Activities will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-primary">সাম্প্রতিক অর্ডার</h3>
+                            <button onclick="loadOrders()" class="text-gold hover:text-primary transition text-sm">
+                                সব দেখুন <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <div id="recentOrdersList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
                             <!-- Recent orders will be loaded here -->
                         </div>
                     </div>
                     <div class="bg-white rounded-lg shadow p-4">
-                        <h3 class="font-bold text-primary mb-4">পেন্ডিং রিভিউ</h3>
-                        <div id="pendingReviewsList" class="space-y-3 max-h-96 overflow-y-auto">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-primary">পেন্ডিং রিভিউ</h3>
+                            <button onclick="loadReviews()" class="text-gold hover:text-primary transition text-sm">
+                                সব দেখুন <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <div id="pendingReviewsList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
                             <!-- Pending reviews will be loaded here -->
                         </div>
                     </div>
@@ -199,9 +515,9 @@
 
             <!-- Sliders Section -->
             <div id="slidersSection" class="section hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-primary">স্লাইডার ম্যানেজমেন্ট</h2>
-                    <button id="addSliderBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                    <h2 class="text-xl md:text-2xl font-bold text-primary">স্লাইডার ম্যানেজমেন্ট</h2>
+                    <button id="addSliderBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
                         <i class="fas fa-plus mr-2"></i>নতুন স্লাইডার
                     </button>
                 </div>
@@ -212,22 +528,22 @@
 
             <!-- Categories Section -->
             <div id="categoriesSection" class="section hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-primary">ক্যাটাগরি ম্যানেজমেন্ট</h2>
-                    <button id="addCategoryBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                    <h2 class="text-xl md:text-2xl font-bold text-primary">ক্যাটাগরি ম্যানেজমেন্ট</h2>
+                    <button id="addCategoryBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
                         <i class="fas fa-plus mr-2"></i>নতুন ক্যাটাগরি
                     </button>
                 </div>
                 <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <table class="w-full">
-                        <thead class="bg-primary text-white">
+                    <table class="data-table">
+                        <thead>
                             <tr>
-                                <th class="p-3 text-left">ক্রম</th>
-                                <th class="p-3 text-left">নাম (ইংরেজি)</th>
-                                <th class="p-3 text-left">নাম (বাংলা)</th>
-                                <th class="p-3 text-left">স্লাগ</th>
-                                <th class="p-3 text-left">স্ট্যাটাস</th>
-                                <th class="p-3 text-left">অ্যাকশন</th>
+                                <th>ক্রম</th>
+                                <th>নাম (ইংরেজি)</th>
+                                <th>নাম (বাংলা)</th>
+                                <th>স্লাগ</th>
+                                <th>স্ট্যাটাস</th>
+                                <th>অ্যাকশন</th>
                             </tr>
                         </thead>
                         <tbody id="categoriesTableBody">
@@ -239,36 +555,42 @@
 
             <!-- Products Section -->
             <div id="productsSection" class="section hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-primary">পণ্য ম্যানেজমেন্ট</h2>
-                    <button id="addProductBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                    <h2 class="text-xl md:text-2xl font-bold text-primary">পণ্য ম্যানেজমেন্ট</h2>
+                    <button id="addProductBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
                         <i class="fas fa-plus mr-2"></i>নতুন পণ্য
                     </button>
                 </div>
                 
                 <!-- Product Filters -->
                 <div class="bg-white p-4 rounded-lg shadow mb-4">
-                    <div class="flex flex-wrap gap-2">
-                        <select id="productCategoryFilter" class="border rounded-lg p-2">
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <select id="productCategoryFilter" class="border rounded-lg p-2 flex-1">
                             <option value="all">সব ক্যাটাগরি</option>
                         </select>
-                        <input type="text" id="productSearch" placeholder="পণ্য খুঁজুন..." class="flex-1 border rounded-lg p-2">
+                        <div class="relative flex-1">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" id="productSearch" placeholder="পণ্য খুঁজুন..." class="w-full pl-10 border rounded-lg p-2">
+                        </div>
+                        <button onclick="loadProducts()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                            <i class="fas fa-search mr-1"></i> খুঁজুন
+                        </button>
                     </div>
                 </div>
 
-                <div id="productsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div id="productsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     <!-- Products will be loaded here -->
                 </div>
             </div>
 
             <!-- Orders Section -->
             <div id="ordersSection" class="section hidden">
-                <h2 class="text-2xl font-bold text-primary mb-4">অর্ডার ম্যানেজমেন্ট</h2>
+                <h2 class="text-xl md:text-2xl font-bold text-primary mb-4">অর্ডার ম্যানেজমেন্ট</h2>
                 
                 <!-- Order Filters -->
                 <div class="bg-white p-4 rounded-lg shadow mb-4">
-                    <div class="flex flex-wrap gap-2">
-                        <select id="orderStatusFilter" class="border rounded-lg p-2">
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <select id="orderStatusFilter" class="border rounded-lg p-2 flex-1">
                             <option value="all">সব স্ট্যাটাস</option>
                             <option value="pending">পেন্ডিং</option>
                             <option value="confirmed">কনফার্মড</option>
@@ -277,29 +599,38 @@
                             <option value="delivered">ডেলিভারড</option>
                             <option value="cancelled">ক্যান্সেলড</option>
                         </select>
-                        <input type="text" id="orderSearch" placeholder="অর্ডার আইডি বা ফোন নম্বর..." class="flex-1 border rounded-lg p-2">
+                        <div class="relative flex-1">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" id="orderSearch" placeholder="অর্ডার আইডি বা ফোন নম্বর..." class="w-full pl-10 border rounded-lg p-2">
+                        </div>
+                        <button onclick="loadOrders()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                            <i class="fas fa-search mr-1"></i> খুঁজুন
+                        </button>
                     </div>
                 </div>
 
                 <div id="ordersList" class="space-y-4">
                     <!-- Orders will be loaded here -->
                 </div>
-                <div id="ordersPagination" class="flex justify-center gap-2 mt-4"></div>
+                <div id="ordersPagination" class="flex justify-center gap-2 mt-4 flex-wrap"></div>
             </div>
 
             <!-- Reviews Section -->
             <div id="reviewsSection" class="section hidden">
-                <h2 class="text-2xl font-bold text-primary mb-4">রিভিউ ম্যানেজমেন্ট</h2>
+                <h2 class="text-xl md:text-2xl font-bold text-primary mb-4">রিভিউ ম্যানেজমেন্ট</h2>
                 
                 <!-- Review Filters -->
                 <div class="bg-white p-4 rounded-lg shadow mb-4">
-                    <div class="flex gap-2">
-                        <select id="reviewStatusFilter" class="border rounded-lg p-2">
+                    <div class="flex gap-3">
+                        <select id="reviewStatusFilter" class="border rounded-lg p-2 flex-1">
                             <option value="all">সব রিভিউ</option>
                             <option value="pending">পেন্ডিং</option>
                             <option value="approved">অ্যাপ্রুভড</option>
                             <option value="rejected">রিজেক্টেড</option>
                         </select>
+                        <button onclick="loadReviews()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
+                            <i class="fas fa-filter mr-1"></i> ফিল্টার
+                        </button>
                     </div>
                 </div>
 
@@ -310,27 +641,27 @@
 
             <!-- Content Section -->
             <div id="contentSection" class="section hidden">
-                <h2 class="text-2xl font-bold text-primary mb-4">কন্টেন্ট ম্যানেজমেন্ট</h2>
-                <div class="bg-white rounded-lg shadow p-4">
+                <h2 class="text-xl md:text-2xl font-bold text-primary mb-4">কন্টেন্ট ম্যানেজমেন্ট</h2>
+                <div class="bg-white rounded-lg shadow p-4 md:p-6">
                     <form id="contentForm" class="space-y-4">
                         <div>
                             <label class="block font-medium mb-2">ফুটার টেক্সট</label>
-                            <input type="text" id="footerText" class="w-full border rounded-lg p-2">
+                            <input type="text" id="footerText" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
                         </div>
                         <div>
                             <label class="block font-medium mb-2">ফোন নম্বর</label>
-                            <input type="text" id="phoneNumber" class="w-full border rounded-lg p-2">
+                            <input type="text" id="phoneNumber" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
                         </div>
                         <div>
                             <label class="block font-medium mb-2">ইমেইল</label>
-                            <input type="email" id="email" class="w-full border rounded-lg p-2">
+                            <input type="email" id="email" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
                         </div>
                         <div>
                             <label class="block font-medium mb-2">ঠিকানা</label>
-                            <textarea id="address" rows="3" class="w-full border rounded-lg p-2"></textarea>
+                            <textarea id="address" rows="3" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold"></textarea>
                         </div>
-                        <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
-                            সংরক্ষণ করুন
+                        <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105 w-full md:w-auto">
+                            <i class="fas fa-save mr-2"></i> সংরক্ষণ করুন
                         </button>
                     </form>
                 </div>
@@ -338,24 +669,24 @@
 
             <!-- Settings Section -->
             <div id="settingsSection" class="section hidden">
-                <h2 class="text-2xl font-bold text-primary mb-4">সেটিংস</h2>
-                <div class="bg-white rounded-lg shadow p-4">
+                <h2 class="text-xl md:text-2xl font-bold text-primary mb-4">সেটিংস</h2>
+                <div class="bg-white rounded-lg shadow p-4 md:p-6">
                     <h3 class="font-bold text-lg mb-4">পাসওয়ার্ড পরিবর্তন</h3>
                     <form id="changePasswordForm" class="space-y-4 max-w-md">
                         <div>
                             <label class="block font-medium mb-2">বর্তমান পাসওয়ার্ড</label>
-                            <input type="password" id="currentPassword" class="w-full border rounded-lg p-2" required>
+                            <input type="password" id="currentPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                         </div>
                         <div>
                             <label class="block font-medium mb-2">নতুন পাসওয়ার্ড</label>
-                            <input type="password" id="newPassword" class="w-full border rounded-lg p-2" required>
+                            <input type="password" id="newPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                         </div>
                         <div>
                             <label class="block font-medium mb-2">নতুন পাসওয়ার্ড (আবার)</label>
-                            <input type="password" id="confirmPassword" class="w-full border rounded-lg p-2" required>
+                            <input type="password" id="confirmPassword" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                         </div>
-                        <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-gold hover:text-primary transition">
-                            পাসওয়ার্ড পরিবর্তন করুন
+                        <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-gold hover:text-primary transition transform hover:scale-105">
+                            <i class="fas fa-key mr-2"></i> পাসওয়ার্ড পরিবর্তন করুন
                         </button>
                     </form>
                 </div>
@@ -367,86 +698,88 @@
 <!-- Modals -->
 
 <!-- Slider Modal -->
-<div id="sliderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div class="p-4 border-b border-gray-200">
+<div id="sliderModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
+        <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
             <h3 id="sliderModalTitle" class="text-xl font-bold text-primary">নতুন স্লাইডার</h3>
         </div>
         <form id="sliderForm" class="p-4 space-y-4">
             <input type="hidden" id="sliderId">
             <div>
                 <label class="block font-medium mb-2">টাইটেল *</label>
-                <input type="text" id="sliderTitle" class="w-full border rounded-lg p-2" required>
+                <input type="text" id="sliderTitle" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
             </div>
             <div>
                 <label class="block font-medium mb-2">সাবটাইটেল</label>
-                <input type="text" id="sliderSubtitle" class="w-full border rounded-lg p-2">
+                <input type="text" id="sliderSubtitle" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
             </div>
             <div>
                 <label class="block font-medium mb-2">ইমেজ *</label>
                 <input type="file" id="sliderImage" accept="image/*" class="w-full border rounded-lg p-2">
-                <img id="sliderImagePreview" class="mt-2 image-preview hidden">
+                <div class="mt-2 flex justify-center">
+                    <img id="sliderImagePreview" class="image-preview hidden">
+                </div>
             </div>
             <div>
                 <label class="block font-medium mb-2">বাটন টেক্সট</label>
-                <input type="text" id="sliderButtonText" class="w-full border rounded-lg p-2" value="এখনই কিনুন">
+                <input type="text" id="sliderButtonText" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="এখনই কিনুন">
             </div>
             <div>
                 <label class="block font-medium mb-2">অর্ডার</label>
-                <input type="number" id="sliderOrder" class="w-full border rounded-lg p-2" value="0">
+                <input type="number" id="sliderOrder" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0">
             </div>
             <div class="flex items-center">
-                <input type="checkbox" id="sliderActive" class="mr-2" checked>
+                <input type="checkbox" id="sliderActive" class="mr-2 w-5 h-5" checked>
                 <label class="font-medium">এক্টিভ</label>
             </div>
             <div class="border-t pt-4 flex justify-end gap-2">
-                <button type="button" id="closeSliderModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100">বাতিল</button>
-                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary">সংরক্ষণ</button>
+                <button type="button" id="closeSliderModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বাতিল</button>
+                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">সংরক্ষণ</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Category Modal -->
-<div id="categoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-        <div class="p-4 border-b border-gray-200">
+<div id="categoryModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all scale-95 hover:scale-100">
+        <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
             <h3 id="categoryModalTitle" class="text-xl font-bold text-primary">নতুন ক্যাটাগরি</h3>
         </div>
         <form id="categoryForm" class="p-4 space-y-4">
             <input type="hidden" id="categoryId">
             <div>
                 <label class="block font-medium mb-2">নাম (ইংরেজি) *</label>
-                <input type="text" id="categoryName" class="w-full border rounded-lg p-2" required>
+                <input type="text" id="categoryName" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
             </div>
             <div>
                 <label class="block font-medium mb-2">নাম (বাংলা) *</label>
-                <input type="text" id="categoryNameBn" class="w-full border rounded-lg p-2" required>
+                <input type="text" id="categoryNameBn" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
             </div>
             <div>
                 <label class="block font-medium mb-2">স্লাগ *</label>
-                <input type="text" id="categorySlug" class="w-full border rounded-lg p-2" required>
+                <input type="text" id="categorySlug" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
             </div>
             <div>
                 <label class="block font-medium mb-2">অর্ডার</label>
-                <input type="number" id="categoryOrder" class="w-full border rounded-lg p-2" value="0">
+                <input type="number" id="categoryOrder" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0">
             </div>
             <div class="flex items-center">
-                <input type="checkbox" id="categoryActive" class="mr-2" checked>
+                <input type="checkbox" id="categoryActive" class="mr-2 w-5 h-5" checked>
                 <label class="font-medium">এক্টিভ</label>
             </div>
             <div class="border-t pt-4 flex justify-end gap-2">
-                <button type="button" id="closeCategoryModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100">বাতিল</button>
-                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary">সংরক্ষণ</button>
+                <button type="button" id="closeCategoryModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বাতিল</button>
+                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">সংরক্ষণ</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Product Modal -->
-<div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div class="p-4 border-b border-gray-200">
+<div id="productModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
+        <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
             <h3 id="productModalTitle" class="text-xl font-bold text-primary">নতুন পণ্য</h3>
         </div>
         <form id="productForm" class="p-4 space-y-4">
@@ -455,11 +788,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-medium mb-2">পণ্যের নাম *</label>
-                    <input type="text" id="productName" class="w-full border rounded-lg p-2" required>
+                    <input type="text" id="productName" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                 </div>
                 <div>
                     <label class="block font-medium mb-2">ক্যাটাগরি *</label>
-                    <select id="productCategory" class="w-full border rounded-lg p-2" required>
+                    <select id="productCategory" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                         <option value="">সিলেক্ট করুন</option>
                     </select>
                 </div>
@@ -467,17 +800,17 @@
 
             <div>
                 <label class="block font-medium mb-2">বিবরণ *</label>
-                <textarea id="productDescription" rows="3" class="w-full border rounded-lg p-2" required></textarea>
+                <textarea id="productDescription" rows="3" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required></textarea>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-medium mb-2">মূল্য (টাকা) *</label>
-                    <input type="number" id="productPrice" class="w-full border rounded-lg p-2" required>
+                    <input type="number" id="productPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                 </div>
                 <div>
                     <label class="block font-medium mb-2">পুরাতন মূল্য (টাকা) *</label>
-                    <input type="number" id="productOriginalPrice" class="w-full border rounded-lg p-2" required>
+                    <input type="number" id="productOriginalPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                 </div>
             </div>
 
@@ -490,69 +823,69 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-medium mb-2">স্টক *</label>
-                    <input type="number" id="productStock" class="w-full border rounded-lg p-2" value="0" required>
+                    <input type="number" id="productStock" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0" required>
                 </div>
                 <div>
                     <label class="block font-medium mb-2">ডিসকাউন্ট</label>
-                    <input type="text" id="productDiscount" class="w-full border rounded-lg p-2" placeholder="যেমন: 20% Off">
+                    <input type="text" id="productDiscount" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="যেমন: 20% Off">
                 </div>
             </div>
 
             <div>
                 <label class="block font-medium mb-2">রঙ</label>
-                <input type="text" id="productColor" class="w-full border rounded-lg p-2">
+                <input type="text" id="productColor" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
             </div>
 
             <div>
                 <label class="block font-medium mb-2">সাইজ</label>
-                <input type="text" id="productSize" class="w-full border rounded-lg p-2">
+                <input type="text" id="productSize" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
             </div>
 
-            <div class="flex items-center gap-4">
-                <div class="flex items-center">
-                    <input type="checkbox" id="productFeatured" class="mr-2">
-                    <label class="font-medium">ফিচার্ড</label>
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="productTrending" class="mr-2">
-                    <label class="font-medium">ট্রেন্ডিং</label>
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="productActive" class="mr-2" checked>
-                    <label class="font-medium">এক্টিভ</label>
-                </div>
+            <div class="flex flex-wrap items-center gap-4">
+                <label class="flex items-center">
+                    <input type="checkbox" id="productFeatured" class="mr-2 w-5 h-5">
+                    <span class="font-medium">ফিচার্ড</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" id="productTrending" class="mr-2 w-5 h-5">
+                    <span class="font-medium">ট্রেন্ডিং</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" id="productActive" class="mr-2 w-5 h-5" checked>
+                    <span class="font-medium">এক্টিভ</span>
+                </label>
             </div>
 
             <div class="border-t pt-4 flex justify-end gap-2">
-                <button type="button" id="closeProductModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100">বাতিল</button>
-                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary">সংরক্ষণ</button>
+                <button type="button" id="closeProductModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বাতিল</button>
+                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">সংরক্ষণ</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Order Details Modal -->
-<div id="orderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div class="p-4 border-b border-gray-200">
+<div id="orderModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
+        <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
             <h3 class="text-xl font-bold text-primary">অর্ডার বিস্তারিত</h3>
         </div>
         <div id="orderDetails" class="p-4"></div>
-        <div class="p-4 border-t border-gray-200 flex justify-end gap-2">
-            <button id="closeOrderModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100">বন্ধ</button>
+        <div class="p-4 border-t border-gray-200 flex justify-end">
+            <button id="closeOrderModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বন্ধ</button>
         </div>
     </div>
 </div>
 
 <!-- Review Modal -->
-<div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div class="p-4 border-b border-gray-200">
+<div id="reviewModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
+        <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
             <h3 class="text-xl font-bold text-primary">রিভিউ বিস্তারিত</h3>
         </div>
         <div id="reviewDetails" class="p-4"></div>
-        <div class="p-4 border-t border-gray-200 flex justify-end gap-2">
-            <button id="closeReviewModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100">বন্ধ</button>
+        <div class="p-4 border-t border-gray-200 flex justify-end">
+            <button id="closeReviewModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বন্ধ</button>
         </div>
     </div>
 </div>
@@ -560,14 +893,28 @@
 <!-- Toast Notification -->
 <div id="toast" class="toast hidden bg-white border-l-4 border-green-500 shadow-lg rounded-lg p-4 min-w-[300px]"></div>
 
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all scale-95">
+        <div class="p-4 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-primary">নিশ্চিতকরণ</h3>
+        </div>
+        <div class="p-4">
+            <p id="confirmMessage" class="text-center"></p>
+        </div>
+        <div class="p-4 border-t border-gray-200 flex justify-end gap-2">
+            <button id="cancelConfirm" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বাতিল</button>
+            <button id="confirmAction" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">ডিলিট</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // API Configuration
     const API_URL = (() => {
-        // যদি লোকালহোস্টে চলছে
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             return 'http://localhost:5000/api';
         }
-        // Render URL
         return 'https://swift-bags.onrender.com/api';
     })();
 
@@ -577,13 +924,21 @@
     let currentSection = 'dashboard';
     let notifications = [];
     let notificationInterval;
+    let chartInstance = null;
+    let confirmCallback = null;
 
     // Check authentication on load
     document.addEventListener('DOMContentLoaded', () => {
         if (token) {
             validateToken();
         }
+        updateLastUpdateTime();
     });
+
+    // Update last update time
+    function updateLastUpdateTime() {
+        document.getElementById('lastUpdate').textContent = `সর্বশেষ আপডেট: ${new Date().toLocaleTimeString('bn-BD')}`;
+    }
 
     // Validate token
     async function validateToken() {
@@ -611,7 +966,9 @@
     function showDashboard() {
         document.getElementById('loginPage').classList.add('hidden');
         document.getElementById('dashboardPage').classList.remove('hidden');
-        document.getElementById('adminName').textContent = localStorage.getItem('adminUsername') || 'Admin';
+        const username = localStorage.getItem('adminUsername') || 'Admin';
+        document.getElementById('adminName').textContent = username;
+        document.getElementById('mobileAdminName').textContent = username;
         loadDashboard();
         startNotificationPolling();
     }
@@ -620,6 +977,25 @@
         document.getElementById('loginPage').classList.remove('hidden');
         document.getElementById('dashboardPage').classList.add('hidden');
     }
+
+    // Quick Actions
+    window.quickAction = function(action) {
+        switch(action) {
+            case 'addProduct':
+                document.getElementById('addProductBtn').click();
+                break;
+            case 'addSlider':
+                document.getElementById('addSliderBtn').click();
+                break;
+            case 'addCategory':
+                document.getElementById('addCategoryBtn').click();
+                break;
+            case 'refresh':
+                loadSectionData(currentSection);
+                showToast('ডেটা রিফ্রেশ করা হয়েছে', 'success');
+                break;
+        }
+    };
 
     // Test connection
     window.testConnection = async function() {
@@ -653,7 +1029,6 @@
             return;
         }
 
-        // Disable button and show loading
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="loading"></span> লগইন হচ্ছে...';
 
@@ -692,9 +1067,8 @@
             errorDiv.classList.remove('hidden');
             errorDiv.innerHTML = 'লগইন করতে সমস্যা হয়েছে: ' + error.message;
         } finally {
-            // Re-enable button
             submitBtn.disabled = false;
-            submitBtn.innerHTML = 'লগইন';
+            submitBtn.innerHTML = 'লগইন করুন';
         }
     });
 
@@ -717,10 +1091,24 @@
         showLogin();
     });
 
-    // Sidebar Navigation
+    // Navigation (Desktop)
     document.querySelectorAll('.sidebar-item').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(btn.dataset.section + 'Section').classList.remove('hidden');
+            currentSection = btn.dataset.section;
+            
+            loadSectionData(currentSection);
+        });
+    });
+
+    // Navigation (Mobile Bottom)
+    document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -736,6 +1124,7 @@
         if (!token) return;
         
         switch(section) {
+            case 'dashboard': loadDashboard(); break;
             case 'sliders': loadSliders(); break;
             case 'categories': loadCategories(); break;
             case 'products': loadProducts(); break;
@@ -743,7 +1132,31 @@
             case 'reviews': loadReviews(); break;
             case 'content': loadContent(); break;
         }
+        updateLastUpdateTime();
     }
+
+    // Confirmation Modal
+    function showConfirm(message, callback) {
+        confirmCallback = callback;
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmModal').classList.remove('hidden');
+        document.getElementById('confirmModal').classList.add('flex');
+    }
+
+    document.getElementById('cancelConfirm').addEventListener('click', () => {
+        document.getElementById('confirmModal').classList.add('hidden');
+        document.getElementById('confirmModal').classList.remove('flex');
+        confirmCallback = null;
+    });
+
+    document.getElementById('confirmAction').addEventListener('click', () => {
+        if (confirmCallback) {
+            confirmCallback();
+        }
+        document.getElementById('confirmModal').classList.add('hidden');
+        document.getElementById('confirmModal').classList.remove('flex');
+        confirmCallback = null;
+    });
 
     // Dashboard
     async function loadDashboard() {
@@ -759,6 +1172,16 @@
                 document.getElementById('pendingOrders').textContent = data.data.pendingOrders;
                 document.getElementById('totalProducts').textContent = data.data.totalProducts;
                 document.getElementById('todayOrders').textContent = data.data.todayOrders;
+                
+                // Update badges
+                document.getElementById('pendingOrdersBadge').textContent = data.data.pendingOrders;
+                document.getElementById('pendingOrdersBadge').classList.toggle('hidden', data.data.pendingOrders === 0);
+                document.getElementById('mobilePendingOrdersBadge').textContent = data.data.pendingOrders;
+                document.getElementById('mobilePendingOrdersBadge').classList.toggle('hidden', data.data.pendingOrders === 0);
+                
+                // Calculate growth (mock data)
+                const growth = Math.floor(Math.random() * 20) + 5;
+                document.getElementById('orderGrowth').textContent = `+${growth}%`;
             }
         } catch (error) {
             console.error('Error loading dashboard:', error);
@@ -766,6 +1189,45 @@
 
         loadRecentOrders();
         loadPendingReviews();
+        loadRecentActivities();
+        initOrderChart();
+    }
+
+    function initOrderChart() {
+        const ctx = document.getElementById('orderChart').getContext('2d');
+        
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+        
+        chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['পেন্ডিং', 'কনফার্মড', 'প্রসেসিং', 'শিপড', 'ডেলিভারড', 'ক্যান্সেলড'],
+                datasets: [{
+                    data: [12, 8, 5, 7, 15, 3],
+                    backgroundColor: [
+                        '#FBBF24',
+                        '#3B82F6',
+                        '#8B5CF6',
+                        '#6366F1',
+                        '#10B981',
+                        '#EF4444'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
     }
 
     async function loadRecentOrders() {
@@ -784,15 +1246,18 @@
                 }
                 
                 list.innerHTML = data.data.map(order => `
-                    <div class="border rounded-lg p-3">
+                    <div class="border rounded-lg p-3 hover:shadow-md transition cursor-pointer" onclick="viewOrderDetails('${order._id}')">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="font-bold">${order.orderId}</p>
-                                <p class="text-sm">${order.customer.name} - ${order.customer.phone}</p>
+                                <p class="font-bold text-sm">${order.orderId}</p>
+                                <p class="text-xs">${order.customer.name} - ${order.customer.phone}</p>
                             </div>
                             <span class="px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(order.status)}">${getStatusText(order.status)}</span>
                         </div>
-                        <p class="text-sm mt-2">মোট: ৳${order.total}</p>
+                        <div class="flex justify-between mt-2 text-sm">
+                            <span>মোট: ৳${order.total}</span>
+                            <span class="text-xs text-gray-500">${timeAgo(order.createdAt)}</span>
+                        </div>
                     </div>
                 `).join('');
             }
@@ -811,8 +1276,10 @@
             const data = await response.json();
             if (data.success) {
                 const list = document.getElementById('pendingReviewsList');
-                document.getElementById('pendingReviewsBadge').classList.toggle('hidden', data.data.length === 0);
                 document.getElementById('pendingReviewsBadge').textContent = data.data.length;
+                document.getElementById('pendingReviewsBadge').classList.toggle('hidden', data.data.length === 0);
+                document.getElementById('mobilePendingReviewsBadge').textContent = data.data.length;
+                document.getElementById('mobilePendingReviewsBadge').classList.toggle('hidden', data.data.length === 0);
                 
                 if (data.data.length === 0) {
                     list.innerHTML = '<p class="text-gray-500 text-center py-4">কোন পেন্ডিং রিভিউ নেই</p>';
@@ -821,11 +1288,13 @@
                 
                 list.innerHTML = data.data.map(review => `
                     <div class="border rounded-lg p-3">
-                        <p class="font-bold">${review.customerName}</p>
-                        <p class="text-sm">${review.review.substring(0, 50)}...</p>
+                        <p class="font-bold text-sm">${review.customerName}</p>
+                        <p class="text-xs text-gray-600">${review.customerAddress}</p>
+                        <div class="text-yellow-500 text-sm">${getStars(review.rating)}</div>
+                        <p class="text-xs mt-1">${review.review.substring(0, 50)}...</p>
                         <div class="flex justify-end gap-2 mt-2">
-                            <button onclick="approveReview('${review._id}')" class="text-green-600 text-sm hover:underline">অ্যাপ্রুভ</button>
-                            <button onclick="rejectReview('${review._id}')" class="text-red-600 text-sm hover:underline">রিজেক্ট</button>
+                            <button onclick="approveReview('${review._id}')" class="text-green-600 text-xs hover:underline">অ্যাপ্রুভ</button>
+                            <button onclick="rejectReview('${review._id}')" class="text-red-600 text-xs hover:underline">রিজেক্ট</button>
                         </div>
                     </div>
                 `).join('');
@@ -833,6 +1302,28 @@
         } catch (error) {
             console.error('Error loading pending reviews:', error);
         }
+    }
+
+    async function loadRecentActivities() {
+        const activities = document.getElementById('recentActivities');
+        const mockActivities = [
+            { icon: 'fa-shopping-cart', text: 'নতুন অর্ডার #ORD12345', time: '২ মিনিট আগে', color: 'text-green-500' },
+            { icon: 'fa-star', text: 'নতুন রিভিউ এসেছে', time: '১৫ মিনিট আগে', color: 'text-yellow-500' },
+            { icon: 'fa-box', text: 'পণ্য আপডেট: লেদার ব্যাগ', time: '১ ঘন্টা আগে', color: 'text-blue-500' },
+            { icon: 'fa-tag', text: 'নতুন ক্যাটাগরি: ব্যাকপ্যাক', time: '২ ঘন্টা আগে', color: 'text-purple-500' }
+        ];
+        
+        activities.innerHTML = mockActivities.map(act => `
+            <div class="flex items-center space-x-3 p-2 border-b">
+                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i class="fas ${act.icon} ${act.color}"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm">${act.text}</p>
+                    <p class="text-xs text-gray-500">${act.time}</p>
+                </div>
+            </div>
+        `).join('');
     }
 
     // Sliders
@@ -851,13 +1342,16 @@
                 }
                 
                 list.innerHTML = data.data.map(slider => `
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="bg-white rounded-lg shadow overflow-hidden transform transition hover:scale-105">
                         <img src="${slider.image}" alt="${slider.title}" class="w-full h-48 object-cover">
                         <div class="p-4">
                             <h3 class="font-bold">${slider.title}</h3>
                             <p class="text-sm text-gray-600">${slider.subtitle || ''}</p>
                             <div class="flex justify-between items-center mt-2">
-                                <span class="text-xs ${slider.active ? 'text-green-600' : 'text-red-600'}">${slider.active ? 'এক্টিভ' : 'ইনএক্টিভ'}</span>
+                                <span class="text-xs ${slider.active ? 'text-green-600' : 'text-red-600'}">
+                                    <i class="fas ${slider.active ? 'fa-check-circle' : 'fa-times-circle'} mr-1"></i>
+                                    ${slider.active ? 'এক্টিভ' : 'ইনএক্টিভ'}
+                                </span>
                                 <span class="text-xs">অর্ডার: ${slider.order || 0}</span>
                             </div>
                             <div class="flex gap-2 mt-3">
@@ -886,6 +1380,17 @@
     document.getElementById('closeSliderModal').addEventListener('click', () => {
         document.getElementById('sliderModal').classList.add('hidden');
         document.getElementById('sliderModal').classList.remove('flex');
+    });
+
+    document.getElementById('sliderImage').addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('sliderImagePreview').src = e.target.result;
+                document.getElementById('sliderImagePreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
     });
 
     document.getElementById('sliderForm').addEventListener('submit', async (e) => {
@@ -961,24 +1466,24 @@
     };
 
     window.deleteSlider = async (id) => {
-        if (!confirm('স্লাইডার ডিলিট করবেন?')) return;
-        
-        try {
-            const response = await fetch(`${API_URL}/admin/sliders/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                showToast('স্লাইডার ডিলিট হয়েছে', 'success');
-                loadSliders();
-            } else {
-                showToast(data.message, 'error');
+        showConfirm('স্লাইডার ডিলিট করবেন?', async () => {
+            try {
+                const response = await fetch(`${API_URL}/admin/sliders/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showToast('স্লাইডার ডিলিট হয়েছে', 'success');
+                    loadSliders();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('সমস্যা হয়েছে', 'error');
             }
-        } catch (error) {
-            showToast('সমস্যা হয়েছে', 'error');
-        }
+        });
     };
 
     // Categories
@@ -997,26 +1502,33 @@
                 }
                 
                 tbody.innerHTML = data.data.map((cat, index) => `
-                    <tr class="border-b">
-                        <td class="p-3">${index + 1}</td>
-                        <td class="p-3">${cat.name}</td>
-                        <td class="p-3">${cat.nameBn}</td>
-                        <td class="p-3">${cat.slug}</td>
-                        <td class="p-3">
+                    <tr class="border-b hover:bg-gray-50">
+                        <td data-label="ক্রম" class="p-3">${index + 1}</td>
+                        <td data-label="নাম (ইংরেজি)" class="p-3">${cat.name}</td>
+                        <td data-label="নাম (বাংলা)" class="p-3">${cat.nameBn}</td>
+                        <td data-label="স্লাগ" class="p-3">${cat.slug}</td>
+                        <td data-label="স্ট্যাটাস" class="p-3">
                             <span class="px-2 py-1 text-xs rounded-full ${cat.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                 ${cat.active ? 'এক্টিভ' : 'ইনএক্টিভ'}
                             </span>
                         </td>
-                        <td class="p-3">
-                            <button onclick="editCategory('${cat._id}')" class="text-primary mr-2"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteCategory('${cat._id}')" class="text-red-500"><i class="fas fa-trash"></i></button>
+                        <td data-label="অ্যাকশন" class="p-3">
+                            <button onclick="editCategory('${cat._id}')" class="text-primary mr-2 hover:text-gold transition">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteCategory('${cat._id}')" class="text-red-500 hover:text-red-600 transition">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </td>
                     </tr>
                 `).join('');
 
                 // Update category dropdown in product form
                 const select = document.getElementById('productCategory');
+                const filterSelect = document.getElementById('productCategoryFilter');
                 select.innerHTML = '<option value="">সিলেক্ট করুন</option>' + 
+                    data.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
+                filterSelect.innerHTML = '<option value="all">সব ক্যাটাগরি</option>' + 
                     data.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
             }
         } catch (error) {
@@ -1101,24 +1613,24 @@
     };
 
     window.deleteCategory = async (id) => {
-        if (!confirm('ক্যাটাগরি ডিলিট করবেন?')) return;
-        
-        try {
-            const response = await fetch(`${API_URL}/admin/categories/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                showToast('ক্যাটাগরি ডিলিট হয়েছে', 'success');
-                loadCategories();
-            } else {
-                showToast(data.message, 'error');
+        showConfirm('ক্যাটাগরি ডিলিট করবেন?', async () => {
+            try {
+                const response = await fetch(`${API_URL}/admin/categories/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showToast('ক্যাটাগরি ডিলিট হয়েছে', 'success');
+                    loadCategories();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('সমস্যা হয়েছে', 'error');
             }
-        } catch (error) {
-            showToast('সমস্যা হয়েছে', 'error');
-        }
+        });
     };
 
     // Products
@@ -1126,41 +1638,60 @@
         if (!token) return;
         
         try {
-            const response = await fetch(`${API_URL}/products`);
+            const category = document.getElementById('productCategoryFilter').value;
+            const search = document.getElementById('productSearch').value;
+            
+            let url = `${API_URL}/products`;
+            if (category !== 'all') {
+                url += `?category=${category}`;
+            }
+            
+            const response = await fetch(url);
             const data = await response.json();
             if (data.success) {
+                let products = data.data;
+                
+                // Filter by search
+                if (search) {
+                    products = products.filter(p => 
+                        p.name.toLowerCase().includes(search.toLowerCase()) ||
+                        p.description.toLowerCase().includes(search.toLowerCase())
+                    );
+                }
+                
                 const list = document.getElementById('productsList');
                 
-                if (data.data.length === 0) {
+                if (products.length === 0) {
                     list.innerHTML = '<p class="col-span-full text-center py-8">কোন পণ্য নেই</p>';
                     return;
                 }
                 
-                list.innerHTML = data.data.map(product => {
+                list.innerHTML = products.map(product => {
                     const variant = product.variants[0] || {};
                     const image = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
                     const hasStock = variant.stock > 0;
                     
                     return `
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="bg-white rounded-lg shadow overflow-hidden transform transition hover:scale-105">
                         <div class="relative">
                             <img src="${image}" alt="${product.name}" class="w-full h-48 object-cover">
                             ${!hasStock ? '<span class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded">Sold Out</span>' : ''}
+                            ${product.featured ? '<span class="absolute top-2 right-2 bg-gold text-primary px-2 py-1 text-xs rounded">ফিচার্ড</span>' : ''}
                         </div>
                         <div class="p-3">
-                            <h3 class="font-bold">${product.name}</h3>
-                            <p class="text-sm text-gray-600">${product.description.substring(0, 50)}...</p>
+                            <h3 class="font-bold text-sm">${product.name}</h3>
+                            <p class="text-xs text-gray-600">${product.description.substring(0, 50)}...</p>
                             <div class="flex justify-between items-center mt-2">
                                 <span class="text-gold font-bold">৳${product.price}</span>
-                                <span class="text-xs text-gray-500">মূল্য: ৳${product.originalPrice}</span>
+                                <span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>
                             </div>
-                            <div class="flex justify-between items-center mt-1 text-sm">
+                            <div class="flex justify-between items-center mt-1 text-xs">
                                 <span>স্টক: ${variant.stock || 0}</span>
                                 <span>বিক্রি: ${variant.sold || 0}</span>
                             </div>
                             <div class="flex gap-2 mt-3">
-                                <button onclick="editProduct('${product._id}')" class="flex-1 bg-primary text-white px-3 py-1 rounded-lg text-sm hover:bg-gold hover:text-primary transition">এডিট</button>
-                                <button onclick="deleteProduct('${product._id}')" class="flex-1 bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition">ডিলিট</button>
+                                <button onclick="editProduct('${product._id}')" class="flex-1 bg-primary text-white px-3 py-1 rounded-lg text-xs hover:bg-gold hover:text-primary transition">এডিট</button>
+                                <button onclick="deleteProduct('${product._id}')" class="flex-1 bg-red-500 text-white px-3 py-1 rounded-lg text-xs hover:bg-red-600 transition">ডিলিট</button>
                             </div>
                         </div>
                     </div>
@@ -1198,7 +1729,7 @@
             reader.onload = function(e) {
                 const img = document.createElement('img');
                 img.src = e.target.result;
-                img.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold';
+                img.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold hover:scale-110 transition';
                 previews.appendChild(img);
             };
             
@@ -1304,24 +1835,24 @@
     };
 
     window.deleteProduct = async (id) => {
-        if (!confirm('পণ্য ডিলিট করবেন?')) return;
-        
-        try {
-            const response = await fetch(`${API_URL}/admin/products/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                showToast('পণ্য ডিলিট হয়েছে', 'success');
-                loadProducts();
-            } else {
-                showToast(data.message, 'error');
+        showConfirm('পণ্য ডিলিট করবেন?', async () => {
+            try {
+                const response = await fetch(`${API_URL}/admin/products/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showToast('পণ্য ডিলিট হয়েছে', 'success');
+                    loadProducts();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('সমস্যা হয়েছে', 'error');
             }
-        } catch (error) {
-            showToast('সমস্যা হয়েছে', 'error');
-        }
+        });
     };
 
     // Orders
@@ -1332,7 +1863,7 @@
             const status = document.getElementById('orderStatusFilter').value;
             const search = document.getElementById('orderSearch').value;
             
-            let url = `${API_URL}/admin/orders?page=${page}`;
+            let url = `${API_URL}/admin/orders?page=${page}&limit=10`;
             if (status !== 'all') url += `&status=${status}`;
             
             const response = await fetch(url, {
@@ -1341,30 +1872,40 @@
             
             const data = await response.json();
             if (data.success) {
+                let orders = data.data;
+                
+                // Filter by search
+                if (search) {
+                    orders = orders.filter(o => 
+                        o.orderId.toLowerCase().includes(search.toLowerCase()) ||
+                        o.customer.phone.includes(search)
+                    );
+                }
+                
                 const list = document.getElementById('ordersList');
                 
-                if (data.data.length === 0) {
+                if (orders.length === 0) {
                     list.innerHTML = '<p class="text-center py-8">কোন অর্ডার নেই</p>';
                     return;
                 }
                 
-                list.innerHTML = data.data.map(order => `
-                    <div class="bg-white rounded-lg shadow p-4">
+                list.innerHTML = orders.map(order => `
+                    <div class="bg-white rounded-lg shadow p-4 transform transition hover:shadow-lg">
                         <div class="flex flex-col md:flex-row justify-between items-start gap-4">
                             <div class="flex-1">
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 flex-wrap">
                                     <span class="font-bold">${order.orderId}</span>
                                     <span class="px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(order.status)}">${getStatusText(order.status)}</span>
+                                    <span class="text-xs text-gray-500">${timeAgo(order.createdAt)}</span>
                                 </div>
                                 <p class="text-sm mt-2"><span class="font-medium">নাম:</span> ${order.customer.name}</p>
                                 <p class="text-sm"><span class="font-medium">ফোন:</span> ${order.customer.phone}</p>
                                 <p class="text-sm"><span class="font-medium">ঠিকানা:</span> ${order.customer.address}</p>
                                 <p class="text-sm"><span class="font-medium">পণ্য:</span> ${order.items.length}টি</p>
                                 <p class="text-sm"><span class="font-medium">মোট:</span> ৳${order.total}</p>
-                                <p class="text-xs text-gray-500 mt-2">${new Date(order.createdAt).toLocaleString('bn-BD')}</p>
                             </div>
-                            <div class="flex flex-col gap-2 min-w-[150px]">
-                                <select onchange="updateOrderStatus('${order._id}', this.value)" class="border rounded-lg p-2 text-sm">
+                            <div class="flex flex-col gap-2 w-full md:w-auto">
+                                <select onchange="updateOrderStatus('${order._id}', this.value)" class="border rounded-lg p-2 text-sm w-full md:w-48">
                                     <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>পেন্ডিং</option>
                                     <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>কনফার্মড</option>
                                     <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>প্রসেসিং</option>
@@ -1372,22 +1913,26 @@
                                     <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>ডেলিভারড</option>
                                     <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ক্যান্সেলড</option>
                                 </select>
-                                <button onclick="viewOrderDetails('${order._id}')" class="bg-primary text-white px-3 py-2 rounded-lg text-sm hover:bg-gold hover:text-primary transition">বিস্তারিত</button>
+                                <button onclick="viewOrderDetails('${order._id}')" class="bg-primary text-white px-3 py-2 rounded-lg text-sm hover:bg-gold hover:text-primary transition w-full">
+                                    <i class="fas fa-eye mr-1"></i> বিস্তারিত
+                                </button>
                             </div>
                         </div>
                     </div>
                 `).join('');
 
-                const pendingCount = data.data.filter(o => o.status === 'pending').length;
+                const pendingCount = orders.filter(o => o.status === 'pending').length;
                 document.getElementById('pendingOrdersBadge').textContent = pendingCount;
                 document.getElementById('pendingOrdersBadge').classList.toggle('hidden', pendingCount === 0);
+                document.getElementById('mobilePendingOrdersBadge').textContent = pendingCount;
+                document.getElementById('mobilePendingOrdersBadge').classList.toggle('hidden', pendingCount === 0);
 
                 // Pagination
                 const pagination = document.getElementById('ordersPagination');
                 if (data.pages > 1) {
                     let pages = '';
                     for (let i = 1; i <= data.pages; i++) {
-                        pages += `<button onclick="loadOrders(${i})" class="px-3 py-1 border rounded-lg ${i === data.page ? 'bg-primary text-white' : 'hover:bg-gray-100'}">${i}</button>`;
+                        pages += `<button onclick="loadOrders(${i})" class="px-3 py-1 border rounded-lg ${i === data.page ? 'bg-primary text-white' : 'hover:bg-gray-100'} transition">${i}</button>`;
                     }
                     pagination.innerHTML = pages;
                 } else {
@@ -1417,6 +1962,7 @@
             if (data.success) {
                 showToast('অর্ডার স্ট্যাটাস আপডেট হয়েছে', 'success');
                 loadOrders();
+                loadDashboard();
             } else {
                 showToast(data.message, 'error');
             }
@@ -1439,44 +1985,45 @@
                 const details = document.getElementById('orderDetails');
                 details.innerHTML = `
                     <div class="space-y-4">
-                        <div>
-                            <h4 class="font-bold text-primary">অর্ডার তথ্য</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">অর্ডার তথ্য</h4>
                             <p><span class="font-medium">অর্ডার আইডি:</span> ${order.orderId}</p>
                             <p><span class="font-medium">তারিখ:</span> ${new Date(order.createdAt).toLocaleString('bn-BD')}</p>
                             <p><span class="font-medium">স্ট্যাটাস:</span> <span class="px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(order.status)}">${getStatusText(order.status)}</span></p>
                         </div>
                         
-                        <div>
-                            <h4 class="font-bold text-primary">গ্রাহকের তথ্য</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">গ্রাহকের তথ্য</h4>
                             <p><span class="font-medium">নাম:</span> ${order.customer.name}</p>
                             <p><span class="font-medium">ফোন:</span> ${order.customer.phone}</p>
                             <p><span class="font-medium">ঠিকানা:</span> ${order.customer.address}</p>
                             <p><span class="font-medium">ডেলিভারি এলাকা:</span> ${order.deliveryArea}</p>
                         </div>
                         
-                        <div>
-                            <h4 class="font-bold text-primary">পণ্যের তালিকা</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">পণ্যের তালিকা</h4>
                             ${order.items.map(item => `
-                                <div class="border-t pt-2 mt-2">
-                                    <div class="flex items-center gap-2">
-                                        <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded">
+                                <div class="border-t pt-2 mt-2 first:border-t-0 first:pt-0 first:mt-0">
+                                    <div class="flex items-center gap-3">
+                                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded border-2 border-gold">
                                         <div class="flex-1">
-                                            <p class="font-medium">${item.name}</p>
+                                            <p class="font-medium text-sm">${item.name}</p>
                                             <p class="text-sm">পরিমাণ: ${item.quantity} × ৳${item.price}</p>
+                                            <p class="text-sm font-bold">মোট: ৳${item.quantity * item.price}</p>
                                         </div>
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
                         
-                        <div>
-                            <h4 class="font-bold text-primary">মূল্যের বিবরণ</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">মূল্যের বিবরণ</h4>
                             <p><span class="font-medium">সাবটোটাল:</span> ৳${order.subtotal}</p>
                             <p><span class="font-medium">ডেলিভারি চার্জ:</span> ৳${order.deliveryCharge}</p>
                             <p class="text-lg font-bold text-gold">সর্বমোট: ৳${order.total}</p>
                         </div>
                         
-                        ${order.notes ? `<div><h4 class="font-bold text-primary">নোট</h4><p>${order.notes}</p></div>` : ''}
+                        ${order.notes ? `<div class="bg-gray-50 p-3 rounded-lg"><h4 class="font-bold text-primary mb-2">নোট</h4><p>${order.notes}</p></div>` : ''}
                     </div>
                 `;
                 
@@ -1518,24 +2065,35 @@
                 }
                 
                 list.innerHTML = data.data.map(review => `
-                    <div class="bg-white rounded-lg shadow p-4">
+                    <div class="bg-white rounded-lg shadow p-4 transform transition hover:shadow-lg">
                         <div class="flex flex-col md:flex-row justify-between items-start gap-4">
                             <div class="flex-1">
                                 <p class="font-bold">${review.customerName}</p>
                                 <p class="text-sm text-gray-600">${review.customerAddress}</p>
-                                <div class="text-yellow-500">${getStars(review.rating)}</div>
-                                <p class="mt-2">${review.review}</p>
+                                <div class="text-yellow-500 text-lg">${getStars(review.rating)}</div>
+                                <p class="mt-2 text-sm">${review.review}</p>
                                 <p class="text-xs text-gray-500 mt-2">${new Date(review.createdAt).toLocaleString('bn-BD')}</p>
                             </div>
                             <div class="flex gap-2">
                                 ${review.status === 'pending' ? `
-                                    <button onclick="approveReview('${review._id}')" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-600">অ্যাপ্রুভ</button>
-                                    <button onclick="rejectReview('${review._id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600">রিজেক্ট</button>
+                                    <button onclick="approveReview('${review._id}')" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-600 transition">
+                                        <i class="fas fa-check mr-1"></i> অ্যাপ্রুভ
+                                    </button>
+                                    <button onclick="rejectReview('${review._id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition">
+                                        <i class="fas fa-times mr-1"></i> রিজেক্ট
+                                    </button>
                                 ` : ''}
-                                <button onclick="viewReview('${review._id}')" class="bg-primary text-white px-3 py-1 rounded-lg text-sm hover:bg-gold hover:text-primary">বিস্তারিত</button>
+                                <button onclick="viewReview('${review._id}')" class="bg-primary text-white px-3 py-1 rounded-lg text-sm hover:bg-gold hover:text-primary transition">
+                                    <i class="fas fa-eye mr-1"></i> বিস্তারিত
+                                </button>
                             </div>
                         </div>
-                        ${review.status !== 'pending' ? `<p class="text-xs mt-2 text-${review.status === 'approved' ? 'green' : 'red'}-600">${review.status === 'approved' ? 'অ্যাপ্রুভড' : 'রিজেক্টেড'}</p>` : ''}
+                        ${review.status !== 'pending' ? `
+                            <p class="text-xs mt-2 text-${review.status === 'approved' ? 'green' : 'red'}-600">
+                                <i class="fas ${review.status === 'approved' ? 'fa-check-circle' : 'fa-times-circle'} mr-1"></i>
+                                ${review.status === 'approved' ? 'অ্যাপ্রুভড' : 'রিজেক্টেড'}
+                            </p>
+                        ` : ''}
                     </div>
                 `).join('');
             }
@@ -1613,10 +2171,14 @@
                     <div class="space-y-4">
                         <p><span class="font-medium">নাম:</span> ${review.customerName}</p>
                         <p><span class="font-medium">ঠিকানা:</span> ${review.customerAddress}</p>
-                        <p><span class="font-medium">রেটিং:</span> <span class="text-yellow-500">${getStars(review.rating)}</span></p>
+                        <p><span class="font-medium">রেটিং:</span> <span class="text-yellow-500 text-lg">${getStars(review.rating)}</span></p>
                         <p><span class="font-medium">রিভিউ:</span> ${review.review}</p>
                         <p><span class="font-medium">তারিখ:</span> ${new Date(review.createdAt).toLocaleString('bn-BD')}</p>
-                        <p><span class="font-medium">স্ট্যাটাস:</span> <span class="px-2 py-1 text-xs rounded-full ${review.status === 'approved' ? 'bg-green-100 text-green-800' : review.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">${review.status}</span></p>
+                        <p><span class="font-medium">স্ট্যাটাস:</span> 
+                            <span class="px-2 py-1 text-xs rounded-full ${review.status === 'approved' ? 'bg-green-100 text-green-800' : review.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">
+                                ${review.status}
+                            </span>
+                        </p>
                     </div>
                 `;
                 
@@ -1747,11 +2309,16 @@
     function updateNotificationBadge() {
         const unread = notifications.filter(n => !n.read).length;
         const badge = document.getElementById('notificationCount');
+        const mobileBadge = document.getElementById('mobileNotificationCount');
+        
         if (unread > 0) {
             badge.textContent = unread;
             badge.classList.remove('hidden');
+            mobileBadge.textContent = unread;
+            mobileBadge.classList.remove('hidden');
         } else {
             badge.classList.add('hidden');
+            mobileBadge.classList.add('hidden');
         }
     }
 
@@ -1790,10 +2357,27 @@
         document.getElementById('notificationDropdown').classList.toggle('hidden');
     });
 
+    document.getElementById('mobileNotificationBtn').addEventListener('click', () => {
+        document.getElementById('notificationDropdown').classList.toggle('hidden');
+    });
+
+    // Click outside to close notification dropdown
+    document.addEventListener('click', (event) => {
+        const dropdown = document.getElementById('notificationDropdown');
+        const btn = document.getElementById('notificationBtn');
+        const mobileBtn = document.getElementById('mobileNotificationBtn');
+        
+        if (!dropdown.contains(event.target) && !btn.contains(event.target) && !mobileBtn.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
     // Filter change events
     document.getElementById('orderStatusFilter').addEventListener('change', () => loadOrders());
     document.getElementById('orderSearch').addEventListener('input', debounce(() => loadOrders(), 500));
     document.getElementById('reviewStatusFilter').addEventListener('change', loadReviews);
+    document.getElementById('productCategoryFilter').addEventListener('change', loadProducts);
+    document.getElementById('productSearch').addEventListener('input', debounce(loadProducts, 500));
 
     // Helper Functions
     function getStatusBadgeClass(status) {
@@ -1864,7 +2448,7 @@
     function showToast(message, type = 'info') {
         const toast = document.getElementById('toast');
         toast.textContent = message;
-        toast.className = `toast fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white ${
+        toast.className = `toast fixed bottom-20 md:bottom-4 right-4 p-4 rounded-lg shadow-lg text-white ${
             type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'
         }`;
         toast.classList.remove('hidden');
@@ -1876,7 +2460,7 @@
 
     // Close modals when clicking outside
     window.onclick = function(event) {
-        const modals = ['sliderModal', 'categoryModal', 'productModal', 'orderModal', 'reviewModal'];
+        const modals = ['sliderModal', 'categoryModal', 'productModal', 'orderModal', 'reviewModal', 'confirmModal'];
         modals.forEach(modalId => {
             const modal = document.getElementById(modalId);
             if (event.target === modal) {
