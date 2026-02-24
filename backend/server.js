@@ -11,6 +11,8 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const os = require('os');
+const cluster = require('cluster');
 
 dotenv.config();
 
@@ -19,11 +21,226 @@ const app = express();
 // Constants
 const JWT_SECRET = process.env.JWT_SECRET || 'MySuperSecretKey123!@#$%^&*';
 const PORT = process.env.PORT || 5000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// Middleware
+// ============= DATABASE CONNECTION WITH AUTO-RECONNECT =============
+
+// MongoDB Connection Options
+const mongooseOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 30000, // 30 seconds
+  socketTimeoutMS: 45000, // 45 seconds
+  family: 4, // Force IPv4
+  keepAlive: true,
+  keepAliveInitialDelay: 300000,
+  maxPoolSize: 50,
+  minPoolSize: 10,
+  maxIdleTimeMS: 30000,
+  connectTimeoutMS: 30000,
+  heartbeatFrequencyMS: 10000,
+  retryWrites: true,
+  retryReads: true,
+  autoIndex: NODE_ENV === 'development',
+  autoCreate: true
+};
+
+// Connection states
+const CONNECTION_STATES = {
+  0: 'disconnected',
+  1: 'connected',
+  2: 'connecting',
+  3: 'disconnecting'
+};
+
+let isConnected = false;
+let connectionAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 50;
+const RECONNECT_INTERVAL = 5000; // 5 seconds
+
+// MongoDB Connection with retry logic
+const connectDB = async () => {
+  try {
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
+    }
+
+    console.log('🔄 Connecting to MongoDB...');
+    console.log('📍 URI:', process.env.MONGODB_URI.replace(/:([^@]{4})[^@]*@/, ':****@')); // Hide password
+
+    await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
+    
+    isConnected = true;
+    connectionAttempts = 0;
+    console.log('✅ MongoDB Connected Successfully');
+    console.log('📊 Database:', mongoose.connection.name);
+    console.log('📡 Host:', mongoose.connection.host);
+    console.log('🔌 Connection State:', CONNECTION_STATES[mongoose.connection.readyState]);
+    
+    // Initialize data after successful connection
+    await initializeData();
+    
+  } catch (err) {
+    isConnected = false;
+    connectionAttempts++;
+    
+    console.error('❌ MongoDB Connection Error:', err.message);
+    console.log(`🔄 Retry attempt ${connectionAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${RECONNECT_INTERVAL/1000} seconds...`);
+    
+    if (connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
+      setTimeout(connectDB, RECONNECT_INTERVAL);
+    } else {
+      console.error('❌ Max reconnection attempts reached. Please check your MongoDB configuration.');
+    }
+  }
+};
+
+// Handle MongoDB connection events
+mongoose.connection.on('connected', () => {
+  console.log('🟢 MongoDB event: connected');
+  isConnected = true;
+});
+
+mongoose.connection.on('connecting', () => {
+  console.log('🟡 MongoDB event: connecting');
+});
+
+mongoose.connection.on('disconnecting', () => {
+  console.log('🟠 MongoDB event: disconnecting');
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('🔴 MongoDB event: disconnected');
+  isConnected = false;
+  
+  // Attempt to reconnect
+  if (connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
+    console.log('🔄 Attempting to reconnect...');
+    setTimeout(connectDB, RECONNECT_INTERVAL);
+  }
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('🟢 MongoDB event: reconnected');
+  isConnected = true;
+  connectionAttempts = 0;
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('🔴 MongoDB event error:', err);
+  isConnected = false;
+});
+
+mongoose.connection.on('fullsetup', () => {
+  console.log('🟢 MongoDB event: fullsetup (replica set)');
+});
+
+mongoose.connection.on('all', () => {
+  console.log('🟢 MongoDB event: all (replica set)');
+});
+
+// Graceful shutdown
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
+process.on('uncaughtException', handleUncaughtException);
+process.on('unhandledRejection', handleUnhandledRejection);
+
+async function gracefulShutdown(signal) {
+  console.log(`\n📢 Received ${signal}. Starting graceful shutdown...`);
+  
+  // Stop accepting new requests
+  server.close(async () => {
+    console.log('👋 HTTP server closed');
+    
+    try {
+      // Close MongoDB connection
+      await mongoose.connection.close();
+      console.log('✅ MongoDB connection closed');
+      
+      process.exit(0);
+    } catch (err) {
+      console.error('❌ Error during shutdown:', err);
+      process.exit(1);
+    }
+  });
+  
+  // Force shutdown after timeout
+  setTimeout(() => {
+    console.error('⚠️ Forced shutdown due to timeout');
+    process.exit(1);
+  }, 10000);
+}
+
+function handleUncaughtException(err) {
+  console.error('❌ Uncaught Exception:', err);
+  gracefulShutdown('uncaughtException');
+}
+
+function handleUnhandledRejection(reason, promise) {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  gracefulShutdown('unhandledRejection');
+}
+
+// Keep-alive mechanism
+setInterval(async () => {
+  if (mongoose.connection.readyState === 1) {
+    try {
+      await mongoose.connection.db.admin().ping();
+      console.log('📡 MongoDB ping successful', new Date().toISOString());
+    } catch (err) {
+      console.error('📡 MongoDB ping failed:', err.message);
+      // Force reconnect if ping fails
+      if (mongoose.connection.readyState !== 1) {
+        connectDB();
+      }
+    }
+  } else {
+    console.log(`📡 MongoDB state: ${CONNECTION_STATES[mongoose.connection.readyState]}`);
+    // Attempt to reconnect if not connected
+    if (!isConnected && connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
+      connectDB();
+    }
+  }
+}, 300000); // Every 5 minutes
+
+// Middleware to check database connection
+app.use(async (req, res, next) => {
+  // Skip for health check and test routes
+  if (req.path === '/health' || req.path === '/api/health' || req.path === '/api/test') {
+    return next();
+  }
+  
+  // Check database connection
+  if (mongoose.connection.readyState !== 1) {
+    console.warn(`⚠️ Database not connected for request: ${req.method} ${req.path}`);
+    
+    // Try to reconnect if not connected
+    if (!isConnected) {
+      await connectDB();
+    }
+    
+    // If still not connected, return error
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable. Please try again.',
+        error: 'Service temporarily unavailable'
+      });
+    }
+  }
+  
+  next();
+});
+
+// ============= MIDDLEWARE =============
+
+// Security middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false
 }));
+
+// Compression
 app.use(compression());
 
 // CORS configuration
@@ -39,15 +256,15 @@ const allowedOrigins = [
 app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, etc)
-    if (!origin || process.env.NODE_ENV === 'development') {
+    if (!origin || NODE_ENV === 'development') {
       return callback(null, true);
     }
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
       callback(null, true);
     } else {
-      console.log('Blocked origin:', origin);
-      callback(null, true); // Temporarily allow all for debugging
+      console.log('⚠️ Blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
@@ -58,22 +275,39 @@ app.use(cors({
 // Handle preflight requests
 app.options('*', cors());
 
+// Body parser with size limits
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.'
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Limit each IP to 1000 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.path === '/health' || req.path === '/api/health' // Skip rate limit for health checks
 });
 app.use('/api/', limiter);
 
-// Cloudinary Configuration
+// Request logging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - IP: ${req.ip}`);
+  next();
+});
+
+// ============= CLOUDINARY CONFIGURATION =============
+
+// Verify Cloudinary configuration
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.warn('⚠️ Cloudinary configuration missing! File uploads will fail.');
+}
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  timeout: 60000 // 60 seconds timeout
 });
 
 // ============= SCHEMAS =============
@@ -89,7 +323,8 @@ const adminSchema = new mongoose.Schema({
     device: String,
     lastActive: { type: Date, default: Date.now }
   }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 // Slider Schema
@@ -110,7 +345,8 @@ const sliderSchema = new mongoose.Schema({
   },
   order: { type: Number, default: 0 },
   active: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 // Category Schema
@@ -120,7 +356,8 @@ const categorySchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true },
   order: { type: Number, default: 0 },
   active: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 // Product Schema
@@ -139,10 +376,10 @@ const productSchema = new mongoose.Schema({
     }],
     color: String,
     size: String,
-    stock: { type: Number, default: 0 },
+    stock: { type: Number, default: 0, min: 0 },
     sold: { type: Number, default: 0 },
     discount: String,
-    rating: { type: Number, default: 4.5 }
+    rating: { type: Number, default: 4.5, min: 0, max: 5 }
   }],
   featured: { type: Boolean, default: false },
   trending: { type: Boolean, default: false },
@@ -165,15 +402,15 @@ const orderSchema = new mongoose.Schema({
     image: String,
     price: Number,
     originalPrice: Number,
-    quantity: Number,
+    quantity: { type: Number, min: 1 },
     variant: {
       color: String,
       size: String
     }
   }],
-  subtotal: { type: Number, required: true },
-  deliveryCharge: { type: Number, required: true },
-  total: { type: Number, required: true },
+  subtotal: { type: Number, required: true, min: 0 },
+  deliveryCharge: { type: Number, required: true, min: 0 },
+  total: { type: Number, required: true, min: 0 },
   deliveryArea: { type: String, required: true },
   status: { 
     type: String, 
@@ -206,7 +443,8 @@ const reviewSchema = new mongoose.Schema({
   },
   notified: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
-  approvedAt: Date
+  approvedAt: Date,
+  updatedAt: { type: Date, default: Date.now }
 });
 
 // Site Content Schema
@@ -225,6 +463,14 @@ const notificationSchema = new mongoose.Schema({
   data: mongoose.Schema.Types.Mixed,
   read: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
+});
+
+// Add timestamps to all schemas
+[adminSchema, sliderSchema, categorySchema, productSchema, orderSchema, reviewSchema, contentSchema, notificationSchema].forEach(schema => {
+  schema.pre('save', function(next) {
+    this.updatedAt = new Date();
+    next();
+  });
 });
 
 const Admin = mongoose.model('Admin', adminSchema);
@@ -264,6 +510,9 @@ const authenticateToken = async (req, res, next) => {
     req.token = token;
     next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(403).json({ success: false, message: 'Token expired' });
+    }
     return res.status(403).json({ success: false, message: 'Invalid token' });
   }
 };
@@ -274,45 +523,21 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'swiftbags',
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-    transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }],
+    timeout: 60000
   }
 });
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
-});
-
-// ============= DATABASE CONNECTION =============
-
-// MongoDB Connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('✅ MongoDB Connected Successfully');
-    console.log('📊 Database:', mongoose.connection.name);
-    
-    // Initialize data after successful connection
-    await initializeData();
-    
-  } catch (err) {
-    console.error('❌ MongoDB Connection Error:', err.message);
-    // Don't exit, just retry
-    setTimeout(connectDB, 5000);
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
   }
-};
-
-// Handle MongoDB connection events
-mongoose.connection.on('error', err => {
-  console.error('MongoDB connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected. Reconnecting...');
-  setTimeout(connectDB, 5000);
 });
 
 // ============= INITIAL SETUP =============
@@ -348,7 +573,6 @@ async function createInitialAdmin() {
       
       console.log('✅ Initial admin created successfully');
       console.log(`   Username: ${adminUsername}`);
-      console.log(`   Password: ${adminPassword}`);
       console.log(`   Admin ID: ${newAdmin._id}`);
     } else {
       console.log('✅ Admin already exists with username:', adminExists.username);
@@ -414,25 +638,65 @@ async function createInitialContent() {
 
 // ============= API ROUTES =============
 
-// Test Routes
-app.get('/api/test', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'API is working',
+// Health Check Routes
+app.get('/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({
+    success: true,
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV
+    uptime: process.uptime(),
+    environment: NODE_ENV,
+    database: {
+      status: dbStatus,
+      state: CONNECTION_STATES[mongoose.connection.readyState],
+      host: mongoose.connection.host,
+      name: mongoose.connection.name
+    },
+    memory: process.memoryUsage(),
+    cpu: os.loadavg()
   });
 });
 
-// Health check route
 app.get('/api/health', (req, res) => {
   res.json({ 
     success: true, 
     message: 'Swift Bags API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
+    environment: NODE_ENV,
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     database: mongoose.connection.name || 'unknown'
+  });
+});
+
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'API is working',
+    timestamp: new Date().toISOString(),
+    env: NODE_ENV
+  });
+});
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Swift Bags API', 
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    status: 'operational',
+    endpoints: {
+      health: '/health',
+      apiHealth: '/api/health',
+      test: '/api/test',
+      admin: '/api/admin/check',
+      products: '/api/products',
+      categories: '/api/categories',
+      sliders: '/api/sliders',
+      reviews: '/api/reviews/approved',
+      contents: '/api/contents'
+    }
   });
 });
 
@@ -442,8 +706,6 @@ app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
     
     console.log('🔐 Login attempt:', { username, password: '***' });
-    console.log('Request body:', req.body);
-    console.log('Headers:', req.headers);
     
     if (!username || !password) {
       return res.status(400).json({ 
@@ -461,11 +723,7 @@ app.post('/api/admin/login', async (req, res) => {
       });
     }
 
-    console.log('Admin found:', admin.username);
-    console.log('Stored password hash:', admin.password.substring(0, 20) + '...');
-
     const isValid = await bcrypt.compare(password, admin.password);
-    console.log('Password valid:', isValid);
     
     if (!isValid) {
       return res.status(401).json({ 
@@ -500,71 +758,8 @@ app.post('/api/admin/login', async (req, res) => {
     console.error('❌ Login error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Server error: ' + error.message 
+      message: 'Server error occurred' 
     });
-  }
-});
-
-// Test login route (for debugging)
-app.post('/api/admin/test-login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    
-    console.log('Test login attempt:', username);
-    
-    const admin = await Admin.findOne({ username });
-    if (!admin) {
-      return res.json({ 
-        success: false, 
-        message: 'Admin not found',
-        exists: false 
-      });
-    }
-
-    const isValid = await bcrypt.compare(password, admin.password);
-    
-    res.json({ 
-      success: isValid,
-      message: isValid ? 'Password correct' : 'Password incorrect',
-      adminExists: true,
-      passwordValid: isValid,
-      adminId: admin._id,
-      storedHash: admin.password.substring(0, 20) + '...'
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Reset admin (temporary for debugging)
-app.get('/api/admin/reset', async (req, res) => {
-  try {
-    // Delete existing admin
-    await Admin.deleteMany({});
-    
-    // Create new admin
-    const hashedPassword = await bcrypt.hash('Admin@123', 10);
-    const newAdmin = await Admin.create({
-      username: 'admin',
-      password: hashedPassword,
-      sessions: [],
-      lastLogin: null,
-      lastPasswordChange: new Date()
-    });
-    
-    console.log('✅ Admin reset successful');
-    
-    res.json({ 
-      success: true, 
-      message: 'Admin reset successful',
-      admin: {
-        username: newAdmin.username,
-        id: newAdmin._id,
-        password: 'Admin@123'
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
   }
 });
 
@@ -599,7 +794,6 @@ app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
   }
 });
 
-// Check admin route
 app.get('/api/admin/check', async (req, res) => {
   try {
     const admins = await Admin.find({}).select('-password');
@@ -636,8 +830,8 @@ app.post('/api/admin/sliders', authenticateToken, upload.single('image'), async 
     const sliderData = JSON.parse(req.body.data);
     const slider = new Slider({
       ...sliderData,
-      image: req.file.path,
-      cloudinaryId: req.file.filename
+      image: req.file ? req.file.path : '',
+      cloudinaryId: req.file ? req.file.filename : ''
     });
     await slider.save();
     res.json({ success: true, data: slider });
@@ -657,7 +851,11 @@ app.put('/api/admin/sliders/:id', authenticateToken, upload.single('image'), asy
     
     if (req.file) {
       if (slider.cloudinaryId) {
-        await cloudinary.uploader.destroy(slider.cloudinaryId);
+        try {
+          await cloudinary.uploader.destroy(slider.cloudinaryId);
+        } catch (cloudErr) {
+          console.error('Error deleting old image:', cloudErr);
+        }
       }
       slider.image = req.file.path;
       slider.cloudinaryId = req.file.filename;
@@ -680,7 +878,11 @@ app.delete('/api/admin/sliders/:id', authenticateToken, async (req, res) => {
     }
 
     if (slider.cloudinaryId) {
-      await cloudinary.uploader.destroy(slider.cloudinaryId);
+      try {
+        await cloudinary.uploader.destroy(slider.cloudinaryId);
+      } catch (cloudErr) {
+        console.error('Error deleting image from Cloudinary:', cloudErr);
+      }
     }
 
     await slider.deleteOne();
@@ -715,7 +917,7 @@ app.put('/api/admin/categories/:id', authenticateToken, async (req, res) => {
     const category = await Category.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
     res.json({ success: true, data: category });
   } catch (error) {
@@ -745,7 +947,10 @@ app.get('/api/products', async (req, res) => {
       }
     }
     
-    const products = await Product.find(query).populate('category').sort({ createdAt: -1 });
+    const products = await Product.find(query)
+      .populate('category')
+      .sort({ createdAt: -1 });
+      
     res.json({ success: true, data: products });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -804,7 +1009,11 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
       for (const variant of product.variants) {
         for (const image of variant.images) {
           if (image.cloudinaryId) {
-            await cloudinary.uploader.destroy(image.cloudinaryId);
+            try {
+              await cloudinary.uploader.destroy(image.cloudinaryId);
+            } catch (cloudErr) {
+              console.error('Error deleting old image:', cloudErr);
+            }
           }
         }
       }
@@ -851,7 +1060,11 @@ app.delete('/api/admin/products/:id', authenticateToken, async (req, res) => {
     for (const variant of product.variants) {
       for (const image of variant.images) {
         if (image.cloudinaryId) {
-          await cloudinary.uploader.destroy(image.cloudinaryId);
+          try {
+            await cloudinary.uploader.destroy(image.cloudinaryId);
+          } catch (cloudErr) {
+            console.error('Error deleting image from Cloudinary:', cloudErr);
+          }
         }
       }
     }
@@ -876,12 +1089,17 @@ app.post('/api/orders', async (req, res) => {
     
     await order.save();
 
-    await Notification.create({
-      type: 'order',
-      title: 'নতুন অর্ডার',
-      message: `${order.customer.name} একটি নতুন অর্ডার দিয়েছেন`,
-      data: { orderId: order._id }
-    });
+    // Create notification
+    try {
+      await Notification.create({
+        type: 'order',
+        title: 'নতুন অর্ডার',
+        message: `${order.customer.name} একটি নতুন অর্ডার দিয়েছেন`,
+        data: { orderId: order._id }
+      });
+    } catch (notifErr) {
+      console.error('Error creating notification:', notifErr);
+    }
 
     res.json({ success: true, data: order });
   } catch (error) {
@@ -898,10 +1116,12 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
       query.status = status;
     }
     
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
     const orders = await Order.find(query)
       .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .limit(parseInt(limit))
+      .skip(skip);
     
     const total = await Order.countDocuments(query);
     
@@ -910,7 +1130,7 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
       data: orders,
       total,
       page: parseInt(page),
-      pages: Math.ceil(total / limit)
+      pages: Math.ceil(total / parseInt(limit))
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -922,7 +1142,7 @@ app.put('/api/admin/orders/:id', authenticateToken, async (req, res) => {
     const order = await Order.findByIdAndUpdate(
       req.params.id,
       { ...req.body, updatedAt: new Date() },
-      { new: true }
+      { new: true, runValidators: true }
     );
     res.json({ success: true, data: order });
   } catch (error) {
@@ -940,12 +1160,17 @@ app.post('/api/reviews', async (req, res) => {
     
     await review.save();
 
-    await Notification.create({
-      type: 'review',
-      title: 'নতুন রিভিউ',
-      message: `${review.customerName} একটি রিভিউ দিয়েছেন`,
-      data: { reviewId: review._id }
-    });
+    // Create notification
+    try {
+      await Notification.create({
+        type: 'review',
+        title: 'নতুন রিভিউ',
+        message: `${review.customerName} একটি রিভিউ দিয়েছেন`,
+        data: { reviewId: review._id }
+      });
+    } catch (notifErr) {
+      console.error('Error creating notification:', notifErr);
+    }
 
     res.json({ success: true, data: review });
   } catch (error) {
@@ -981,6 +1206,9 @@ app.get('/api/admin/reviews', authenticateToken, async (req, res) => {
 app.put('/api/admin/reviews/:id', authenticateToken, async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
+    if (!review) {
+      return res.status(404).json({ success: false, message: 'Review not found' });
+    }
     
     if (req.body.status === 'approved' && review.status !== 'approved') {
       review.approvedAt = new Date();
@@ -1035,7 +1263,9 @@ app.post('/api/admin/contents', authenticateToken, async (req, res) => {
 // Notifications Routes
 app.get('/api/admin/notifications', authenticateToken, async (req, res) => {
   try {
-    const notifications = await Notification.find().sort({ createdAt: -1 }).limit(50);
+    const notifications = await Notification.find()
+      .sort({ createdAt: -1 })
+      .limit(50);
     res.json({ success: true, data: notifications });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -1076,26 +1306,6 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
   }
 });
 
-// Root route
-app.get('/', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Swift Bags API', 
-    version: '1.0.0',
-    endpoints: {
-      health: '/api/health',
-      test: '/api/test',
-      admin: '/api/admin/check',
-      reset: '/api/admin/reset',
-      products: '/api/products',
-      categories: '/api/categories',
-      sliders: '/api/sliders',
-      reviews: '/api/reviews/approved',
-      contents: '/api/contents'
-    }
-  });
-});
-
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ 
@@ -1107,11 +1317,19 @@ app.use('*', (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('Server error:', err.stack);
+  console.error('❌ Server error:', err.stack);
+  
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
+      message: 'File upload error: ' + err.message
+    });
+  }
+  
   res.status(500).json({ 
     success: false, 
     message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
@@ -1120,16 +1338,21 @@ app.use((err, req, res, next) => {
 // Connect to database
 connectDB();
 
-// Vercel export
-module.exports = app;
+const server = app.listen(PORT, () => {
+  console.log('\n🚀 ==================================');
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Environment: ${NODE_ENV}`);
+  console.log(`📍 Health: http://localhost:${PORT}/health`);
+  console.log(`📍 API Health: http://localhost:${PORT}/api/health`);
+  console.log(`📍 Test: http://localhost:${PORT}/api/test`);
+  console.log(`📍 Admin check: http://localhost:${PORT}/api/admin/check`);
+  console.log('=====================================\n');
+});
 
-// For local development
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📍 Test: http://localhost:${PORT}/api/test`);
-    console.log(`📍 Health: http://localhost:${PORT}/api/health`);
-    console.log(`📍 Admin check: http://localhost:${PORT}/api/admin/check`);
-    console.log(`📍 Reset admin: http://localhost:${PORT}/api/admin/reset`);
-  });
-}
+// Increase server timeout
+server.timeout = 120000; // 2 minutes
+server.keepAliveTimeout = 65000; // 65 seconds
+server.headersTimeout = 66000; // 66 seconds
+
+// For Vercel export
+module.exports = app;
