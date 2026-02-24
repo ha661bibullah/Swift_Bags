@@ -16,37 +16,41 @@ dotenv.config();
 
 const app = express();
 
-// Vercel এর জন্য পোর্ট কনফিগারেশন
-const PORT = process.env.PORT || 5000;
-
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 app.use(compression());
+
+// CORS configuration for production
+const allowedOrigins = [
+  'https://swift-bags.vercel.app',
+  'https://swift-bags-admin.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5000'
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:5000', 
-    'http://localhost:3000', 
-    'http://127.0.0.1:5500',
-    'https://swift-bags-t1u3.vercel.app', 
-    'https://swift-bags-gad3.vercel.app',
-    'https://swift-bags-dakt7pscx-arif-billah.vercel.app'
-  ],
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Vercel এর জন্য স্ট্যাটিক ফাইল সার্ভ করা
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
 
@@ -57,13 +61,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// MongoDB Connection
+// MongoDB Connection with better error handling
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
 })
-.then(() => console.log('MongoDB Connected'))
-.catch(err => console.log('MongoDB Connection Error:', err));
+.then(() => console.log('MongoDB Connected Successfully'))
+.catch(err => {
+  console.error('MongoDB Connection Error:', err);
+  process.exit(1);
+});
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', err => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected');
+});
 
 // ============= SCHEMAS =============
 
@@ -84,12 +102,13 @@ const sliderSchema = new mongoose.Schema({
   cloudinaryId: { type: String },
   buttonText: { type: String, default: 'এখনই কিনুন' },
   productData: {
-    id: Number,
+    id: String,
     name: String,
     price: Number,
     originalPrice: Number,
     discount: String,
-    variantStock: Number
+    variantStock: Number,
+    img: String
   },
   order: { type: Number, default: 0 },
   active: { type: Boolean, default: true },
@@ -144,7 +163,7 @@ const orderSchema = new mongoose.Schema({
     address: { type: String, required: true }
   },
   items: [{
-    productId: mongoose.Schema.Types.ObjectId,
+    productId: String,
     name: String,
     image: String,
     price: Number,
@@ -239,7 +258,6 @@ const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid token' });
     }
 
-    // Check if session exists
     const sessionExists = admin.sessions.some(s => s.token === token);
     if (!sessionExists) {
       return res.status(401).json({ success: false, message: 'Session expired' });
@@ -305,6 +323,7 @@ async function createInitialCategories() {
   }
 }
 
+// Run initial setup
 createInitialAdmin();
 createInitialCategories();
 
@@ -368,7 +387,7 @@ app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     req.user.password = hashedPassword;
     req.user.lastPasswordChange = new Date();
-    req.user.sessions = []; // Clear all sessions
+    req.user.sessions = [];
     await req.user.save();
 
     res.json({ success: true, message: 'Password changed successfully' });
@@ -412,7 +431,6 @@ app.put('/api/admin/sliders/:id', authenticateToken, upload.single('image'), asy
     const sliderData = JSON.parse(req.body.data);
     
     if (req.file) {
-      // Delete old image from cloudinary
       if (slider.cloudinaryId) {
         await cloudinary.uploader.destroy(slider.cloudinaryId);
       }
@@ -436,7 +454,6 @@ app.delete('/api/admin/sliders/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Slider not found' });
     }
 
-    // Delete image from cloudinary
     if (slider.cloudinaryId) {
       await cloudinary.uploader.destroy(slider.cloudinaryId);
     }
@@ -514,7 +531,6 @@ app.post('/api/admin/products', authenticateToken, upload.array('images', 10), a
   try {
     const productData = JSON.parse(req.body.data);
     
-    // Process images
     const variants = productData.variants || [];
     if (req.files && req.files.length > 0) {
       const images = req.files.map((file, index) => ({
@@ -531,6 +547,10 @@ app.post('/api/admin/products', authenticateToken, upload.array('images', 10), a
     }
 
     const category = await Category.findOne({ slug: productData.category });
+    if (!category) {
+      return res.status(400).json({ success: false, message: 'Category not found' });
+    }
+
     const product = new Product({
       ...productData,
       category: category._id,
@@ -555,7 +575,6 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
     const productData = JSON.parse(req.body.data);
     
     if (req.files && req.files.length > 0) {
-      // Delete old images
       for (const variant of product.variants) {
         for (const image of variant.images) {
           if (image.cloudinaryId) {
@@ -579,6 +598,10 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
     }
 
     const category = await Category.findOne({ slug: productData.category });
+    if (!category) {
+      return res.status(400).json({ success: false, message: 'Category not found' });
+    }
+
     productData.category = category._id;
     productData.categorySlug = productData.category;
 
@@ -599,7 +622,6 @@ app.delete('/api/admin/products/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    // Delete images from cloudinary
     for (const variant of product.variants) {
       for (const image of variant.images) {
         if (image.cloudinaryId) {
@@ -628,7 +650,6 @@ app.post('/api/orders', async (req, res) => {
     
     await order.save();
 
-    // Create notification
     await Notification.create({
       type: 'order',
       title: 'নতুন অর্ডার',
@@ -647,7 +668,7 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
     const { status, page = 1, limit = 20 } = req.query;
     let query = {};
     
-    if (status) {
+    if (status && status !== 'all') {
       query.status = status;
     }
     
@@ -662,7 +683,7 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
       success: true,
       data: orders,
       total,
-      page,
+      page: parseInt(page),
       pages: Math.ceil(total / limit)
     });
   } catch (error) {
@@ -693,7 +714,6 @@ app.post('/api/reviews', async (req, res) => {
     
     await review.save();
 
-    // Create notification
     await Notification.create({
       type: 'review',
       title: 'নতুন রিভিউ',
@@ -721,7 +741,7 @@ app.get('/api/admin/reviews', authenticateToken, async (req, res) => {
     const { status } = req.query;
     let query = {};
     
-    if (status) {
+    if (status && status !== 'all') {
       query.status = status;
     }
     
@@ -832,19 +852,56 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'Swift Bags API is running' });
+  res.json({ 
+    success: true, 
+    message: 'Swift Bags API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Root route
 app.get('/', (req, res) => {
-  res.json({ success: true, message: 'Swift Bags API', version: '1.0.0' });
+  res.json({ 
+    success: true, 
+    message: 'Swift Bags API', 
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      products: '/api/products',
+      categories: '/api/categories',
+      sliders: '/api/sliders',
+      reviews: '/api/reviews/approved',
+      contents: '/api/contents'
+    }
+  });
 });
 
-// Vercel এর জন্য এক্সপোর্ট
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    success: false, 
+    message: 'Route not found',
+    path: req.originalUrl
+  });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    success: false, 
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// Vercel export
 module.exports = app;
 
-// লোকাল ডেভেলপমেন্টের জন্য
+// For local development
 if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

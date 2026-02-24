@@ -563,7 +563,8 @@
 <div id="toast" class="toast hidden bg-white border-l-4 border-green-500 shadow-lg rounded-lg p-4 min-w-[300px]"></div>
 
 <script>
-    const API_URL = 'https://swift-bags-dakt7pscx-arif-billah.vercel.app/api';
+    // API Configuration - Update with your actual backend URL
+    const API_URL = 'https://your-backend.vercel.app/api'; // CHANGE THIS TO YOUR ACTUAL BACKEND URL
     let token = localStorage.getItem('adminToken');
     let currentSection = 'dashboard';
     let notifications = [];
@@ -663,7 +664,9 @@
                 document.getElementById('totalProducts').textContent = data.data.totalProducts;
                 document.getElementById('todayOrders').textContent = data.data.todayOrders;
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+        }
 
         loadRecentOrders();
         loadPendingReviews();
@@ -690,7 +693,9 @@
                     </div>
                 `).join('');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading recent orders:', error);
+        }
     }
 
     async function loadPendingReviews() {
@@ -715,7 +720,9 @@
                     </div>
                 `).join('');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading pending reviews:', error);
+        }
     }
 
     // Sliders
@@ -743,7 +750,9 @@
                     </div>
                 `).join('');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading sliders:', error);
+        }
     }
 
     document.getElementById('addSliderBtn').addEventListener('click', () => {
@@ -822,7 +831,9 @@
                 document.getElementById('sliderModal').classList.remove('hidden');
                 document.getElementById('sliderModal').classList.add('flex');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error editing slider:', error);
+        }
     };
 
     window.deleteSlider = async (id) => {
@@ -876,7 +887,9 @@
                 select.innerHTML = '<option value="">সিলেক্ট করুন</option>' + 
                     data.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
     }
 
     document.getElementById('addCategoryBtn').addEventListener('click', () => {
@@ -948,7 +961,9 @@
                 document.getElementById('categoryModal').classList.remove('hidden');
                 document.getElementById('categoryModal').classList.add('flex');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error editing category:', error);
+        }
     };
 
     window.deleteCategory = async (id) => {
@@ -979,11 +994,16 @@
             const data = await response.json();
             if (data.success) {
                 const list = document.getElementById('productsList');
-                list.innerHTML = data.data.map(product => `
+                list.innerHTML = data.data.map(product => {
+                    const variant = product.variants[0] || {};
+                    const image = variant.images && variant.images[0] ? variant.images[0].url : '';
+                    const hasStock = variant.stock > 0;
+                    
+                    return `
                     <div class="bg-white rounded-lg shadow overflow-hidden">
                         <div class="relative">
-                            <img src="${product.variants[0]?.images[0]?.url || ''}" alt="${product.name}" class="w-full h-48 object-cover">
-                            ${product.variants[0]?.stock === 0 ? '<span class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded sold-out-badge">Sold Out</span>' : ''}
+                            <img src="${image}" alt="${product.name}" class="w-full h-48 object-cover">
+                            ${!hasStock ? '<span class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded sold-out-badge">Sold Out</span>' : ''}
                         </div>
                         <div class="p-3">
                             <h3 class="font-bold">${product.name}</h3>
@@ -993,8 +1013,8 @@
                                 <span class="text-xs text-gray-500">স্ট্রাইক: ৳${product.originalPrice}</span>
                             </div>
                             <div class="flex justify-between items-center mt-1 text-sm">
-                                <span>স্টক: ${product.variants[0]?.stock || 0}</span>
-                                <span>বিক্রি: ${product.variants[0]?.sold || 0}</span>
+                                <span>স্টক: ${variant.stock || 0}</span>
+                                <span>বিক্রি: ${variant.sold || 0}</span>
                             </div>
                             <div class="flex gap-2 mt-3">
                                 <button onclick="editProduct('${product._id}')" class="flex-1 bg-primary text-white px-3 py-1 rounded-lg text-sm hover:bg-gold hover:text-primary transition">এডিট</button>
@@ -1002,9 +1022,11 @@
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading products:', error);
+        }
     }
 
     document.getElementById('addProductBtn').addEventListener('click', () => {
@@ -1100,6 +1122,8 @@
             const product = data.data.find(p => p._id === id);
             
             if (product) {
+                const variant = product.variants[0] || {};
+                
                 document.getElementById('productModalTitle').textContent = 'এডিট পণ্য';
                 document.getElementById('productId').value = product._id;
                 document.getElementById('productName').value = product.name;
@@ -1107,10 +1131,10 @@
                 document.getElementById('productCategory').value = product.categorySlug;
                 document.getElementById('productPrice').value = product.price;
                 document.getElementById('productOriginalPrice').value = product.originalPrice;
-                document.getElementById('productStock').value = product.variants[0]?.stock || 0;
-                document.getElementById('productDiscount').value = product.variants[0]?.discount || '';
-                document.getElementById('productColor').value = product.variants[0]?.color || '';
-                document.getElementById('productSize').value = product.variants[0]?.size || '';
+                document.getElementById('productStock').value = variant.stock || 0;
+                document.getElementById('productDiscount').value = variant.discount || '';
+                document.getElementById('productColor').value = variant.color || '';
+                document.getElementById('productSize').value = variant.size || '';
                 document.getElementById('productFeatured').checked = product.featured;
                 document.getElementById('productTrending').checked = product.trending;
                 document.getElementById('productActive').checked = product.active;
@@ -1118,17 +1142,21 @@
                 // Show existing images
                 const previews = document.getElementById('productImagePreviews');
                 previews.innerHTML = '';
-                product.variants[0]?.images.forEach(img => {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = img.url;
-                    imgEl.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold';
-                    previews.appendChild(imgEl);
-                });
+                if (variant.images) {
+                    variant.images.forEach(img => {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = img.url;
+                        imgEl.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold';
+                        previews.appendChild(imgEl);
+                    });
+                }
                 
                 document.getElementById('productModal').classList.remove('hidden');
                 document.getElementById('productModal').classList.add('flex');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error editing product:', error);
+        }
     };
 
     window.deleteProduct = async (id) => {
@@ -1209,7 +1237,9 @@
                 }
                 pagination.innerHTML = pages;
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading orders:', error);
+        }
     }
 
     window.updateOrderStatus = async (id, status) => {
@@ -1291,7 +1321,9 @@
                 document.getElementById('orderModal').classList.remove('hidden');
                 document.getElementById('orderModal').classList.add('flex');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error viewing order details:', error);
+        }
     };
 
     document.getElementById('closeOrderModal').addEventListener('click', () => {
@@ -1336,7 +1368,9 @@
                     </div>
                 `).join('');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+        }
     }
 
     window.approveReview = async (id) => {
@@ -1411,7 +1445,9 @@
                 document.getElementById('reviewModal').classList.remove('hidden');
                 document.getElementById('reviewModal').classList.add('flex');
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error viewing review:', error);
+        }
     };
 
     document.getElementById('closeReviewModal').addEventListener('click', () => {
@@ -1432,7 +1468,9 @@
                 document.getElementById('email').value = data.data.email || '';
                 document.getElementById('address').value = data.data.address || '';
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading content:', error);
+        }
     }
 
     document.getElementById('contentForm').addEventListener('submit', async (e) => {
@@ -1517,7 +1555,9 @@
                 updateNotificationBadge();
                 updateNotificationList();
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
     }
 
     function updateNotificationBadge() {
@@ -1549,7 +1589,9 @@
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             loadNotifications();
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
     };
 
     document.getElementById('notificationBtn').addEventListener('click', () => {

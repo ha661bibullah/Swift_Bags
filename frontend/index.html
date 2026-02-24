@@ -11,6 +11,7 @@
     <!-- Hind Siliguri Font -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* আপনার বিদ্যমান সব স্টাইল এখানে থাকবে - অপরিবর্তিত */
         * {
             font-family: 'Hind Siliguri', sans-serif;
         }
@@ -18,7 +19,6 @@
             color: #1C1E21;
             background-color: #F5F7FA;
         }
-        /* কাস্টম কালার */
         .bg-primary { background-color: #0A1F44; }
         .text-primary { color: #0A1F44; }
         .bg-gold { background-color: #D4AF37; }
@@ -27,7 +27,6 @@
         .bg-light { background-color: #F5F7FA; }
         .text-dark { color: #1A1A1A; }
         
-        /* মোবাইল টপবার মেনু */
         .mobile-top-menu {
             display: none;
             position: absolute;
@@ -64,25 +63,17 @@
             margin-top: 10px;
         }
         
-        /* লোগো এনিমেশন */
         .logo-animation {
             border-radius: 7%;
             animation: pulse 2s infinite;
             box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
         }
         @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
         }
         
-        /* পপ-আপ */
         .popup {
             position: fixed;
             top: 50%;
@@ -108,7 +99,6 @@
             display: block;
         }
         
-        /* প্রোডাক্ট কার্ড */
         .product-card {
             transition: all 0.3s;
             position: relative;
@@ -117,7 +107,6 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
         }
-        /* ব্যাজ (ডিসকাউন্ট/Sold Out) */
         .product-badge {
             position: absolute;
             top: 10px;
@@ -134,7 +123,6 @@
             background: #dc2626;
             color: white;
         }
-        /* ইমেজ গ্যালারির জন্য ছোট থাম্বনেইল */
         .thumbnail-container {
             display: flex;
             gap: 5px;
@@ -171,7 +159,6 @@
             border-radius: 0 0 4px 4px;
         }
         
-        /* ক্যাটাগরি বাটন */
         .cat-btn {
             padding: 8px 16px;
             border-radius: 30px;
@@ -188,7 +175,6 @@
             color: #1a1a1a;
         }
         
-        /* হোয়াটসঅ্যাপ বাটন */
         .whatsapp-btn {
             position: fixed;
             bottom: 20px;
@@ -210,7 +196,6 @@
             transform: scale(1.1);
         }
         
-        /* অর্ডার ফর্মে সিলেক্টেড প্রোডাক্ট - স্ক্রলবার ছাড়া */
         #selectedProducts {
             max-height: 200px;
             overflow-y: auto;
@@ -308,7 +293,6 @@
             padding: 4px;
         }
         
-        /* স্লাইডার */
         .slider-item {
             background-size: cover;
             background-position: center;
@@ -325,7 +309,6 @@
             background: linear-gradient(90deg, rgba(10,31,68,0.7) 0%, rgba(10,31,68,0.3) 100%);
         }
         
-        /* অফার প্রাইস স্টাইল */
         .original-price {
             text-decoration: line-through;
             color: #9ca3af;
@@ -338,14 +321,12 @@
             font-size: 14px;
         }
         
-        /* কন্টেইনার ম্যাক্স উইডথ */
         .container-custom {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 1rem;
         }
         
-        /* স্টাইলিশ সিলেক্ট বক্স */
         .delivery-select {
             width: 100%;
             padding: 12px;
@@ -368,7 +349,6 @@
             color: #6b7280;
         }
         
-        /* অর্ডার বাটন স্টাইল */
         .order-now-btn {
             width: 100%;
             background-color: #0A1F44;
@@ -429,7 +409,6 @@
             cursor: not-allowed;
         }
         
-        /* ট্রেন্ডিং আইটেম */
         .trending-item {
             background: white;
             border-radius: 12px;
@@ -441,7 +420,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        /* লোডিং স্পিনার */
         .loader {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #D4AF37;
@@ -665,8 +643,8 @@
     </div>
 
     <script>
-        // API Configuration
-        const API_URL = 'https://swift-bags-dakt7pscx-arif-billah.vercel.app/api'; // Change this to your backend URL in production
+        // API Configuration - Update this with your actual Vercel backend URL
+        const API_URL = 'https://your-backend.vercel.app/api'; // CHANGE THIS TO YOUR ACTUAL BACKEND URL
         
         // State
         let currentCat = 'all';
@@ -1039,7 +1017,6 @@
             if (content.address) {
                 document.getElementById('footerAddress').textContent = content.address;
             }
-            // Update other content as needed
         }
 
         // Submit Order
