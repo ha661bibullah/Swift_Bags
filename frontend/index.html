@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Swift Bags - আপনার স্বপ্নের ব্যাগ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Hind Siliguri Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        body {
+            color: #1C1E21;
+            background-color: #F5F7FA;
+        }
+        /* কাস্টম কালার */
+        .bg-primary { background-color: #0A1F44; }
+        .text-primary { color: #0A1F44; }
+        .bg-gold { background-color: #D4AF37; }
+        .text-gold { color: #D4AF37; }
+        .border-gold { border-color: #D4AF37; }
+        .bg-light { background-color: #F5F7FA; }
+        .text-dark { color: #1A1A1A; }
+        
+        /* মোবাইল টপবার মেনু */
+        .mobile-top-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #0A1F44;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 40;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        .mobile-top-menu.active {
+            display: block;
+        }
+        .mobile-top-menu a {
+            display: block;
+            padding: 12px 0;
+            color: white;
+            font-size: 18px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+        }
+        .mobile-top-menu a:last-child {
+            border-bottom: none;
+        }
+        .mobile-top-menu .call-btn {
+            background-color: #D4AF37;
+            color: #0A1F44;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        /* লোগো এনিমেশন */
+        .logo-animation {
+            border-radius: 7%;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+            }
+        }
+        
+        /* পপ-আপ */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        .popup.active {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .popup-overlay.active {
+            display: block;
+        }
+        
+        /* প্রোডাক্ট কার্ড */
+        .product-card {
+            transition: all 0.3s;
+            position: relative;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+        }
+        /* ব্যাজ (ডিসকাউন্ট/Sold Out) */
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #D4AF37;
+            color: #0A1F44;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        .sold-out-badge {
+            background: #dc2626;
+            color: white;
+        }
+        /* ইমেজ গ্যালারির জন্য ছোট থাম্বনেইল */
+        .thumbnail-container {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+            overflow-x: auto;
+            padding: 0 5px;
+        }
+        .thumbnail {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            flex-shrink: 0;
+        }
+        .thumbnail.active {
+            border-color: #D4AF37;
+        }
+        .thumbnail.sold-out-thumb {
+            opacity: 0.6;
+            position: relative;
+        }
+        .thumbnail.sold-out-thumb::after {
+            content: 'Sold Out';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(220, 38, 38, 0.8);
+            color: white;
+            font-size: 8px;
+            text-align: center;
+            border-radius: 0 0 4px 4px;
+        }
+        
+        /* ক্যাটাগরি বাটন */
+        .cat-btn {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .cat-btn.active {
+            background-color: #0A1F44;
+            color: white;
+        }
+        .cat-btn:not(.active) {
+            background-color: #e5e7eb;
+            color: #1a1a1a;
+        }
+        
+        /* হোয়াটসঅ্যাপ বাটন */
+        .whatsapp-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            background-color: #25D366;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+        }
+        .whatsapp-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* অর্ডার ফর্মে সিলেক্টেড প্রোডাক্ট - স্ক্রলবার ছাড়া */
+        #selectedProducts {
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #D4AF37 #e5e7eb;
+        }
+        #selectedProducts::-webkit-scrollbar {
+            width: 4px;
+        }
+        #selectedProducts::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+        #selectedProducts::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+        
+        .selected-product-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        .selected-product-item img {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .product-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .product-name {
+            font-weight: 600;
+            font-size: 13px;
+            min-width: 80px;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .quantity-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 4px;
+            background: #0A1F44;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .quantity-btn:hover {
+            background: #D4AF37;
+            color: #0A1F44;
+        }
+        .quantity-value {
+            min-width: 24px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .price-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            min-width: 70px;
+        }
+        .current-price {
+            color: #D4AF37;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .original-price-small {
+            text-decoration: line-through;
+            color: #9ca3af;
+            font-size: 11px;
+        }
+        .remove-item {
+            color: #ef4444;
+            font-size: 14px;
+            padding: 4px;
+        }
+        
+        /* স্লাইডার */
+        .slider-item {
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            height: 100%;
+        }
+        .slider-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(10,31,68,0.7) 0%, rgba(10,31,68,0.3) 100%);
+        }
+        
+        /* অফার প্রাইস স্টাইল */
+        .original-price {
+            text-decoration: line-through;
+            color: #9ca3af;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .offer-price {
+            color: #D4AF37;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* কন্টেইনার ম্যাক্স উইডথ */
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* স্টাইলিশ সিলেক্ট বক্স */
+        .delivery-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background-color: white;
+            font-size: 14px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .delivery-select:focus {
+            outline: none;
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+        }
+        .delivery-select option {
+            color: #1a1a1a;
+        }
+        .delivery-select option:first-child {
+            color: #6b7280;
+        }
+        
+        /* অর্ডার বাটন স্টাইল */
+        .order-now-btn {
+            width: 100%;
+            background-color: #0A1F44;
+            color: white;
+            font-weight: bold;
+            padding: 8px 0;
+            border-radius: 8px;
+            margin-top: 8px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .order-now-btn:hover:not(:disabled) {
+            background-color: #D4AF37;
+            color: #0A1F44;
+        }
+        .order-now-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .trending-order-btn {
+            background-color: #0A1F44;
+            color: white;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .trending-order-btn:hover:not(:disabled) {
+            background-color: #D4AF37;
+            color: #0A1F44;
+        }
+        .trending-order-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .slider-order-btn {
+            display: inline-block;
+            background-color: #D4AF37;
+            color: #0A1F44;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .slider-order-btn:hover:not(:disabled) {
+            background-color: #e6c456;
+        }
+        .slider-order-btn:disabled {
+            background-color: #9ca3af;
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        /* ট্রেন্ডিং আইটেম */
+        .trending-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s;
+        }
+        .trending-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* লোডিং স্পিনার */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #D4AF37;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- নেভবার -->
+    <nav class="bg-primary text-white sticky top-0 z-50 shadow-lg">
+        <div class="container-custom py-3 flex justify-between items-center">
+            <!-- লোগো - এনিমেশন সহ -->
+            <div class="flex items-center space-x-2">
+                <img src="img/SwiftBags.jpeg" alt="Swift Bags Logo" class="w-10 h-10 logo-animation" onerror="this.src='https://via.placeholder.com/40x40/D4AF37/0A1F44?text=SB'">
+                <span class="text-2xl font-bold text-gold">SwiftBags</span>
+            </div>
+            
+            <!-- ডেস্কটপ মেনু -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#home" class="hover:text-gold transition">হোম</a>
+                <a href="#products" class="hover:text-gold transition">পণ্য</a>
+                <a href="#order" class="hover:text-gold transition">অর্ডার</a>
+                <a href="#reviews" class="hover:text-gold transition">রিভিউ</a>
+                <!-- কল করুন বাটন (ডেস্কটপ) -->
+                <a href="tel:01326198456" class="bg-gold text-primary px-4 py-2 rounded-lg font-bold hover:bg-yellow-500 transition flex items-center gap-2">
+                    <i class="fas fa-phone-alt"></i> কল করুন
+                </a>
+            </div>
+            
+            <!-- মোবাইল মেনু বাটন (থ্রি লাইন) -->
+            <button id="menuBtn" class="md:hidden text-2xl text-gold">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- মোবাইল টপবার মেনু -->
+        <div id="mobileTopMenu" class="mobile-top-menu md:hidden">
+            <a href="#home">হোম</a>
+            <a href="#products">পণ্য</a>
+            <a href="#order">অর্ডার</a>
+            <a href="#reviews">রিভিউ</a>
+            <a href="tel:01326198456" class="call-btn">
+                <i class="fas fa-phone-alt mr-2"></i> কল করুন
+            </a>
+        </div>
+    </nav>
+
+    <!-- ১. স্লাইডার সেকশন -->
+    <section id="home" class="py-4">
+        <div class="container-custom">
+            <div class="relative rounded-2xl overflow-hidden shadow-xl" style="height: 400px;">
+                <div id="slider" class="relative h-full">
+                    <!-- স্লাইডার আইটেম ডায়নামিক হবে -->
+                    <div class="loader" id="sliderLoader"></div>
+                </div>
+                <!-- স্লাইডার কন্ট্রোল -->
+                <button id="prevSlide" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-left text-sm md:text-base"></i></button>
+                <button id="nextSlide" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-right text-sm md:text-base"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ২ ও ৩. ক্যাটাগরি ও প্রোডাক্ট কার্ড -->
+    <section id="products" class="py-6">
+        <div class="container-custom">
+            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-4 text-center">আমাদের পণ্য</h2>
+            
+            <!-- ক্যাটাগরি বাটন -->
+            <div id="categoryButtons" class="flex justify-center gap-2 md:gap-4 mb-6 overflow-x-auto pb-2 px-2">
+                <!-- ক্যাটাগরি বাটন ডায়নামিক হবে -->
+                <div class="loader" style="width: 20px; height: 20px;"></div>
+            </div>
+
+            <!-- প্রোডাক্ট গ্রিড -->
+            <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+                <!-- প্রোডাক্ট কার্ডগুলো ডায়নামিকভাবে লোড হবে -->
+                <div class="loader"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ৪. অর্ডার ফর্ম + ট্রেন্ডিং স্লাইডার -->
+    <section id="order" class="py-6 bg-white">
+        <div class="container-custom">
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- অর্ডার ফর্ম (বামে) -->
+                <div class="md:w-1/2 bg-light p-4 md:p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">অর্ডার ফর্ম</h3>
+                    
+                    <!-- সিলেক্টেড প্রোডাক্টস - স্ক্রলবার কাস্টমাইজড -->
+                    <div id="selectedProductsContainer" class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">আপনার নির্বাচিত পণ্য:</label>
+                        <div id="selectedProducts" class="p-2 border border-gray-300 rounded-lg bg-white">
+                            <!-- সিলেক্টেড আইটেম এখানে দেখাবে -->
+                            <p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>
+                        </div>
+                    </div>
+                    
+                    <!-- ডেলিভারি চার্জ সিলেক্ট অপশন (ডিফল্ট আনসিলেক্টেড) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ডেলিভারি এলাকা *</label>
+                        <select id="deliveryArea" class="delivery-select" required>
+                            <option value="" selected disabled>ডেলিভারি এলাকা নির্বাচন করুন</option>
+                            <option value="80">ঢাকার মধ্যে (৮০ টাকা)</option>
+                            <option value="130">ঢাকার বাইরে (১৩০ টাকা)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4 text-sm bg-blue-50 p-3 rounded-lg">
+                        <p class="flex justify-between text-green-600 font-bold"><span>২০০০+ টাকার অর্ডারে:</span> <span>ফ্রি ডেলিভারি</span></p>
+                    </div>
+                    
+                    <form id="orderForm">
+                        <input type="text" id="name" placeholder="আপনার নাম *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required>
+                        <input type="tel" id="phone" placeholder="মোবাইল নম্বর *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required>
+                        <textarea id="address" placeholder="ঠিকানা *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required rows="3"></textarea>
+                        
+                        <!-- অর্ডার টোটাল -->
+                        <div class="flex justify-between items-center mb-3 font-bold">
+                            <span>মোট মূল্য (পণ্য):</span>
+                            <span id="subtotalPrice" class="text-xl text-gold">০ টাকা</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-3 text-sm">
+                            <span>ডেলিভারি চার্জ:</span>
+                            <span id="deliveryCharge">নির্বাচন করুন</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-3 font-bold text-lg border-t pt-2">
+                            <span>সর্বমোট:</span>
+                            <span id="totalPrice" class="text-xl text-gold">০ টাকা</span>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-gold hover:text-primary transition text-lg">
+                            অর্ডার নিশ্চিত করুন
+                        </button>
+                    </form>
+                </div>
+
+                <!-- ট্রেন্ডিং স্লাইডার (ডানে) - মোবাইলে হিডেন -->
+                <div class="hidden md:block md:w-1/2 bg-primary p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gold mb-4">ট্রেন্ডিং এখন</h3>
+                    <div id="trendingItems" class="trending-slider space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                        <!-- ট্রেন্ডিং আইটেম ডায়নামিক হবে -->
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ৫. রিভিউ ফর্ম ও কাস্টমার রিভিউ -->
+    <section id="reviews" class="py-6">
+        <div class="container-custom">
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- রিভিউ ফর্ম (বামে) -->
+                <div class="md:w-1/2 bg-white p-4 md:p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">আপনার মতামত দিন</h3>
+                    <form id="reviewForm">
+                        <input type="text" id="reviewName" placeholder="আপনার নাম *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required>
+                        <input type="text" id="reviewAddress" placeholder="ঠিকানা *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required>
+                        <textarea id="reviewText" placeholder="আপনার রিভিউ *" class="w-full p-3 mb-3 border border-gray-300 rounded-lg" required rows="3"></textarea>
+                        
+                        <div class="flex items-center mb-3">
+                            <span class="mr-2 font-medium">রেটিং:</span>
+                            <div class="star-rating flex text-2xl text-gray-400">
+                                <i class="far fa-star cursor-pointer hover:text-yellow-500" data-rating="1"></i>
+                                <i class="far fa-star cursor-pointer hover:text-yellow-500" data-rating="2"></i>
+                                <i class="far fa-star cursor-pointer hover:text-yellow-500" data-rating="3"></i>
+                                <i class="far fa-star cursor-pointer hover:text-yellow-500" data-rating="4"></i>
+                                <i class="far fa-star cursor-pointer hover:text-yellow-500" data-rating="5"></i>
+                            </div>
+                            <input type="hidden" id="rating" value="0">
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-gold hover:text-primary transition">
+                            রিভিউ জমা দিন
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- কাস্টমার রিভিউ (ডানে) -->
+                <div class="md:w-1/2 bg-light p-4 md:p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">গ্রাহক রিভিউ</h3>
+                    <div id="customerReviews" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                        <!-- ডায়নামিক রিভিউ আসবে -->
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ৬. ফুটার -->
+    <footer class="bg-primary text-white py-4 mt-6">
+        <div class="container-custom text-center">
+            <p id="footerText" class="text-sm md:text-base">&copy; 2025 Swift Bags. সর্বস্বত্ব সংরক্ষিত।</p>
+            <p id="footerAddress" class="text-xs text-gray-400 mt-1">১২৩/৪, গুলশান, ঢাকা - ১২১২, বাংলাদেশ</p>
+        </div>
+    </footer>
+
+    <!-- হোয়াটসঅ্যাপ বাটন -->
+    <a href="https://wa.me/8801326198456?text=হাই,%20আমি%20Swift%20Bags%20থেকে%20অর্ডার%20করতে%20চাই।" target="_blank" class="whatsapp-btn">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- পপ-আপ মেসেজ -->
+    <div class="popup-overlay" id="popupOverlay"></div>
+    <div class="popup bg-white p-4 md:p-6 rounded-lg shadow-xl text-center max-w-xs md:max-w-md" id="popup">
+        <h3 id="popupTitle" class="text-lg md:text-xl font-bold"></h3>
+        <p id="popupMessage" class="my-3 text-sm md:text-base"></p>
+        <p id="popupExtraMessage" class="text-sm text-gray-600 mb-3"></p>
+        <button id="closePopup" class="bg-primary text-white px-4 py-2 rounded-lg text-sm md:text-base">ঠিক আছে</button>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_URL = 'http://localhost:5000/api'; // Change this to your backend URL in production
+        
+        // State
+        let currentCat = 'all';
+        let selectedForOrder = [];
+        let currentDeliveryCharge = 0;
+        let allProducts = [];
+        let allCategories = [];
+        let allSliders = [];
+        let allTrending = [];
+        let currentSlide = 0;
+        let slideInterval;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllData();
+            setupEventListeners();
+        });
+
+        // Load all data from API
+        async function loadAllData() {
+            await Promise.all([
+                loadSliders(),
+                loadCategories(),
+                loadProducts(),
+                loadTrending(),
+                loadReviews(),
+                loadContent()
+            ]);
+        }
+
+        // Load Sliders
+        async function loadSliders() {
+            try {
+                const response = await fetch(`${API_URL}/sliders`);
+                const data = await response.json();
+                if (data.success) {
+                    allSliders = data.data;
+                    renderSliders();
+                }
+            } catch (error) {
+                console.error('Error loading sliders:', error);
+                showPopup('দুঃখিত!', 'স্লাইডার লোড করতে সমস্যা হয়েছে', 'error');
+            }
+        }
+
+        // Load Categories
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_URL}/categories`);
+                const data = await response.json();
+                if (data.success) {
+                    allCategories = data.data;
+                    renderCategories();
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Load Products
+        async function loadProducts(category = 'all') {
+            try {
+                let url = `${API_URL}/products`;
+                if (category !== 'all') {
+                    url += `?category=${category}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.success) {
+                    allProducts = data.data;
+                    renderProducts();
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                showPopup('দুঃখিত!', 'পণ্য লোড করতে সমস্যা হয়েছে', 'error');
+            }
+        }
+
+        // Load Trending Products
+        async function loadTrending() {
+            try {
+                const response = await fetch(`${API_URL}/products`);
+                const data = await response.json();
+                if (data.success) {
+                    allTrending = data.data.filter(p => p.trending).slice(0, 5);
+                    renderTrending();
+                }
+            } catch (error) {
+                console.error('Error loading trending:', error);
+            }
+        }
+
+        // Load Approved Reviews
+        async function loadReviews() {
+            try {
+                const response = await fetch(`${API_URL}/reviews/approved`);
+                const data = await response.json();
+                if (data.success) {
+                    renderReviews(data.data);
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+            }
+        }
+
+        // Load Site Content
+        async function loadContent() {
+            try {
+                const response = await fetch(`${API_URL}/contents`);
+                const data = await response.json();
+                if (data.success) {
+                    updateContent(data.data);
+                }
+            } catch (error) {
+                console.error('Error loading content:', error);
+            }
+        }
+
+        // Render Sliders
+        function renderSliders() {
+            const sliderContainer = document.getElementById('slider');
+            if (!sliderContainer) return;
+            
+            if (allSliders.length === 0) {
+                sliderContainer.innerHTML = '<div class="text-center text-white p-12">কোন স্লাইডার নেই</div>';
+                return;
+            }
+
+            sliderContainer.innerHTML = allSliders.map((slider, index) => `
+                <div class="slider-item absolute inset-0 ${index === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 flex items-center justify-between p-6 md:p-12" style="background-image: url('${slider.image}'); background-size: cover; background-position: center;">
+                    <div class="relative z-10 text-white max-w-lg">
+                        <h2 class="text-2xl md:text-4xl font-bold text-gold">${slider.title}</h2>
+                        ${slider.subtitle ? `<p class="text-sm md:text-base my-3">${slider.subtitle}</p>` : ''}
+                        <a href="#order" class="slider-order-btn inline-block bg-gold text-primary px-4 py-2 md:px-6 md:py-3 rounded-lg font-bold hover:bg-yellow-500 transition text-sm md:text-base" 
+                           data-product='${JSON.stringify(slider.productData || {})}'>
+                            ${slider.buttonText || 'এখনই কিনুন'}
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+
+            // Start slideshow
+            currentSlide = 0;
+            if (slideInterval) clearInterval(slideInterval);
+            startSlideshow();
+        }
+
+        // Render Categories
+        function renderCategories() {
+            const container = document.getElementById('categoryButtons');
+            if (!container) return;
+
+            container.innerHTML = `
+                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base">সকল পণ্য</button>
+                ${allCategories.map(cat => `
+                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}">
+                        ${cat.nameBn}
+                    </button>
+                `).join('')}
+            `;
+
+            // Add event listeners
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const category = this.dataset.category || 'all';
+                    loadProducts(category);
+                });
+            });
+        }
+
+        // Render Products
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            if (!grid) return;
+
+            if (allProducts.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
+                return;
+            }
+
+            grid.innerHTML = allProducts.map(product => {
+                const variant = product.variants[0] || {};
+                const primaryImage = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+                const hasStock = variant.stock > 0;
+                const discount = variant.discount || '';
+
+                return `
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" data-product-id="${product._id}">
+                        ${discount && hasStock ? `<span class="product-badge">${discount}</span>` : ''}
+                        
+                        <div class="relative">
+                            <img src="${primaryImage}" alt="${product.name}" class="main-image w-full h-36 md:h-48 object-cover" data-product-id="${product._id}" data-variant-index="0">
+                        </div>
+                        
+                        ${variant.images && variant.images.length > 1 ? `
+                            <div class="thumbnail-container px-2 pb-1">
+                                ${variant.images.map((img, idx) => `
+                                    <img src="${img.url}" alt="thumb" class="thumbnail ${idx === 0 ? 'active' : ''} ${variant.stock === 0 ? 'sold-out-thumb' : ''}" data-product-id="${product._id}" data-variant-index="${idx}" data-stock="${variant.stock}">
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="p-2 md:p-3">
+                            <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
+                            <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
+                            
+                            <div class="flex items-center justify-between mt-1">
+                                <div class="flex text-yellow-500 text-xs">
+                                    ${getStarRating(variant.rating || 4.5)}
+                                    <span class="rating-value text-gray-500 ml-1">(${variant.rating || 4.5})</span>
+                                </div>
+                                <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}টি</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="offer-price">৳${product.price}</span>
+                                <span class="original-price">৳${product.originalPrice}</span>
+                            </div>
+                            
+                            <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
+                                    data-product-id="${product._id}" data-variant-index="0" ${!hasStock ? 'disabled' : ''}>
+                                ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add thumbnail click handlers
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.addEventListener('click', handleThumbnailClick);
+            });
+        }
+
+        // Handle Thumbnail Click
+        function handleThumbnailClick(e) {
+            const thumb = e.currentTarget;
+            const productId = thumb.dataset.productId;
+            const variantIndex = parseInt(thumb.dataset.variantIndex);
+            const variantStock = parseInt(thumb.dataset.stock);
+            const productCard = thumb.closest('.product-card');
+            const mainImg = productCard.querySelector('.main-image');
+            
+            // Find product in allProducts
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) return;
+            
+            const variant = product.variants[variantIndex];
+            
+            if (mainImg) {
+                mainImg.src = thumb.src;
+                mainImg.dataset.variantIndex = variantIndex;
+                
+                // Update discount badge
+                const discountBadge = productCard.querySelector('.product-badge:not(.sold-out-badge)');
+                if (discountBadge && variant.discount) {
+                    discountBadge.innerText = variant.discount;
+                    discountBadge.style.display = variant.stock > 0 ? 'block' : 'none';
+                }
+                
+                // Update rating
+                const ratingStars = productCard.querySelector('.rating-stars');
+                const ratingValue = productCard.querySelector('.rating-value');
+                if (ratingStars && ratingValue) {
+                    ratingStars.innerHTML = getStarRating(variant.rating || 4.5);
+                    ratingValue.innerText = `(${variant.rating || 4.5})`;
+                }
+                
+                // Update sold count
+                const soldSpan = productCard.querySelector('.sold-count');
+                if (soldSpan) {
+                    soldSpan.innerText = `বিক্রি: ${variant.sold || 0}টি`;
+                }
+                
+                // Update active thumbnail
+                productCard.querySelectorAll('.thumbnail').forEach(t => {
+                    t.classList.remove('active');
+                });
+                thumb.classList.add('active');
+                
+                // Update order button
+                const orderBtn = productCard.querySelector('.order-now-btn');
+                if (orderBtn) {
+                    orderBtn.dataset.variantIndex = variantIndex;
+                    if (variant.stock > 0) {
+                        orderBtn.disabled = false;
+                        orderBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                        orderBtn.classList.add('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
+                        orderBtn.innerText = 'অর্ডার করুন';
+                    } else {
+                        orderBtn.disabled = true;
+                        orderBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                        orderBtn.classList.remove('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
+                        orderBtn.innerText = 'Sold Out';
+                    }
+                }
+            }
+        }
+
+        // Render Trending Items
+        function renderTrending() {
+            const container = document.getElementById('trendingItems');
+            if (!container) return;
+
+            if (allTrending.length === 0) {
+                container.innerHTML = '<p class="text-white">কোন ট্রেন্ডিং পণ্য নেই</p>';
+                return;
+            }
+
+            container.innerHTML = allTrending.map(product => {
+                const variant = product.variants[0] || {};
+                const image = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
+                
+                return `
+                    <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4">
+                        <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-primary">${product.name}</h4>
+                            <div class="flex items-center text-yellow-500 text-xs md:text-sm">
+                                ${getStarRating(variant.rating || 4.5)}
+                                <span class="text-gray-600 ml-2">(${variant.rating || 4.5})</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">${variant.sold || 0} জন Recently Viewed</p>
+                            <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
+                                    data-product='${JSON.stringify({
+                                        id: product._id,
+                                        name: product.name,
+                                        img: image,
+                                        price: product.price,
+                                        originalPrice: product.originalPrice,
+                                        discount: variant.discount || '',
+                                        variantStock: variant.stock || 0
+                                    })}'>
+                                অর্ডার করুন
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Reviews
+        function renderReviews(reviews) {
+            const container = document.getElementById('customerReviews');
+            if (!container) return;
+
+            if (reviews.length === 0) {
+                container.innerHTML = '<p class="text-center py-4">কোন রিভিউ নেই</p>';
+                return;
+            }
+
+            container.innerHTML = reviews.map(review => `
+                <div class="bg-white p-3 rounded-lg shadow">
+                    <p class="font-bold">${review.customerName} (${review.customerAddress})</p>
+                    <div class="text-yellow-500">${getStars(review.rating)}</div>
+                    <p class="text-gray-700 text-sm">${review.review}</p>
+                </div>
+            `).join('');
+        }
+
+        // Update Site Content
+        function updateContent(content) {
+            if (content.footerText) {
+                document.getElementById('footerText').textContent = content.footerText;
+            }
+            if (content.address) {
+                document.getElementById('footerAddress').textContent = content.address;
+            }
+            // Update other content as needed
+        }
+
+        // Submit Order
+        async function submitOrder(orderData) {
+            try {
+                const response = await fetch(`${API_URL}/orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error submitting order:', error);
+                throw error;
+            }
+        }
+
+        // Submit Review
+        async function submitReview(reviewData) {
+            try {
+                const response = await fetch(`${API_URL}/reviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reviewData)
+                });
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                throw error;
+            }
+        }
+
+        // Event Listeners Setup
+        function setupEventListeners() {
+            // Mobile Menu
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileTopMenu = document.getElementById('mobileTopMenu');
+            
+            menuBtn?.addEventListener('click', () => {
+                mobileTopMenu?.classList.toggle('active');
+            });
+
+            // Close mobile menu on link click
+            document.querySelectorAll('.mobile-top-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileTopMenu?.classList.remove('active');
+                });
+            });
+
+            // Slider Controls
+            document.getElementById('prevSlide')?.addEventListener('click', () => {
+                moveSlide(-1);
+            });
+
+            document.getElementById('nextSlide')?.addEventListener('click', () => {
+                moveSlide(1);
+            });
+
+            // Delivery Area Change
+            document.getElementById('deliveryArea')?.addEventListener('change', function(e) {
+                currentDeliveryCharge = parseInt(e.target.value) || 0;
+                updateTotal();
+            });
+
+            // Order Form Submit
+            document.getElementById('orderForm')?.addEventListener('submit', handleOrderSubmit);
+
+            // Review Form Submit
+            document.getElementById('reviewForm')?.addEventListener('submit', handleReviewSubmit);
+
+            // Star Rating
+            document.querySelectorAll('.star-rating i').forEach(star => {
+                star.addEventListener('click', handleStarClick);
+            });
+
+            // Popup Close
+            document.getElementById('closePopup')?.addEventListener('click', closePopup);
+            document.getElementById('popupOverlay')?.addEventListener('click', closePopup);
+
+            // Global Click for Order Buttons
+            document.addEventListener('click', handleGlobalClick);
+        }
+
+        // Handle Global Clicks (Order Buttons)
+        function handleGlobalClick(e) {
+            // Product Card Order Button
+            if (e.target.classList.contains('order-now-btn') && !e.target.disabled) {
+                handleProductOrder(e.target);
+            }
+
+            // Trending Order Button
+            if (e.target.classList.contains('trending-order-btn') && !e.target.disabled) {
+                handleTrendingOrder(e.target);
+            }
+
+            // Slider Order Button
+            if (e.target.classList.contains('slider-order-btn') && !e.target.disabled) {
+                e.preventDefault();
+                handleSliderOrder(e.target);
+            }
+        }
+
+        // Handle Product Order
+        function handleProductOrder(btn) {
+            const productId = btn.dataset.productId;
+            const variantIndex = parseInt(btn.dataset.variantIndex);
+            const productCard = btn.closest('.product-card');
+            const mainImg = productCard.querySelector('.main-image');
+            
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) return;
+            
+            const variant = product.variants[variantIndex];
+            
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                return;
+            }
+            
+            const orderProduct = {
+                id: productId + '-' + variantIndex,
+                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                img: mainImg ? mainImg.src : (variant.images[0]?.url || ''),
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: variantIndex,
+                quantity: 1
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === productId + '-' + variantIndex);
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle Trending Order
+        function handleTrendingOrder(btn) {
+            const product = JSON.parse(btn.dataset.product);
+            
+            if (product.variantStock === 0) {
+                showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
+                return;
+            }
+            
+            const orderProduct = {
+                id: product.id,
+                name: product.name,
+                img: product.img,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === product.id);
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle Slider Order
+        function handleSliderOrder(btn) {
+            const product = JSON.parse(btn.dataset.product);
+            
+            if (product.variantStock === 0) {
+                showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
+                return;
+            }
+            
+            const orderProduct = {
+                id: product.id,
+                name: product.name,
+                img: product.img,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === product.id);
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle Order Form Submit
+        async function handleOrderSubmit(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const deliveryArea = document.getElementById('deliveryArea').value;
+            
+            if (!name || !phone || !address) {
+                showPopup('ব্যর্থ!', 'সব ফিল্ড পূরণ করুন', 'error');
+                return;
+            }
+            
+            if (!deliveryArea) {
+                showPopup('ব্যর্থ!', 'ডেলিভারি এলাকা নির্বাচন করুন', 'error');
+                return;
+            }
+            
+            if (selectedForOrder.length === 0) {
+                showPopup('ব্যর্থ!', 'কমপক্ষে একটি পণ্য নির্বাচন করুন', 'error');
+                return;
+            }
+
+            const subtotal = selectedForOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
+            
+            const orderData = {
+                customer: {
+                    name,
+                    phone,
+                    address
+                },
+                items: selectedForOrder.map(item => ({
+                    productId: item.id.split('-')[0],
+                    name: item.name,
+                    image: item.img,
+                    price: item.price,
+                    originalPrice: item.originalPrice,
+                    quantity: item.quantity,
+                    variant: {
+                        color: '',
+                        size: ''
+                    }
+                })),
+                subtotal,
+                deliveryCharge: delivery,
+                total: subtotal + delivery,
+                deliveryArea: deliveryArea === '80' ? 'ঢাকার মধ্যে' : 'ঢাকার বাইরে'
+            };
+
+            try {
+                const result = await submitOrder(orderData);
+                if (result.success) {
+                    showPopup('অর্ডার সফল!', 'আপনার অর্ডার নেওয়া হয়েছে', 'success', 'খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+                    
+                    // Reset form
+                    e.target.reset();
+                    selectedForOrder = [];
+                    currentDeliveryCharge = 0;
+                    document.getElementById('deliveryArea').value = '';
+                    updateSelectedProducts();
+                } else {
+                    showPopup('ব্যর্থ!', result.message || 'অর্ডার নিতে সমস্যা হয়েছে', 'error');
+                }
+            } catch (error) {
+                showPopup('ব্যর্থ!', 'অর্ডার নিতে সমস্যা হয়েছে', 'error');
+            }
+        }
+
+        // Handle Review Form Submit
+        async function handleReviewSubmit(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('reviewName').value.trim();
+            const address = document.getElementById('reviewAddress').value.trim();
+            const review = document.getElementById('reviewText').value.trim();
+            const rating = document.getElementById('rating').value;
+            
+            if (!name || !address || !review || rating == 0) {
+                showPopup('ব্যর্থ!', 'সব তথ্য দিন এবং রেটিং দিন', 'error');
+                return;
+            }
+
+            const reviewData = {
+                customerName: name,
+                customerAddress: address,
+                review,
+                rating: parseInt(rating)
+            };
+
+            try {
+                const result = await submitReview(reviewData);
+                if (result.success) {
+                    showPopup('ধন্যবাদ!', 'আপনার রিভিউ জমা হয়েছে', 'success', 'এডমিন অ্যাপ্রুভ করার পর দেখানো হবে।');
+                    
+                    // Reset form
+                    e.target.reset();
+                    document.getElementById('rating').value = 0;
+                    document.querySelectorAll('.star-rating i').forEach(i => i.className = 'far fa-star');
+                } else {
+                    showPopup('ব্যর্থ!', result.message || 'রিভিউ জমা দিতে সমস্যা হয়েছে', 'error');
+                }
+            } catch (error) {
+                showPopup('ব্যর্থ!', 'রিভিউ জমা দিতে সমস্যা হয়েছে', 'error');
+            }
+        }
+
+        // Handle Star Click
+        function handleStarClick() {
+            const rating = this.dataset.rating;
+            document.getElementById('rating').value = rating;
+            
+            document.querySelectorAll('.star-rating i').forEach((s, idx) => {
+                if (idx < rating) {
+                    s.className = 'fas fa-star text-yellow-500';
+                } else {
+                    s.className = 'far fa-star';
+                }
+            });
+        }
+
+        // Selected Products Update
+        function updateSelectedProducts() {
+            const container = document.getElementById('selectedProducts');
+            
+            if (selectedForOrder.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>';
+                updateTotal();
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            selectedForOrder.forEach((p, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'selected-product-item';
+                itemDiv.innerHTML = `
+                    <img src="${p.img}" alt="${p.name}">
+                    <div class="product-info">
+                        <span class="product-name">${p.name}</span>
+                        <div class="quantity-control">
+                            <span class="quantity-btn" onclick="changeQuantity(${index}, -1)">−</span>
+                            <span class="quantity-value">${p.quantity}</span>
+                            <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
+                        </div>
+                        <div class="price-info">
+                            <span class="current-price">৳${p.price}</span>
+                            <span class="original-price-small">৳${p.originalPrice}</span>
+                        </div>
+                    </div>
+                    <button class="remove-item" onclick="removeFromOrder(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(itemDiv);
+            });
+            
+            updateTotal();
+        }
+
+        // Change Quantity
+        window.changeQuantity = function(index, change) {
+            if (selectedForOrder[index]) {
+                const newQty = selectedForOrder[index].quantity + change;
+                if (newQty >= 1 && newQty <= 10) {
+                    selectedForOrder[index].quantity = newQty;
+                    updateSelectedProducts();
+                }
+            }
+        };
+
+        // Remove from Order
+        window.removeFromOrder = function(index) {
+            selectedForOrder.splice(index, 1);
+            updateSelectedProducts();
+        };
+
+        // Update Total
+        function updateTotal() {
+            const subtotalEl = document.getElementById('subtotalPrice');
+            const deliveryChargeEl = document.getElementById('deliveryCharge');
+            const totalEl = document.getElementById('totalPrice');
+            
+            let subtotal = 0;
+            selectedForOrder.forEach(item => {
+                subtotal += item.price * item.quantity;
+            });
+            
+            let delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
+            
+            subtotalEl.innerText = `৳${subtotal}`;
+            
+            if (currentDeliveryCharge === 0) {
+                deliveryChargeEl.innerText = 'নির্বাচন করুন';
+            } else {
+                deliveryChargeEl.innerText = delivery === 0 ? 'ফ্রি' : `৳${delivery}`;
+            }
+            
+            totalEl.innerText = `৳${subtotal + delivery}`;
+        }
+
+        // Slideshow Functions
+        function startSlideshow() {
+            const slides = document.querySelectorAll('.slider-item');
+            if (slides.length === 0) return;
+            
+            slideInterval = setInterval(() => {
+                moveSlide(1);
+            }, 5000);
+        }
+
+        function moveSlide(direction) {
+            const slides = document.querySelectorAll('.slider-item');
+            if (slides.length === 0) return;
+            
+            slides[currentSlide].style.opacity = '0';
+            currentSlide = (currentSlide + direction + slides.length) % slides.length;
+            slides[currentSlide].style.opacity = '1';
+        }
+
+        // Helper Functions
+        function getStarRating(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(rating)) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else if (i === Math.floor(rating) + 1 && rating % 1 >= 0.5) {
+                    stars += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                    stars += '<i class="far fa-star"></i>';
+                }
+            }
+            return stars;
+        }
+
+        function getStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += i <= rating ? '★' : '☆';
+            }
+            return stars;
+        }
+
+        // Popup Functions
+        function showPopup(title, message, type, extraMessage = '') {
+            const popupTitle = document.getElementById('popupTitle');
+            const popupMessage = document.getElementById('popupMessage');
+            const popupExtraMessage = document.getElementById('popupExtraMessage');
+            
+            popupTitle.innerText = title;
+            popupMessage.innerText = message;
+            popupExtraMessage.innerText = extraMessage;
+            
+            popupTitle.style.color = type === 'success' ? '#10b981' : '#ef4444';
+            
+            document.getElementById('popup').classList.add('active');
+            document.getElementById('popupOverlay').classList.add('active');
+        }
+
+        function closePopup() {
+            document.getElementById('popup').classList.remove('active');
+            document.getElementById('popupOverlay').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
