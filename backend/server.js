@@ -31,7 +31,7 @@ app.use(cors({
     'http://127.0.0.1:5500',
     'https://swift-bags-cpq4.vercel.app', 
     'https://swift-bags.vercel.app',
-    'https://swift-bags-4iux.vercel.app'
+    'https://swift-bags-4iux-52oajys37-arif-billahs-projects-0e9b4e01.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
