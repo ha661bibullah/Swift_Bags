@@ -9,11 +9,12 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
+    <link rel="icon" type="img/swift_bags.png" href="favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Hind Siliguri Font -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* সমস্ত স্টাইল পূর্বের মতোই থাকবে, অপরিবর্তিত */
+        /* সমস্ত স্টাইল পূর্বের মতোই থাকবে, নিচে প্রয়োজনীয় আপডেট যোগ করা হয়েছে */
         * {
             font-family: 'Hind Siliguri', sans-serif;
         }
@@ -222,6 +223,7 @@
             border-radius: 4px;
         }
         
+        /* আপডেট: নির্বাচিত পণ্য এক লাইনে দেখানোর জন্য */
         .selected-product-item {
             display: flex;
             align-items: center;
@@ -231,13 +233,14 @@
             border-radius: 6px;
             margin-bottom: 6px;
             border: 1px solid #e5e7eb;
-            flex-wrap: wrap;
+            flex-wrap: nowrap; /* এক লাইনে রাখার জন্য */
         }
         .selected-product-item img {
             width: 45px;
             height: 45px;
             object-fit: cover;
             border-radius: 4px;
+            flex-shrink: 0;
         }
         .product-info {
             flex: 1;
@@ -245,17 +248,23 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap; /* এক লাইনে রাখার জন্য */
+            min-width: 0; /* শিশুদের সঙ্কুচিত হতে দেয় */
         }
         .product-name {
             font-weight: 600;
             font-size: 13px;
-            min-width: 80px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+            flex-shrink: 1;
         }
         .quantity-control {
             display: flex;
             align-items: center;
             gap: 4px;
+            flex-shrink: 0;
         }
         .quantity-btn {
             width: 26px;
@@ -270,6 +279,7 @@
             font-size: 16px;
             font-weight: bold;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
         .quantity-btn:hover {
             background: #D4AF37;
@@ -280,27 +290,63 @@
             text-align: center;
             font-weight: 600;
             font-size: 13px;
+            flex-shrink: 0;
         }
         .price-info {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             min-width: 70px;
+            flex-shrink: 0;
         }
         .current-price {
             color: #D4AF37;
             font-weight: bold;
             font-size: 13px;
+            white-space: nowrap;
         }
         .original-price-small {
             text-decoration: line-through;
             color: #9ca3af;
             font-size: 11px;
+            white-space: nowrap;
         }
         .remove-item {
             color: #ef4444;
             font-size: 14px;
             padding: 4px;
+            flex-shrink: 0;
+        }
+        
+        /* মোবাইলের জন্য অতিরিক্ত ফাইন-টিউনিং */
+        @media (max-width: 480px) {
+            .selected-product-item {
+                gap: 4px;
+                padding: 4px;
+            }
+            .selected-product-item img {
+                width: 35px;
+                height: 35px;
+            }
+            .product-name {
+                font-size: 12px;
+                max-width: 80px;
+            }
+            .quantity-btn {
+                width: 22px;
+                height: 22px;
+                font-size: 14px;
+            }
+            .quantity-value {
+                font-size: 12px;
+                min-width: 20px;
+            }
+            .current-price, .original-price-small {
+                font-size: 12px;
+            }
+            .price-info {
+                min-width: 60px;
+            }
         }
         
         .slider-item {
@@ -823,239 +869,67 @@
         }
 
         // Render Products
-function renderProducts() {
-    const grid = document.getElementById('productGrid');
-    if (!grid) return;
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            if (!grid) return;
 
-    if (allProducts.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
-        return;
-    }
-
-    grid.innerHTML = allProducts.map(product => {
-        const variant = product.variants[0] || {};
-        const primaryImage = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
-        const hasStock = variant.stock > 0;
-        const discount = variant.discount || '';
-
-        return `
-            <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" data-product-id="${product._id}">
-                ${discount && hasStock ? `<span class="product-badge" data-badge>${discount}</span>` : ''}
-                
-                <div class="relative cursor-pointer main-image-container" data-product-id="${product._id}" data-variant-index="0">
-                    <img src="${primaryImage}" alt="${product.name}" class="main-image w-full h-36 md:h-48 object-cover" data-product-id="${product._id}" data-variant-index="0">
-                </div>
-                
-                ${variant.images && variant.images.length > 1 ? `
-                    <div class="thumbnail-container px-2 pb-1">
-                        ${variant.images.map((img, idx) => {
-                            const v = product.variants[idx] || variant;
-                            return `<img src="${img.url}" alt="thumb" class="thumbnail ${idx === 0 ? 'active' : ''}" data-product-id="${product._id}" data-variant-index="${idx}" data-stock="${v.stock}" data-sold="${v.sold}" data-rating="${v.rating}" data-discount="${v.discount || ''}">`;
-                        }).join('')}
-                    </div>
-                ` : ''}
-                
-                <div class="p-2 md:p-3">
-                    <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
-                    <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
-                    
-                    <div class="flex items-center justify-between mt-1">
-                        <div class="flex text-yellow-500 text-xs rating-stars">
-                            ${getStarRating(variant.rating || 4.5)}
-                        </div>
-                        <span class="rating-value text-gray-500 ml-1">(${variant.rating || 4.5})</span>
-                        <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}টি</span>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 mt-1">
-                        <span class="offer-price">৳${product.price}</span>
-                        <span class="original-price">৳${product.originalPrice}</span>
-                    </div>
-                    
-                    <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
-                            data-product-id="${product._id}" data-variant-index="0" ${!hasStock ? 'disabled' : ''}>
-                        ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    // থাম্বনেইলে ক্লিক ইভেন্ট যোগ করুন
-    document.querySelectorAll('.thumbnail').forEach(thumb => {
-        thumb.addEventListener('click', handleThumbnailClick);
-    });
-
-    // মূল ছবিতে ক্লিক ইভেন্ট যোগ করুন
-    document.querySelectorAll('.main-image, .main-image-container').forEach(element => {
-        element.addEventListener('click', function(e) {
-            // যদি ক্লিক করা এলিমেন্টটি .main-image হয়
-            let target = e.currentTarget;
-            
-            // যদি ক্লিক করা এলিমেন্টটি .main-image-container হয়
-            if (target.classList.contains('main-image-container')) {
-                const img = target.querySelector('.main-image');
-                if (img) {
-                    handleMainImageClick(img);
-                }
-            } 
-            // যদি ক্লিক করা এলিমেন্টটি .main-image হয়
-            else if (target.classList.contains('main-image')) {
-                handleMainImageClick(target);
+            if (allProducts.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
+                return;
             }
-        });
-    });
-}
 
-// মূল ছবিতে ক্লিক হ্যান্ডলার
-function handleMainImageClick(mainImg) {
-    const productId = mainImg.dataset.productId;
-    const variantIndex = parseInt(mainImg.dataset.variantIndex || '0');
-    const productCard = mainImg.closest('.product-card');
-    
-    // পণ্য খুঁজুন
-    const product = allProducts.find(p => p._id === productId);
-    if (!product) return;
-    
-    // পরবর্তী ভেরিয়েন্ট খুঁজুন
-    const totalVariants = product.variants.length;
-    if (totalVariants <= 1) return; // যদি শুধু একটি ভেরিয়েন্ট থাকে
-    
-    // পরবর্তী ভেরিয়েন্ট ইনডেক্স
-    const nextVariantIndex = (variantIndex + 1) % totalVariants;
-    const nextVariant = product.variants[nextVariantIndex];
-    
-    if (!nextVariant) return;
-    
-    // পরবর্তী ভেরিয়েন্টের ছবি খুঁজুন
-    const nextImage = nextVariant.images && nextVariant.images[0] ? nextVariant.images[0].url : mainImg.src;
-    
-    // মূল ছবি আপডেট করুন
-    mainImg.src = nextImage;
-    mainImg.dataset.variantIndex = nextVariantIndex;
-    
-    // ডিসকাউন্ট ব্যাজ আপডেট করুন
-    const badge = productCard.querySelector('[data-badge]');
-    if (badge) {
-        if (nextVariant.discount && nextVariant.stock > 0) {
-            badge.innerText = nextVariant.discount;
-            badge.style.display = 'block';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-    
-    // রেটিং আপডেট করুন
-    const ratingStars = productCard.querySelector('.rating-stars');
-    const ratingValue = productCard.querySelector('.rating-value');
-    if (ratingStars && ratingValue) {
-        ratingStars.innerHTML = getStarRating(nextVariant.rating || 4.5);
-        ratingValue.innerText = `(${nextVariant.rating || 4.5})`;
-    }
-    
-    // বিক্রি সংখ্যা আপডেট করুন
-    const soldSpan = productCard.querySelector('.sold-count');
-    if (soldSpan) {
-        soldSpan.innerText = `বিক্রি: ${nextVariant.sold || 0}টি`;
-    }
-    
-    // থাম্বনেইল আপডেট করুন
-    productCard.querySelectorAll('.thumbnail').forEach(thumb => {
-        const thumbVariantIndex = parseInt(thumb.dataset.variantIndex);
-        thumb.classList.toggle('active', thumbVariantIndex === nextVariantIndex);
-    });
-    
-    // অর্ডার বাটন আপডেট করুন
-    const orderBtn = productCard.querySelector('.order-now-btn');
-    if (orderBtn) {
-        orderBtn.dataset.variantIndex = nextVariantIndex;
-        if (nextVariant.stock > 0) {
-            orderBtn.disabled = false;
-            orderBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-            orderBtn.classList.add('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
-            orderBtn.innerText = 'অর্ডার করুন';
-        } else {
-            orderBtn.disabled = true;
-            orderBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-            orderBtn.classList.remove('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
-            orderBtn.innerText = 'Sold Out';
-        }
-    }
-    
-    // ছোট্ট অ্যানিমেশন
-    mainImg.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-        mainImg.style.transform = 'scale(1)';
-    }, 200);
-}
+            grid.innerHTML = allProducts.map(product => {
+                const variant = product.variants[0] || {};
+                const primaryImage = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+                const hasStock = variant.stock > 0;
+                const discount = variant.discount || '';
 
-// থাম্বনেইল ক্লিক হ্যান্ডলার (আগের মতোই)
-function handleThumbnailClick(e) {
-    const thumb = e.currentTarget;
-    const productId = thumb.dataset.productId;
-    const variantIndex = parseInt(thumb.dataset.variantIndex);
-    const productCard = thumb.closest('.product-card');
-    
-    // Find product
-    const product = allProducts.find(p => p._id === productId);
-    if (!product) return;
-    
-    const variant = product.variants[variantIndex];
-    if (!variant) return;
-    
-    // Update main image
-    const mainImg = productCard.querySelector('.main-image');
-    if (mainImg) {
-        mainImg.src = thumb.src;
-        mainImg.dataset.variantIndex = variantIndex;
-    }
-    
-    // Update discount badge
-    const badge = productCard.querySelector('[data-badge]');
-    if (badge) {
-        if (variant.discount && variant.stock > 0) {
-            badge.innerText = variant.discount;
-            badge.style.display = 'block';
-        } else {
-            badge.style.display = 'none';
+                return `
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" data-product-id="${product._id}">
+                        ${discount && hasStock ? `<span class="product-badge" data-badge>${discount}</span>` : ''}
+                        
+                        <div class="relative">
+                            <img src="${primaryImage}" alt="${product.name}" class="main-image w-full h-36 md:h-48 object-cover" data-product-id="${product._id}" data-variant-index="0">
+                        </div>
+                        
+                        ${variant.images && variant.images.length > 1 ? `
+                            <div class="thumbnail-container px-2 pb-1">
+                                ${variant.images.map((img, idx) => {
+                                    const v = product.variants[idx] || variant;
+                                    return `<img src="${img.url}" alt="thumb" class="thumbnail ${idx === 0 ? 'active' : ''}" data-product-id="${product._id}" data-variant-index="${idx}" data-stock="${v.stock}" data-sold="${v.sold}" data-rating="${v.rating}" data-discount="${v.discount || ''}">`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="p-2 md:p-3">
+                            <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
+                            <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
+                            
+                            <div class="flex items-center justify-between mt-1">
+                                <div class="flex text-yellow-500 text-xs rating-stars">
+                                    ${getStarRating(variant.rating || 4.5)}
+                                </div>
+                                <span class="rating-value text-gray-500 ml-1">(${variant.rating || 4.5})</span>
+                                <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}টি</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="offer-price">৳${product.price}</span>
+                                <span class="original-price">৳${product.originalPrice}</span>
+                            </div>
+                            
+                            <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
+                                    data-product-id="${product._id}" data-variant-index="0" ${!hasStock ? 'disabled' : ''}>
+                                ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // পুরোনো থাম্বনেইল লিসেনার সরিয়ে দেওয়া হয়েছে, নিচে ডেলিগেশন ব্যবহার করা হবে
         }
-    }
-    
-    // Update rating stars and value
-    const ratingStars = productCard.querySelector('.rating-stars');
-    const ratingValue = productCard.querySelector('.rating-value');
-    if (ratingStars && ratingValue) {
-        ratingStars.innerHTML = getStarRating(variant.rating || 4.5);
-        ratingValue.innerText = `(${variant.rating || 4.5})`;
-    }
-    
-    // Update sold count
-    const soldSpan = productCard.querySelector('.sold-count');
-    if (soldSpan) {
-        soldSpan.innerText = `বিক্রি: ${variant.sold || 0}টি`;
-    }
-    
-    // Update active thumbnail
-    productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-    thumb.classList.add('active');
-    
-    // Update order button
-    const orderBtn = productCard.querySelector('.order-now-btn');
-    if (orderBtn) {
-        orderBtn.dataset.variantIndex = variantIndex;
-        if (variant.stock > 0) {
-            orderBtn.disabled = false;
-            orderBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-            orderBtn.classList.add('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
-            orderBtn.innerText = 'অর্ডার করুন';
-        } else {
-            orderBtn.disabled = true;
-            orderBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-            orderBtn.classList.remove('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
-            orderBtn.innerText = 'Sold Out';
-        }
-    }
-}
+
         // Handle Thumbnail Click
         function handleThumbnailClick(e) {
             const thumb = e.currentTarget;
@@ -1272,6 +1146,14 @@ function handleThumbnailClick(e) {
             document.getElementById('popupOverlay')?.addEventListener('click', closePopup);
 
             document.addEventListener('click', handleGlobalClick);
+
+            // ========== নতুন: থাম্বনেইল ক্লিকের জন্য ইভেন্ট ডেলিগেশন ==========
+            document.getElementById('productGrid')?.addEventListener('click', function(e) {
+                const thumb = e.target.closest('.thumbnail');
+                if (thumb) {
+                    handleThumbnailClick({ currentTarget: thumb });
+                }
+            });
         }
 
         // Handle Global Clicks
