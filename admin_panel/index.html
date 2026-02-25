@@ -67,9 +67,7 @@
             overflow-y: auto;
         }
         
-        .mobile-sidebar.open {
-            left: 0;
-        }
+        .mobile-sidebar.open { left: 0; }
         
         .mobile-sidebar-overlay {
             position: fixed;
@@ -82,9 +80,7 @@
             display: none;
         }
         
-        .mobile-sidebar-overlay.open {
-            display: block;
-        }
+        .mobile-sidebar-overlay.open { display: block; }
         
         .mobile-sidebar-header {
             background: #0A1F44;
@@ -102,20 +98,9 @@
             cursor: pointer;
         }
         
-        .mobile-sidebar-item:hover {
-            background: #f9f9f9;
-        }
-        
-        .mobile-sidebar-item.active {
-            background: #D4AF37;
-            color: #0A1F44;
-            font-weight: 600;
-        }
-        
-        .mobile-sidebar-item i {
-            width: 28px;
-            font-size: 18px;
-        }
+        .mobile-sidebar-item:hover { background: #f9f9f9; }
+        .mobile-sidebar-item.active { background: #D4AF37; color: #0A1F44; font-weight: 600; }
+        .mobile-sidebar-item i { width: 28px; font-size: 18px; }
         
         .mobile-sidebar-badge {
             background: #ef4444;
@@ -150,10 +135,7 @@
             text-align: center;
         }
         
-        .modal {
-            transition: all 0.3s;
-            backdrop-filter: blur(5px);
-        }
+        .modal { backdrop-filter: blur(5px); }
         
         .image-preview {
             width: 80px;
@@ -163,15 +145,36 @@
             border: 2px solid #D4AF37;
             transition: all 0.3s;
         }
-        .image-preview:hover {
-            transform: scale(1.05);
-        }
+        .image-preview:hover { transform: scale(1.05); }
         
-        .loading {
+        .loading-spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
             border: 3px solid rgba(212,175,55,.3);
+            border-radius: 50%;
+            border-top-color: #D4AF37;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(3px);
+        }
+        
+        .loading-spinner-large {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(212,175,55,.3);
             border-radius: 50%;
             border-top-color: #D4AF37;
             animation: spin 1s ease-in-out infinite;
@@ -219,14 +222,10 @@
             padding: 12px;
             border-bottom: 1px solid #e5e7eb;
         }
-        .data-table tr:hover {
-            background: #f9fafb;
-        }
+        .data-table tr:hover { background: #f9fafb; }
         
         @media (max-width: 768px) {
-            .data-table thead {
-                display: none;
-            }
+            .data-table thead { display: none; }
             .data-table tr {
                 display: block;
                 margin-bottom: 16px;
@@ -242,9 +241,7 @@
                 border: none;
                 border-bottom: 1px dashed #e5e7eb;
             }
-            .data-table td:last-child {
-                border-bottom: none;
-            }
+            .data-table td:last-child { border-bottom: none; }
             .data-table td:before {
                 content: attr(data-label);
                 font-weight: 600;
@@ -274,9 +271,7 @@
             border-radius: 8px;
             transition: background 0.3s;
         }
-        .hamburger-btn:hover {
-            background: rgba(212, 175, 55, 0.2);
-        }
+        .hamburger-btn:hover { background: rgba(212, 175, 55, 0.2); }
 
         @media (max-width: 768px) {
             #notificationDropdown {
@@ -289,9 +284,44 @@
                 z-index: 1002;
             }
         }
+
+        .btn-primary {
+            background-color: #0A1F44;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #D4AF37;
+            color: #0A1F44;
+            transform: scale(1.05);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .btn-danger:hover { background-color: #dc2626; }
+        .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body class="bg-gray-100">
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="text-center">
+        <div class="loading-spinner-large mx-auto mb-4"></div>
+        <p class="text-primary font-bold">লোড হচ্ছে...</p>
+    </div>
+</div>
 
 <!-- Login Page -->
 <div id="loginPage" class="min-h-screen flex items-center justify-center bg-primary p-4">
@@ -577,7 +607,7 @@
                     <div class="bg-white rounded-lg shadow p-4">
                         <h3 class="font-bold text-primary mb-4">অর্ডার স্ট্যাটাস</h3>
                         <div style="height: 220px;">
-                            <canvas id="orderChart" style="width: 100%; height: 100%;"></canvas>
+                            <canvas id="orderChart"></canvas>
                         </div>
                     </div>
                     <div class="bg-white rounded-lg shadow p-4">
@@ -831,7 +861,10 @@
             </div>
             <div class="border-t pt-4 flex justify-end gap-2">
                 <button type="button" id="closeSliderModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বাতিল</button>
-                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">সংরক্ষণ</button>
+                <button type="submit" id="sliderSubmitBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition flex items-center gap-2">
+                    <span>সংরক্ষণ</span>
+                    <span id="sliderLoading" class="loading-spinner hidden"></span>
+                </button>
             </div>
         </form>
     </div>
@@ -867,7 +900,10 @@
             </div>
             <div class="border-t pt-4 flex justify-end gap-2">
                 <button type="button" id="closeCategoryModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বাতিল</button>
-                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">সংরক্ষণ</button>
+                <button type="submit" id="categorySubmitBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition flex items-center gap-2">
+                    <span>সংরক্ষণ</span>
+                    <span id="categoryLoading" class="loading-spinner hidden"></span>
+                </button>
             </div>
         </form>
     </div>
@@ -890,7 +926,7 @@
                 <div>
                     <label class="block font-medium mb-2">ক্যাটাগরি *</label>
                     <select id="productCategory" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
-                        <option value="">সিলেক্ট করুন</option>
+                        <option value="">লোড হচ্ছে...</option>
                     </select>
                 </div>
             </div>
@@ -906,8 +942,8 @@
                     <input type="number" id="productPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
                 </div>
                 <div>
-                    <label class="block font-medium mb-2">পুরাতন মূল্য (টাকা) *</label>
-                    <input type="number" id="productOriginalPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
+                    <label class="block font-medium mb-2">পুরাতন মূল্য (টাকা)</label>
+                    <input type="number" id="productOriginalPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0">
                 </div>
             </div>
 
@@ -966,7 +1002,10 @@
 
             <div class="border-t pt-4 flex justify-end gap-2">
                 <button type="button" id="closeProductModal" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">বাতিল</button>
-                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition">সংরক্ষণ</button>
+                <button type="submit" id="productSubmitBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-primary transition flex items-center gap-2">
+                    <span>সংরক্ষণ</span>
+                    <span id="productLoading" class="loading-spinner hidden"></span>
+                </button>
             </div>
         </form>
     </div>
@@ -1037,7 +1076,16 @@
     let notificationInterval;
     let chartInstance = null;
     let confirmCallback = null;
-    let allProducts = []; // for slider dropdown
+    let allProducts = [];
+
+    // Loading functions
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+    }
 
     // Check authentication on load
     document.addEventListener('DOMContentLoaded', () => {
@@ -1045,10 +1093,45 @@
             validateToken();
         }
         updateLastUpdateTime();
-        
         setupMobileSidebar();
         setupNotificationToggles();
+        setupModalCloseButtons();
     });
+
+    function setupModalCloseButtons() {
+        // Close buttons for all modals - only these buttons will close modals
+        document.getElementById('closeSliderModal').addEventListener('click', () => {
+            document.getElementById('sliderModal').classList.add('hidden');
+            document.getElementById('sliderModal').classList.remove('flex');
+        });
+
+        document.getElementById('closeCategoryModal').addEventListener('click', () => {
+            document.getElementById('categoryModal').classList.add('hidden');
+            document.getElementById('categoryModal').classList.remove('flex');
+        });
+
+        document.getElementById('closeProductModal').addEventListener('click', () => {
+            document.getElementById('productModal').classList.add('hidden');
+            document.getElementById('productModal').classList.remove('flex');
+        });
+
+        document.getElementById('closeOrderModal').addEventListener('click', () => {
+            document.getElementById('orderModal').classList.add('hidden');
+            document.getElementById('orderModal').classList.remove('flex');
+        });
+
+        document.getElementById('closeReviewModal').addEventListener('click', () => {
+            document.getElementById('reviewModal').classList.add('hidden');
+            document.getElementById('reviewModal').classList.remove('flex');
+            document.getElementById('deleteReviewBtn').classList.add('hidden');
+        });
+
+        document.getElementById('cancelConfirm').addEventListener('click', () => {
+            document.getElementById('confirmModal').classList.add('hidden');
+            document.getElementById('confirmModal').classList.remove('flex');
+            confirmCallback = null;
+        });
+    }
 
     function setupNotificationToggles() {
         const notificationBtn = document.getElementById('notificationBtn');
@@ -1234,7 +1317,7 @@
         }
 
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="loading"></span> লগইন হচ্ছে...';
+        submitBtn.innerHTML = '<span class="loading-spinner"></span> লগইন হচ্ছে...';
 
         try {
             const response = await fetch(`${API_URL}/admin/login`, {
@@ -1310,12 +1393,6 @@
         document.getElementById('confirmModal').classList.remove('hidden');
         document.getElementById('confirmModal').classList.add('flex');
     }
-
-    document.getElementById('cancelConfirm').addEventListener('click', () => {
-        document.getElementById('confirmModal').classList.add('hidden');
-        document.getElementById('confirmModal').classList.remove('flex');
-        confirmCallback = null;
-    });
 
     document.getElementById('confirmAction').addEventListener('click', () => {
         if (confirmCallback) {
@@ -1581,11 +1658,6 @@
         }
     });
 
-    document.getElementById('closeSliderModal').addEventListener('click', () => {
-        document.getElementById('sliderModal').classList.add('hidden');
-        document.getElementById('sliderModal').classList.remove('flex');
-    });
-
     document.getElementById('sliderImage').addEventListener('change', function() {
         if (this.files && this.files[0]) {
             const reader = new FileReader();
@@ -1599,6 +1671,14 @@
 
     document.getElementById('sliderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const submitBtn = document.getElementById('sliderSubmitBtn');
+        const loading = document.getElementById('sliderLoading');
+        const btnText = submitBtn.querySelector('span:first-child');
+        
+        submitBtn.disabled = true;
+        loading.classList.remove('hidden');
+        btnText.textContent = 'সংরক্ষণ হচ্ছে...';
         
         const formData = new FormData();
         const productSelect = document.getElementById('sliderProductSelect');
@@ -1656,6 +1736,10 @@
             }
         } catch (error) {
             showToast('সমস্যা হয়েছে', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            loading.classList.add('hidden');
+            btnText.textContent = 'সংরক্ষণ';
         }
     });
 
@@ -1754,16 +1838,28 @@
                     </tr>
                 `).join('');
 
-                const select = document.getElementById('productCategory');
-                const filterSelect = document.getElementById('productCategoryFilter');
-                select.innerHTML = '<option value="">সিলেক্ট করুন</option>' + 
-                    data.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
-                filterSelect.innerHTML = '<option value="all">সব ক্যাটাগরি</option>' + 
-                    data.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
+                // Update category dropdowns
+                updateCategoryDropdowns(data.data);
             }
         } catch (error) {
             console.error('Error loading categories:', error);
             showToast('ক্যাটাগরি লোড করতে সমস্যা হয়েছে', 'error');
+        }
+    }
+
+    function updateCategoryDropdowns(categories) {
+        // Product category select in modal
+        const productSelect = document.getElementById('productCategory');
+        if (productSelect) {
+            productSelect.innerHTML = '<option value="">সিলেক্ট করুন</option>' + 
+                categories.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
+        }
+
+        // Product filter select
+        const filterSelect = document.getElementById('productCategoryFilter');
+        if (filterSelect) {
+            filterSelect.innerHTML = '<option value="all">সব ক্যাটাগরি</option>' + 
+                categories.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
         }
     }
 
@@ -1776,13 +1872,16 @@
         document.getElementById('categoryModal').classList.add('flex');
     });
 
-    document.getElementById('closeCategoryModal').addEventListener('click', () => {
-        document.getElementById('categoryModal').classList.add('hidden');
-        document.getElementById('categoryModal').classList.remove('flex');
-    });
-
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const submitBtn = document.getElementById('categorySubmitBtn');
+        const loading = document.getElementById('categoryLoading');
+        const btnText = submitBtn.querySelector('span:first-child');
+        
+        submitBtn.disabled = true;
+        loading.classList.remove('hidden');
+        btnText.textContent = 'সংরক্ষণ হচ্ছে...';
         
         const data = {
             name: document.getElementById('categoryName').value,
@@ -1816,6 +1915,10 @@
             }
         } catch (error) {
             showToast('সমস্যা হয়েছে', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            loading.classList.add('hidden');
+            btnText.textContent = 'সংরক্ষণ';
         }
     });
 
@@ -1932,31 +2035,25 @@
         }
     }
 
-   document.getElementById('addProductBtn').addEventListener('click', async () => {
-    // ক্যাটাগরি লোড করুন
-    try {
-        const response = await fetch(`${API_URL}/categories`);
-        const data = await response.json();
-        if (data.success) {
-            const select = document.getElementById('productCategory');
-            select.innerHTML = '<option value="">সিলেক্ট করুন</option>' + 
-                data.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
+    document.getElementById('addProductBtn').addEventListener('click', async () => {
+        // Load categories first
+        try {
+            const response = await fetch(`${API_URL}/categories`);
+            const data = await response.json();
+            if (data.success) {
+                updateCategoryDropdowns(data.data);
+            }
+        } catch (error) {
+            console.error('Error loading categories:', error);
         }
-    } catch (error) {
-        console.error('Error loading categories:', error);
-    }
-    
-    document.getElementById('productModalTitle').textContent = 'নতুন পণ্য';
-    document.getElementById('productForm').reset();
-    document.getElementById('productId').value = '';
-    document.getElementById('productActive').checked = true;
-    document.getElementById('productImagePreviews').innerHTML = '';
-    document.getElementById('productModal').classList.remove('hidden');
-    document.getElementById('productModal').classList.add('flex');
-});
-    document.getElementById('closeProductModal').addEventListener('click', () => {
-        document.getElementById('productModal').classList.add('hidden');
-        document.getElementById('productModal').classList.remove('flex');
+        
+        document.getElementById('productModalTitle').textContent = 'নতুন পণ্য';
+        document.getElementById('productForm').reset();
+        document.getElementById('productId').value = '';
+        document.getElementById('productActive').checked = true;
+        document.getElementById('productImagePreviews').innerHTML = '';
+        document.getElementById('productModal').classList.remove('hidden');
+        document.getElementById('productModal').classList.add('flex');
     });
 
     document.getElementById('productImages').addEventListener('change', function() {
@@ -1981,13 +2078,22 @@
     document.getElementById('productForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const submitBtn = document.getElementById('productSubmitBtn');
+        const loading = document.getElementById('productLoading');
+        const btnText = submitBtn.querySelector('span:first-child');
+        
+        submitBtn.disabled = true;
+        loading.classList.remove('hidden');
+        btnText.textContent = 'সংরক্ষণ হচ্ছে...';
+        
         const formData = new FormData();
         const data = {
             name: document.getElementById('productName').value,
             description: document.getElementById('productDescription').value,
             category: document.getElementById('productCategory').value,
+            categorySlug: document.getElementById('productCategory').value,
             price: parseInt(document.getElementById('productPrice').value),
-            originalPrice: parseInt(document.getElementById('productOriginalPrice').value),
+            originalPrice: parseInt(document.getElementById('productOriginalPrice').value) || 0,
             variants: [{
                 stock: parseInt(document.getElementById('productStock').value) || 0,
                 sold: parseInt(document.getElementById('productSold').value) || 0,
@@ -2029,73 +2135,72 @@
             }
         } catch (error) {
             showToast('সমস্যা হয়েছে', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            loading.classList.add('hidden');
+            btnText.textContent = 'সংরক্ষণ';
         }
     });
 
-  window.editProduct = async (id) => {
-    try {
-        // প্রথমে ক্যাটাগরি লোড হওয়া নিশ্চিত করুন
-        const categoriesResponse = await fetch(`${API_URL}/categories`);
-        const categoriesData = await categoriesResponse.json();
-        
-        // ক্যাটাগরি সিলেক্ট আপডেট করুন
-        if (categoriesData.success) {
-            const select = document.getElementById('productCategory');
-            select.innerHTML = '<option value="">সিলেক্ট করুন</option>' + 
-                categoriesData.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
-        }
-        
-        // তারপর পণ্যের ডাটা লোড করুন
-        const response = await fetch(`${API_URL}/products`);
-        const data = await response.json();
-        const product = data.data.find(p => p._id === id);
-        
-        if (product) {
-            const variant = product.variants[0] || {};
-            
-            document.getElementById('productModalTitle').textContent = 'এডিট পণ্য';
-            document.getElementById('productId').value = product._id;
-            document.getElementById('productName').value = product.name;
-            document.getElementById('productDescription').value = product.description;
-            
-            // ক্যাটাগরি সেট করার আগে একটু সময় নিন
-            setTimeout(() => {
-                const categorySelect = document.getElementById('productCategory');
-                categorySelect.value = product.categorySlug;
-                console.log('Category set to:', product.categorySlug); // ডিবাগ করার জন্য
-            }, 100);
-            
-            document.getElementById('productPrice').value = product.price;
-            document.getElementById('productOriginalPrice').value = product.originalPrice;
-            document.getElementById('productStock').value = variant.stock || 0;
-            document.getElementById('productSold').value = variant.sold || 0;
-            document.getElementById('productDiscount').value = variant.discount || '';
-            document.getElementById('productColor').value = variant.color || '';
-            document.getElementById('productSize').value = variant.size || '';
-            document.getElementById('productRating').value = variant.rating || 4.5;
-            document.getElementById('productFeatured').checked = product.featured || false;
-            document.getElementById('productTrending').checked = product.trending || false;
-            document.getElementById('productActive').checked = product.active !== false;
-            
-            const previews = document.getElementById('productImagePreviews');
-            previews.innerHTML = '';
-            if (variant.images && variant.images.length > 0) {
-                variant.images.forEach(img => {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = img.url;
-                    imgEl.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold';
-                    previews.appendChild(imgEl);
-                });
+    window.editProduct = async (id) => {
+        try {
+            // Load categories first
+            const categoriesResponse = await fetch(`${API_URL}/categories`);
+            const categoriesData = await categoriesResponse.json();
+            if (categoriesData.success) {
+                updateCategoryDropdowns(categoriesData.data);
             }
             
-            document.getElementById('productModal').classList.remove('hidden');
-            document.getElementById('productModal').classList.add('flex');
+            // Then load product data
+            const response = await fetch(`${API_URL}/products`);
+            const data = await response.json();
+            const product = data.data.find(p => p._id === id);
+            
+            if (product) {
+                const variant = product.variants[0] || {};
+                
+                document.getElementById('productModalTitle').textContent = 'এডিট পণ্য';
+                document.getElementById('productId').value = product._id;
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productDescription').value = product.description;
+                
+                // Set category after dropdown is populated
+                setTimeout(() => {
+                    document.getElementById('productCategory').value = product.categorySlug;
+                }, 100);
+                
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productOriginalPrice').value = product.originalPrice || 0;
+                document.getElementById('productStock').value = variant.stock || 0;
+                document.getElementById('productSold').value = variant.sold || 0;
+                document.getElementById('productDiscount').value = variant.discount || '';
+                document.getElementById('productColor').value = variant.color || '';
+                document.getElementById('productSize').value = variant.size || '';
+                document.getElementById('productRating').value = variant.rating || 4.5;
+                document.getElementById('productFeatured').checked = product.featured || false;
+                document.getElementById('productTrending').checked = product.trending || false;
+                document.getElementById('productActive').checked = product.active !== false;
+                
+                const previews = document.getElementById('productImagePreviews');
+                previews.innerHTML = '';
+                if (variant.images && variant.images.length > 0) {
+                    variant.images.forEach(img => {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = img.url;
+                        imgEl.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold';
+                        previews.appendChild(imgEl);
+                    });
+                }
+                
+                document.getElementById('productModal').classList.remove('hidden');
+                document.getElementById('productModal').classList.add('flex');
+            }
+        } catch (error) {
+            console.error('Error editing product:', error);
+            showToast('সমস্যা হয়েছে', 'error');
         }
-    } catch (error) {
-        console.error('Error editing product:', error);
-        showToast('সমস্যা হয়েছে', 'error');
-    }
-};
+    };
+
     window.deleteProduct = async (id) => {
         showConfirm('পণ্য ডিলিট করবেন?', async () => {
             try {
@@ -2297,11 +2402,6 @@
         }
     };
 
-    document.getElementById('closeOrderModal').addEventListener('click', () => {
-        document.getElementById('orderModal').classList.add('hidden');
-        document.getElementById('orderModal').classList.remove('flex');
-    });
-
     // Reviews
     async function loadReviews() {
         if (!token) return;
@@ -2489,12 +2589,6 @@
             showToast('সমস্যা হয়েছে', 'error');
         }
     };
-
-    document.getElementById('closeReviewModal').addEventListener('click', () => {
-        document.getElementById('reviewModal').classList.add('hidden');
-        document.getElementById('reviewModal').classList.remove('flex');
-        document.getElementById('deleteReviewBtn').classList.add('hidden');
-    });
 
     // Content
     async function loadContent() {
@@ -2742,39 +2836,6 @@
             toast.classList.add('hidden');
         }, 3000);
     }
-
-    // মডেল ক্লোজ করার জন্য শুধুমাত্র "বাতিল" বাটন ব্যবহার করা হবে
-document.getElementById('closeSliderModal').addEventListener('click', () => {
-    document.getElementById('sliderModal').classList.add('hidden');
-    document.getElementById('sliderModal').classList.remove('flex');
-});
-
-document.getElementById('closeCategoryModal').addEventListener('click', () => {
-    document.getElementById('categoryModal').classList.add('hidden');
-    document.getElementById('categoryModal').classList.remove('flex');
-});
-
-document.getElementById('closeProductModal').addEventListener('click', () => {
-    document.getElementById('productModal').classList.add('hidden');
-    document.getElementById('productModal').classList.remove('flex');
-});
-
-document.getElementById('closeOrderModal').addEventListener('click', () => {
-    document.getElementById('orderModal').classList.add('hidden');
-    document.getElementById('orderModal').classList.remove('flex');
-});
-
-document.getElementById('closeReviewModal').addEventListener('click', () => {
-    document.getElementById('reviewModal').classList.add('hidden');
-    document.getElementById('reviewModal').classList.remove('flex');
-    document.getElementById('deleteReviewBtn').classList.add('hidden');
-});
-
-document.getElementById('cancelConfirm').addEventListener('click', () => {
-    document.getElementById('confirmModal').classList.add('hidden');
-    document.getElementById('confirmModal').classList.remove('flex');
-    confirmCallback = null;
-});
 </script>
 </body>
 </html>
