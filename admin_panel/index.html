@@ -26,7 +26,7 @@
             padding: 12px 16px;
             position: sticky;
             top: 0;
-            z-index: 900;
+            z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -35,14 +35,12 @@
 
         .sidebar {
             transition: all 0.3s;
-            height: calc(100vh - 60px); /* Full height minus top nav */
+            height: calc(100vh - 60px);
             overflow-y: auto;
             position: sticky;
             top: 60px;
             background: white;
             box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
         }
         
         .sidebar-item {
@@ -137,7 +135,91 @@
             text-align: center;
         }
         
-        .modal { backdrop-filter: blur(5px); }
+        /* মোবাইল মডেল ইমপ্রুভমেন্ট */
+        @media (max-width: 768px) {
+            .modal {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                display: flex !important;
+                align-items: flex-start !important;
+                justify-content: center !important;
+                z-index: 9999 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                background-color: rgba(0, 0, 0, 0.5) !important;
+                backdrop-filter: blur(5px) !important;
+                -webkit-backdrop-filter: blur(5px) !important;
+            }
+            
+            .modal .bg-white {
+                width: 100% !important;
+                min-height: 100vh !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                max-height: none !important;
+                transform: none !important;
+                box-shadow: none !important;
+                animation: slideUp 0.3s ease-out !important;
+                background: white !important;
+            }
+            
+            @keyframes slideUp {
+                from {
+                    transform: translateY(100%);
+                }
+                to {
+                    transform: translateY(0);
+                }
+            }
+            
+            .modal .sticky {
+                position: sticky !important;
+                top: 0 !important;
+                background: white !important;
+                z-index: 10 !important;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+            }
+            
+            .modal .border-t {
+                position: sticky !important;
+                bottom: 0 !important;
+                background: white !important;
+                z-index: 10 !important;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+            }
+            
+            body.modal-open {
+                overflow: hidden !important;
+                position: fixed !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+            
+            body.modal-open .mobile-header {
+                z-index: 1 !important;
+            }
+        }
+        
+        /* ডেস্কটপে ব্যাকড্রপ ব্লার */
+        @media (min-width: 769px) {
+            .modal {
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+                background-color: rgba(0, 0, 0, 0.5);
+                transition: all 0.3s;
+            }
+            
+            .modal .bg-white {
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            }
+        }
         
         .image-preview {
             width: 80px;
@@ -187,15 +269,19 @@
         .toast {
             position: fixed;
             bottom: 20px;
+            left: 20px;
             right: 20px;
-            z-index: 9999;
-            animation: slideIn 0.3s;
+            z-index: 10000;
+            animation: slideUp 0.3s;
             max-width: 350px;
+            margin: 0 auto;
         }
         
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        @media (min-width: 768px) {
+            .toast {
+                left: auto;
+                right: 20px;
+            }
         }
         
         .quick-action-btn {
@@ -275,15 +361,15 @@
         }
         .hamburger-btn:hover { background: rgba(212, 175, 55, 0.2); }
 
-        /* Improved notification modal for mobile */
-        #notificationModal {
-            align-items: center;
-        }
         @media (max-width: 768px) {
-            #notificationModal .bg-white {
-                max-height: 90vh;
-                margin: 1rem;
-                width: calc(100% - 2rem);
+            #notificationDropdown {
+                position: fixed;
+                top: 70px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                max-width: none;
+                z-index: 1002;
             }
         }
 
@@ -313,41 +399,6 @@
         }
         .btn-danger:hover { background-color: #dc2626; }
         .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Product image preview with remove button */
-        .image-preview-wrapper {
-            position: relative;
-            display: inline-block;
-            margin: 5px;
-        }
-        .image-preview-wrapper img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid #D4AF37;
-        }
-        .remove-image-btn {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            cursor: pointer;
-            border: 2px solid white;
-            transition: all 0.2s;
-        }
-        .remove-image-btn:hover {
-            background: #dc2626;
-            transform: scale(1.1);
-        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -410,7 +461,7 @@
         </div>
         <div class="flex items-center space-x-3">
             <div class="relative">
-                <button id="mobileNotificationBtn" class="text-2xl relative" onclick="openNotificationModal()">
+                <button id="mobileNotificationBtn" class="text-2xl relative">
                     <i class="fas fa-bell"></i>
                     <span id="mobileNotificationCount" class="notification-badge hidden">0</span>
                 </button>
@@ -480,10 +531,16 @@
             </div>
             <div class="flex items-center space-x-4">
                 <div class="relative">
-                    <button id="notificationBtn" class="text-2xl relative" onclick="openNotificationModal()">
+                    <button id="notificationBtn" class="text-2xl relative">
                         <i class="fas fa-bell"></i>
                         <span id="notificationCount" class="notification-badge hidden">0</span>
                     </button>
+                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                        <div class="p-3 border-b border-gray-200 sticky top-0 bg-white">
+                            <h3 class="font-bold text-primary">নোটিফিকেশন</h3>
+                        </div>
+                        <div id="notificationList" class="divide-y divide-gray-100"></div>
+                    </div>
                 </div>
                 <span class="hidden md:inline" id="adminName">Admin</span>
                 <button id="logoutBtn" class="bg-gold text-primary px-4 py-2 rounded-lg text-sm hover:bg-yellow-500 transition transform hover:scale-105">
@@ -496,7 +553,7 @@
     <div class="flex flex-col md:flex-row">
         <!-- Desktop Sidebar -->
         <div class="sidebar hidden md:block md:w-64">
-            <div class="p-4 flex-1">
+            <div class="p-4">
                 <div class="space-y-1">
                     <button class="sidebar-item w-full text-left flex items-center active" data-section="dashboard">
                         <i class="fas fa-home mr-3 w-5"></i> ড্যাশবোর্ড
@@ -526,7 +583,6 @@
                     </button>
                 </div>
             </div>
-            <!-- No extra gap; sidebar now uses flex-1 -->
         </div>
 
         <!-- Main Content -->
@@ -847,19 +903,6 @@
     </div>
 </div>
 
-<!-- Notification Modal -->
-<div id="notificationModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] overflow-y-auto">
-        <div class="p-4 border-b border-gray-200 sticky top-0 bg-white flex justify-between items-center">
-            <h3 class="text-xl font-bold text-primary">নোটিফিকেশন</h3>
-            <button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div id="notificationListModal" class="divide-y divide-gray-100 p-2"></div>
-    </div>
-</div>
-
 <!-- Slider Modal -->
 <div id="sliderModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4 pt-8 md:pt-4 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl my-8 md:my-0 max-h-[calc(100vh-6rem)] md:max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
@@ -996,7 +1039,6 @@
                 <label class="block font-medium mb-2">ইমেজ * (সর্বোচ্চ ১০টি)</label>
                 <input type="file" id="productImages" accept="image/*" multiple class="w-full border rounded-lg p-2">
                 <div id="productImagePreviews" class="flex flex-wrap gap-2 mt-2"></div>
-                <input type="hidden" id="removedImages" value=""> <!-- Comma-separated cloudinaryIds to delete -->
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1124,9 +1166,6 @@
     let confirmCallback = null;
     let allProducts = [];
 
-    // Store removed image IDs during product edit
-    let removedImageIds = [];
-
     // Loading functions
     function showLoading() {
         document.getElementById('loadingOverlay').classList.remove('hidden');
@@ -1136,40 +1175,48 @@
         document.getElementById('loadingOverlay').classList.add('hidden');
     }
 
+    // বডি স্ক্রল লক করার জন্য ফাংশন
+    function setupBodyScrollLock() {
+        const modals = ['sliderModal', 'categoryModal', 'productModal', 'orderModal', 'reviewModal', 'confirmModal'];
+        
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            if (modal.classList.contains('flex')) {
+                                document.body.classList.add('modal-open');
+                            } else {
+                                document.body.classList.remove('modal-open');
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(modal, { attributes: true });
+            }
+        });
+    }
+
     // Check authentication on load
     document.addEventListener('DOMContentLoaded', () => {
+        token = localStorage.getItem('adminToken');
+        
         if (token) {
             validateToken();
+        } else {
+            showLogin();
         }
+        
         updateLastUpdateTime();
         setupMobileSidebar();
         setupNotificationToggles();
         setupModalCloseButtons();
-
-        // Auto-refresh current section every 60 seconds
-        setInterval(() => {
-            if (token && currentSection) {
-                loadSectionData(currentSection);
-            }
-        }, 60000);
-
-        // Periodic token check for session validity (every 30 seconds)
-        setInterval(async () => {
-            if (!token) return;
-            try {
-                const res = await fetch(`${API_URL}/admin/check-session`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!data.success) {
-                    logout();
-                }
-            } catch (err) {
-                // ignore network errors
-            }
-        }, 30000);
+        setupBodyScrollLock();
     });
 
+    // মডেল ক্লোজ বাটন সেটআপ
     function setupModalCloseButtons() {
         document.getElementById('closeSliderModal').addEventListener('click', () => {
             document.getElementById('sliderModal').classList.add('hidden');
@@ -1184,8 +1231,6 @@
         document.getElementById('closeProductModal').addEventListener('click', () => {
             document.getElementById('productModal').classList.add('hidden');
             document.getElementById('productModal').classList.remove('flex');
-            // Reset removed images array
-            removedImageIds = [];
         });
 
         document.getElementById('closeOrderModal').addEventListener('click', () => {
@@ -1207,20 +1252,35 @@
     }
 
     function setupNotificationToggles() {
-        // For mobile, clicking bell opens modal
+        const notificationBtn = document.getElementById('notificationBtn');
         const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
+        const dropdown = document.getElementById('notificationDropdown');
+        
+        if (notificationBtn) {
+            notificationBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('hidden');
+            });
+        }
+        
         if (mobileNotificationBtn) {
             mobileNotificationBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                openNotificationModal();
+                dropdown.classList.toggle('hidden');
             });
         }
-    }
-
-    function openNotificationModal() {
-        loadNotifications(); // refresh list
-        document.getElementById('notificationModal').classList.remove('hidden');
-        document.getElementById('notificationModal').classList.add('flex');
+        
+        document.addEventListener('click', function(e) {
+            if (!dropdown.contains(e.target) && 
+                !notificationBtn?.contains(e.target) && 
+                !mobileNotificationBtn?.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        
+        dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
     }
 
     function setupMobileSidebar() {
@@ -1270,10 +1330,20 @@
     }
 
     async function validateToken() {
+        if (!token) {
+            showLogin();
+            return;
+        }
+        
         try {
             const response = await fetch(`${API_URL}/admin/check`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            
+            if (!response.ok) {
+                throw new Error('Token invalid');
+            }
+            
             const data = await response.json();
             
             if (data.success) {
@@ -1298,13 +1368,26 @@
         document.getElementById('adminName').textContent = username;
         document.getElementById('mobileAdminName').textContent = username;
         document.getElementById('mobileSidebarAdminName').textContent = username;
+        
         loadDashboard();
         startNotificationPolling();
+        
+        if (window.location.hash) {
+            history.replaceState(null, null, ' ');
+        }
     }
 
     function showLogin() {
         document.getElementById('loginPage').classList.remove('hidden');
         document.getElementById('dashboardPage').classList.add('hidden');
+        
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUsername');
+        localStorage.removeItem('adminId');
+        token = null;
+        clearInterval(notificationInterval);
+        
+        history.replaceState(null, null, window.location.pathname);
     }
 
     async function logout() {
@@ -1461,7 +1544,7 @@
         confirmCallback = null;
     });
 
-    // Dashboard with real order stats
+    // Dashboard
     async function loadDashboard() {
         if (!token) return;
         
@@ -1500,34 +1583,10 @@
         loadRecentOrders();
         loadPendingReviews();
         loadRecentActivities();
-        loadRealOrderChart(); // Load real chart data
+        initOrderChart();
     }
 
-    async function loadRealOrderChart() {
-        try {
-            // Fetch orders and count by status
-            const response = await fetch(`${API_URL}/admin/orders?limit=1000`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (data.success) {
-                const orders = data.data;
-                const statusCounts = {
-                    pending: orders.filter(o => o.status === 'pending').length,
-                    confirmed: orders.filter(o => o.status === 'confirmed').length,
-                    processing: orders.filter(o => o.status === 'processing').length,
-                    shipped: orders.filter(o => o.status === 'shipped').length,
-                    delivered: orders.filter(o => o.status === 'delivered').length,
-                    cancelled: orders.filter(o => o.status === 'cancelled').length
-                };
-                updateOrderChart(statusCounts);
-            }
-        } catch (error) {
-            console.error('Error loading order chart data:', error);
-        }
-    }
-
-    function updateOrderChart(counts) {
+    function initOrderChart() {
         const ctx = document.getElementById('orderChart').getContext('2d');
         
         if (chartInstance) {
@@ -1539,14 +1598,7 @@
             data: {
                 labels: ['পেন্ডিং', 'কনফার্মড', 'প্রসেসিং', 'শিপড', 'ডেলিভারড', 'ক্যান্সেলড'],
                 datasets: [{
-                    data: [
-                        counts.pending,
-                        counts.confirmed,
-                        counts.processing,
-                        counts.shipped,
-                        counts.delivered,
-                        counts.cancelled
-                    ],
+                    data: [12, 8, 5, 7, 15, 3],
                     backgroundColor: [
                         '#FBBF24',
                         '#3B82F6',
@@ -2137,53 +2189,96 @@
         document.getElementById('productId').value = '';
         document.getElementById('productActive').checked = true;
         document.getElementById('productImagePreviews').innerHTML = '';
-        removedImageIds = []; // reset removed images
-        document.getElementById('removedImages').value = '';
         document.getElementById('productModal').classList.remove('hidden');
         document.getElementById('productModal').classList.add('flex');
     });
 
     document.getElementById('productImages').addEventListener('change', function() {
         const previews = document.getElementById('productImagePreviews');
-        // Keep existing previews (if any) and append new ones
-        // For new images, we add them without remove buttons (can only remove after save? but we allow removal of newly added files before save)
-        // Actually we should allow removal of newly selected files as well. Let's implement a more robust preview with remove for all.
-        // We'll redesign: when files are selected, we show them with remove buttons that remove the file from the input.
-        // However, clearing the input completely is tricky. We'll instead maintain an array of selected files and rebuild the input? Too complex.
-        // Simpler: we'll add a remove button on each preview, and when clicked, we remove that image from the list of files to upload.
-        // But FileList is read-only. So we need to use DataTransfer to manage files. Let's implement that.
-
-        // For simplicity, we'll only allow removal of existing images (from DB) via the remove button on preview.
-        // Newly selected files can be removed by clearing the input and re-adding? Not ideal. We'll skip this for now.
-        // We'll implement removal of existing images only.
+        previews.innerHTML = '';
+        
+        for (let i = 0; i < Math.min(this.files.length, 10); i++) {
+            const file = this.files[i];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold hover:scale-110 transition';
+                previews.appendChild(img);
+            };
+            
+            reader.readAsDataURL(file);
+        }
     });
 
-    // Function to add a preview for an existing image (with remove button)
-    function addExistingImagePreview(url, cloudinaryId) {
-        const previews = document.getElementById('productImagePreviews');
-        const wrapper = document.createElement('div');
-        wrapper.className = 'image-preview-wrapper';
-        wrapper.dataset.cloudinaryId = cloudinaryId;
-        wrapper.innerHTML = `
-            <img src="${url}" alt="Product image">
-            <div class="remove-image-btn" onclick="removeExistingImage(this)"><i class="fas fa-times"></i></div>
-        `;
-        previews.appendChild(wrapper);
-    }
-
-    window.removeExistingImage = function(btn) {
-        const wrapper = btn.closest('.image-preview-wrapper');
-        if (wrapper) {
-            const cloudinaryId = wrapper.dataset.cloudinaryId;
-            if (cloudinaryId) {
-                removedImageIds.push(cloudinaryId);
-                document.getElementById('removedImages').value = removedImageIds.join(',');
-            }
-            wrapper.remove();
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('productSubmitBtn');
+        const loading = document.getElementById('productLoading');
+        const btnText = submitBtn.querySelector('span:first-child');
+        
+        submitBtn.disabled = true;
+        loading.classList.remove('hidden');
+        btnText.textContent = 'সংরক্ষণ হচ্ছে...';
+        
+        const formData = new FormData();
+        const data = {
+            name: document.getElementById('productName').value,
+            description: document.getElementById('productDescription').value,
+            category: document.getElementById('productCategory').value,
+            categorySlug: document.getElementById('productCategory').value,
+            price: parseInt(document.getElementById('productPrice').value),
+            originalPrice: parseInt(document.getElementById('productOriginalPrice').value) || 0,
+            variants: [{
+                stock: parseInt(document.getElementById('productStock').value) || 0,
+                sold: parseInt(document.getElementById('productSold').value) || 0,
+                discount: document.getElementById('productDiscount').value,
+                color: document.getElementById('productColor').value,
+                size: document.getElementById('productSize').value,
+                rating: parseFloat(document.getElementById('productRating').value) || 4.5
+            }],
+            featured: document.getElementById('productFeatured').checked,
+            trending: document.getElementById('productTrending').checked,
+            active: document.getElementById('productActive').checked
+        };
+        
+        formData.append('data', JSON.stringify(data));
+        
+        const imageFiles = document.getElementById('productImages').files;
+        for (let i = 0; i < imageFiles.length; i++) {
+            formData.append('images', imageFiles[i]);
         }
-    };
 
-    // Override editProduct to populate previews with remove buttons
+        const productId = document.getElementById('productId').value;
+        const url = productId ? `${API_URL}/admin/products/${productId}` : `${API_URL}/admin/products`;
+        const method = productId ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                showToast(productId ? 'পণ্য আপডেট হয়েছে' : 'পণ্য তৈরি হয়েছে', 'success');
+                document.getElementById('closeProductModal').click();
+                loadProducts();
+            } else {
+                showToast(result.message, 'error');
+            }
+        } catch (error) {
+            showToast('সমস্যা হয়েছে', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            loading.classList.add('hidden');
+            btnText.textContent = 'সংরক্ষণ';
+        }
+    });
+
     window.editProduct = async (id) => {
         try {
             const categoriesResponse = await fetch(`${API_URL}/categories`);
@@ -2222,11 +2317,12 @@
                 
                 const previews = document.getElementById('productImagePreviews');
                 previews.innerHTML = '';
-                removedImageIds = []; // reset
-                document.getElementById('removedImages').value = '';
                 if (variant.images && variant.images.length > 0) {
                     variant.images.forEach(img => {
-                        addExistingImagePreview(img.url, img.cloudinaryId);
+                        const imgEl = document.createElement('img');
+                        imgEl.src = img.url;
+                        imgEl.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold';
+                        previews.appendChild(imgEl);
                     });
                 }
                 
@@ -2238,75 +2334,6 @@
             showToast('সমস্যা হয়েছে', 'error');
         }
     };
-
-    // Modify product form submit to include removedImages
-    document.getElementById('productForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('productSubmitBtn');
-        const loading = document.getElementById('productLoading');
-        const btnText = submitBtn.querySelector('span:first-child');
-        
-        submitBtn.disabled = true;
-        loading.classList.remove('hidden');
-        btnText.textContent = 'সংরক্ষণ হচ্ছে...';
-        
-        const formData = new FormData();
-        const data = {
-            name: document.getElementById('productName').value,
-            description: document.getElementById('productDescription').value,
-            category: document.getElementById('productCategory').value,
-            categorySlug: document.getElementById('productCategory').value,
-            price: parseInt(document.getElementById('productPrice').value),
-            originalPrice: parseInt(document.getElementById('productOriginalPrice').value) || 0,
-            variants: [{
-                stock: parseInt(document.getElementById('productStock').value) || 0,
-                sold: parseInt(document.getElementById('productSold').value) || 0,
-                discount: document.getElementById('productDiscount').value,
-                color: document.getElementById('productColor').value,
-                size: document.getElementById('productSize').value,
-                rating: parseFloat(document.getElementById('productRating').value) || 4.5
-            }],
-            featured: document.getElementById('productFeatured').checked,
-            trending: document.getElementById('productTrending').checked,
-            active: document.getElementById('productActive').checked,
-            removedImages: removedImageIds // send list of cloudinaryIds to delete
-        };
-        
-        formData.append('data', JSON.stringify(data));
-        
-        const imageFiles = document.getElementById('productImages').files;
-        for (let i = 0; i < imageFiles.length; i++) {
-            formData.append('images', imageFiles[i]);
-        }
-
-        const productId = document.getElementById('productId').value;
-        const url = productId ? `${API_URL}/admin/products/${productId}` : `${API_URL}/admin/products`;
-        const method = productId ? 'PUT' : 'POST';
-
-        try {
-            const response = await fetch(url, {
-                method,
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                showToast(productId ? 'পণ্য আপডেট হয়েছে' : 'পণ্য তৈরি হয়েছে', 'success');
-                document.getElementById('closeProductModal').click();
-                loadProducts();
-            } else {
-                showToast(result.message, 'error');
-            }
-        } catch (error) {
-            showToast('সমস্যা হয়েছে', 'error');
-        } finally {
-            submitBtn.disabled = false;
-            loading.classList.add('hidden');
-            btnText.textContent = 'সংরক্ষণ';
-        }
-    });
 
     window.deleteProduct = async (id) => {
         showConfirm('পণ্য ডিলিট করবেন?', async () => {
@@ -2435,7 +2462,7 @@
             if (data.success) {
                 showToast('অর্ডার স্ট্যাটাস আপডেট হয়েছে', 'success');
                 loadOrders();
-                loadDashboard(); // refresh stats including chart
+                loadDashboard();
             } else {
                 showToast(data.message, 'error');
             }
@@ -2804,7 +2831,7 @@
             if (data.success) {
                 notifications = data.data;
                 updateNotificationBadge();
-                updateNotificationModalList();
+                updateNotificationList();
             }
         } catch (error) {
             console.error('Error loading notifications:', error);
@@ -2827,8 +2854,8 @@
         }
     }
 
-    function updateNotificationModalList() {
-        const list = document.getElementById('notificationListModal');
+    function updateNotificationList() {
+        const list = document.getElementById('notificationList');
         
         if (notifications.length === 0) {
             list.innerHTML = '<div class="p-3 text-center text-gray-500">কোন নোটিফিকেশন নেই</div>';
@@ -2836,7 +2863,7 @@
         }
         
         list.innerHTML = notifications.map(notif => `
-            <div class="p-3 hover:bg-gray-50 cursor-pointer ${notif.read ? '' : 'bg-yellow-50'}" onclick="handleNotificationClick('${notif._id}')">
+            <div class="p-3 hover:bg-gray-50 cursor-pointer ${notif.read ? '' : 'bg-yellow-50'}" onclick="markNotificationRead('${notif._id}')">
                 <p class="font-medium text-sm">${notif.title}</p>
                 <p class="text-xs text-gray-600">${notif.message}</p>
                 <p class="text-xs text-gray-400 mt-1">${timeAgo(notif.createdAt)}</p>
@@ -2844,23 +2871,18 @@
         `).join('');
     }
 
-    window.handleNotificationClick = async (id) => {
-        const notif = notifications.find(n => n._id === id);
-        if (!notif) return;
-
-        await fetch(`${API_URL}/admin/notifications/${id}/read`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (notif.type === 'order' && notif.data?.orderId) {
-            viewOrderDetails(notif.data.orderId);
-        } else if (notif.type === 'review' && notif.data?.reviewId) {
-            viewReview(notif.data.reviewId);
+    window.markNotificationRead = async (id) => {
+        if (!token) return;
+        
+        try {
+            await fetch(`${API_URL}/admin/notifications/${id}/read`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadNotifications();
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
         }
-
-        document.getElementById('notificationModal').classList.add('hidden');
-        loadNotifications();
     };
 
     // Filter change events
@@ -2948,6 +2970,643 @@
             toast.classList.add('hidden');
         }, 3000);
     }
+
+    // ব্রাউজার ব্যাক বাটন হ্যান্ডেল করুন
+    window.addEventListener('popstate', function(event) {
+        const openModals = document.querySelectorAll('.modal.flex');
+        if (openModals.length > 0) {
+            openModals.forEach(modal => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+            document.body.classList.remove('modal-open');
+            event.preventDefault();
+        }
+    });
+
+        // পেজ রিফ্রেশ বা আনলোডের সময় টোকেন সংরক্ষিত থাকবে
+    window.addEventListener('beforeunload', function() {
+        // কিছু করার দরকার নেই, টোকেন localStorage এ সংরক্ষিত থাকবে
+    });
+
+    // এরর হ্যান্ডলিং ইমপ্রুভ করুন
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled rejection:', event.reason);
+        showToast('একটি সমস্যা হয়েছে', 'error');
+    });
+
+    // নেটওয়ার্ক স্ট্যাটাস চেক
+    window.addEventListener('online', function() {
+        showToast('ইন্টারনেট সংযোগ পুনরুদ্ধার হয়েছে', 'success');
+    });
+
+    window.addEventListener('offline', function() {
+        showToast('ইন্টারনেট সংযোগ বিচ্ছিন্ন হয়েছে', 'error');
+    });
+
+    // ডিবাগging তথ্য কনসোলে দেখান (শুধুমাত্র ডেভেলপমেন্টের জন্য)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.log('ডেভেলপমেন্ট মোডে চলছে');
+    }
+
+    // মোবাইল ডিভাইস ডিটেক্ট করুন
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+        document.body.classList.add('is-mobile');
+    }
+
+    // টাচ ইভেন্ট হ্যান্ডলিং
+    document.addEventListener('touchstart', function() {
+        // টাচ ইভেন্ট হ্যান্ডল করার জন্য
+    }, { passive: true });
+
+    // কীবোর্ড শর্টকাট (ডেস্কটপের জন্য)
+    document.addEventListener('keydown', function(e) {
+        // Escape কী প্রেস করলে মডেল বন্ধ হবে
+        if (e.key === 'Escape') {
+            const openModals = document.querySelectorAll('.modal.flex');
+            if (openModals.length > 0) {
+                openModals.forEach(modal => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                });
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Ctrl+S ফর্ম সাবমিট প্রতিরোধ
+        if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            // কোন ফর্ম খোলা আছে কিনা চেক করুন
+            const openModals = document.querySelectorAll('.modal.flex');
+            if (openModals.length > 0) {
+                const form = openModals[0].querySelector('form');
+                if (form) {
+                    form.dispatchEvent(new Event('submit', { cancelable: true }));
+                }
+            }
+        }
+    });
+
+    // লোকাল স্টোরেজ ক্লিনআপ (যদি প্রয়োজন হয়)
+    function cleanupLocalStorage() {
+        const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+        const loginTime = localStorage.getItem('loginTime');
+        
+        if (loginTime && (Date.now() - parseInt(loginTime)) > maxAge) {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUsername');
+            localStorage.removeItem('adminId');
+            localStorage.removeItem('loginTime');
+            showLogin();
+        }
+    }
+
+    // লগইন সফল হলে সময় সংরক্ষণ করুন
+    function saveLoginTime() {
+        localStorage.setItem('loginTime', Date.now().toString());
+    }
+
+    // অরিজিনাল লগইন ফাংশন আপডেট করুন
+    const originalLoginSubmit = document.getElementById('loginForm').onsubmit;
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const errorDiv = document.getElementById('loginError');
+        const submitBtn = document.getElementById('loginBtn');
+        
+        errorDiv.classList.add('hidden');
+        
+        if (!username || !password) {
+            errorDiv.classList.remove('hidden');
+            errorDiv.innerHTML = 'ইউজারনেম এবং পাসওয়ার্ড দিন';
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading-spinner"></span> লগইন হচ্ছে...';
+
+        try {
+            const response = await fetch(`${API_URL}/admin/login`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                token = data.token;
+                localStorage.setItem('adminToken', token);
+                saveLoginTime();
+                
+                if (data.admin) {
+                    localStorage.setItem('adminUsername', data.admin.username);
+                    localStorage.setItem('adminId', data.admin.id);
+                }
+                
+                showDashboard();
+                showToast('লগইন সফল হয়েছে', 'success');
+            } else {
+                errorDiv.classList.remove('hidden');
+                errorDiv.innerHTML = data.message || 'ইউজারনেম বা পাসওয়ার্ড ভুল';
+            }
+        } catch (error) {
+            console.error('Login error details:', error);
+            errorDiv.classList.remove('hidden');
+            errorDiv.innerHTML = 'লগইন করতে সমস্যা হয়েছে: ' + error.message;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'লগইন করুন';
+        }
+    });
+
+    // পিরিয়ডিক ক্লিনআপ চালান
+    setInterval(cleanupLocalStorage, 60 * 60 * 1000); // প্রতি ঘন্টায়
+
+    // ডাটা এক্সপোর্ট ফাংশন (ঐচ্ছিক)
+    window.exportData = function(type) {
+        if (!token) return;
+        
+        let data = [];
+        let filename = '';
+        
+        switch(type) {
+            case 'orders':
+                data = orders; // আপনার অর্ডার ডাটা
+                filename = 'orders_export.csv';
+                break;
+            case 'products':
+                data = products; // আপনার পণ্য ডাটা
+                filename = 'products_export.csv';
+                break;
+        }
+        
+        if (data.length > 0) {
+            const csv = convertToCSV(data);
+            downloadCSV(csv, filename);
+            showToast('ডাটা এক্সপোর্ট করা হয়েছে', 'success');
+        }
+    };
+
+    function convertToCSV(data) {
+        if (data.length === 0) return '';
+        
+        const headers = Object.keys(data[0]);
+        const csvRows = [];
+        
+        csvRows.push(headers.join(','));
+        
+        for (const row of data) {
+            const values = headers.map(header => {
+                const escaped = ('' + row[header]).replace(/"/g, '\\"');
+                return `"${escaped}"`;
+            });
+            csvRows.push(values.join(','));
+        }
+        
+        return csvRows.join('\n');
+    }
+
+    function downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', filename);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    // অটো-রিফ্রেশ ফাংশন (ঐচ্ছিক)
+    let autoRefreshInterval;
+    
+    window.startAutoRefresh = function(interval = 300000) { // 5 মিনিট
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+        autoRefreshInterval = setInterval(() => {
+            if (token && document.getElementById('dashboardPage').classList.contains('hidden') === false) {
+                loadSectionData(currentSection);
+                showToast('ডাটা অটো-রিফ্রেশ হয়েছে', 'info');
+            }
+        }, interval);
+    };
+
+    window.stopAutoRefresh = function() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    };
+
+    // অটো-রিফ্রেশ শুরু করুন
+    startAutoRefresh();
+
+    // ফর্ম ভ্যালিডেশন ফাংশন
+    function validateProductForm() {
+        const name = document.getElementById('productName').value;
+        const price = document.getElementById('productPrice').value;
+        const category = document.getElementById('productCategory').value;
+        
+        if (!name || name.trim() === '') {
+            showToast('পণ্যের নাম দিন', 'error');
+            return false;
+        }
+        
+        if (!price || price <= 0) {
+            showToast('সঠিক মূল্য দিন', 'error');
+            return false;
+        }
+        
+        if (!category) {
+            showToast('ক্যাটাগরি নির্বাচন করুন', 'error');
+            return false;
+        }
+        
+        return true;
+    }
+
+    // ইমেজ আপলোড প্রিভিউ ফাংশন ইমপ্রুভ
+    function previewImages(input, previewContainer) {
+        const container = document.getElementById(previewContainer);
+        container.innerHTML = '';
+        
+        if (input.files) {
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold m-1 hover:scale-110 transition cursor-pointer';
+                    img.onclick = () => showImagePreview(e.target.result);
+                    container.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    function showImagePreview(src) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[10001] p-4';
+        modal.innerHTML = `
+            <div class="relative max-w-4xl max-h-screen">
+                <img src="${src}" class="max-w-full max-h-screen object-contain rounded-lg">
+                <button onclick="this.parentElement.parentElement.remove()" class="absolute top-4 right-4 bg-white text-primary w-10 h-10 rounded-full flex items-center justify-center text-2xl hover:bg-gold transition">&times;</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // ড্র্যাগ অ্যান্ড ড্রপ ফাইল আপলোড
+    function setupDragAndDrop(dropZoneId, fileInputId) {
+        const dropZone = document.getElementById(dropZoneId);
+        const fileInput = document.getElementById(fileInputId);
+        
+        if (!dropZone || !fileInput) return;
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('border-gold', 'bg-gold', 'bg-opacity-10');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('border-gold', 'bg-gold', 'bg-opacity-10');
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            
+            // ইভেন্ট ট্রিগার করুন
+            const event = new Event('change', { bubbles: true });
+            fileInput.dispatchEvent(event);
+        }
+    }
+
+    // সেটআপ ড্র্যাগ অ্যান্ড ড্রপ
+    setupDragAndDrop('productImages', 'productImages');
+    setupDragAndDrop('sliderImage', 'sliderImage');
+
+    // সার্চ ফাংশন অপ্টিমাইজেশন
+    function optimizedSearch(items, searchTerm, fields) {
+        if (!searchTerm) return items;
+        
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        
+        return items.filter(item => {
+            return fields.some(field => {
+                const value = item[field];
+                if (typeof value === 'string') {
+                    return value.toLowerCase().includes(lowerSearchTerm);
+                }
+                if (typeof value === 'number') {
+                    return value.toString().includes(lowerSearchTerm);
+                }
+                return false;
+            });
+        });
+    }
+
+    // প্যাগিনেশন ফাংশন
+    function paginateData(data, page, limit) {
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+        
+        return {
+            data: data.slice(startIndex, endIndex),
+            total: data.length,
+            page: page,
+            pages: Math.ceil(data.length / limit)
+        };
+    }
+
+    // ক্যাশিং মেকানিজম
+    const cache = {
+        data: {},
+        timestamp: {},
+        maxAge: 5 * 60 * 1000, // 5 মিনিট
+        
+        set(key, value) {
+            this.data[key] = value;
+            this.timestamp[key] = Date.now();
+        },
+        
+        get(key) {
+            if (this.data[key] && (Date.now() - this.timestamp[key] < this.maxAge)) {
+                return this.data[key];
+            }
+            return null;
+        },
+        
+        clear(key) {
+            if (key) {
+                delete this.data[key];
+                delete this.timestamp[key];
+            } else {
+                this.data = {};
+                this.timestamp = {};
+            }
+        }
+    };
+
+    // ক্যাশ সহ API কল
+    async function fetchWithCache(url, options = {}, cacheKey = null) {
+        if (!cacheKey) {
+            cacheKey = url;
+        }
+        
+        const cachedData = cache.get(cacheKey);
+        if (cachedData) {
+            console.log('ক্যাশ থেকে ডাটা লোড করা হয়েছে:', cacheKey);
+            return cachedData;
+        }
+        
+        const response = await fetch(url, options);
+        const data = await response.json();
+        
+        if (data.success) {
+            cache.set(cacheKey, data);
+        }
+        
+        return data;
+    }
+
+    // ক্যাশ ক্লিয়ার করার ফাংশন
+    window.clearCache = function(key) {
+        cache.clear(key);
+        showToast('ক্যাশ ক্লিয়ার করা হয়েছে', 'success');
+    };
+
+    // ডাটা সিঙ্ক ফাংশন
+    async function syncData() {
+        if (!token) return;
+        
+        showLoading();
+        
+        try {
+            const sections = ['dashboard', 'sliders', 'categories', 'products', 'orders', 'reviews', 'content'];
+            
+            for (const section of sections) {
+                await loadSectionData(section);
+            }
+            
+            cache.clear(); // ক্যাশ ক্লিয়ার করুন
+            showToast('সব ডাটা সিঙ্ক করা হয়েছে', 'success');
+        } catch (error) {
+            console.error('Error syncing data:', error);
+            showToast('ডাটা সিঙ্ক করতে সমস্যা হয়েছে', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // সিঙ্ক বাটন যোগ করুন
+    window.addSyncButton = function() {
+        const syncBtn = document.createElement('button');
+        syncBtn.id = 'syncBtn';
+        syncBtn.className = 'fixed bottom-20 right-4 bg-primary text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-gold hover:text-primary transition z-50';
+        syncBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+        syncBtn.onclick = syncData;
+        syncBtn.title = 'সব ডাটা সিঙ্ক করুন';
+        document.body.appendChild(syncBtn);
+    };
+
+    // সিঙ্ক বাটন যোগ করুন
+    addSyncButton();
+
+    // ইউজার সেশন মনিটরিং
+    let lastActivity = Date.now();
+    
+    document.addEventListener('mousemove', () => { lastActivity = Date.now(); });
+    document.addEventListener('keypress', () => { lastActivity = Date.now(); });
+    document.addEventListener('click', () => { lastActivity = Date.now(); });
+    document.addEventListener('scroll', () => { lastActivity = Date.now(); });
+    
+    setInterval(() => {
+        const inactiveTime = Date.now() - lastActivity;
+        const maxInactiveTime = 30 * 60 * 1000; // 30 মিনিট
+        
+        if (inactiveTime > maxInactiveTime && token) {
+            showToast('নিষ্ক্রিয়তার কারণে লগআউট হচ্ছে...', 'warning');
+            setTimeout(() => logout(), 5000);
+        }
+    }, 60000); // প্রতি মিনিটে চেক করুন
+
+    // অ্যাপ্লিকেশন ভার্সন চেক
+    async function checkVersion() {
+        try {
+            const response = await fetch(`${API_URL}/version`);
+            const data = await response.json();
+            
+            const currentVersion = localStorage.getItem('appVersion');
+            
+            if (currentVersion && data.version !== currentVersion) {
+                showToast('নতুন ভার্সন পাওয়া গেছে। পেজ রিলোড করুন।', 'info');
+            }
+            
+            localStorage.setItem('appVersion', data.version);
+        } catch (error) {
+            console.error('Error checking version:', error);
+        }
+    }
+
+    // প্রতি ঘন্টায় ভার্সন চেক করুন
+    setInterval(checkVersion, 60 * 60 * 1000);
+
+    // রিপোর্ট জেনারেট ফাংশন
+    window.generateReport = async function(type, startDate, endDate) {
+        if (!token) return;
+        
+        showLoading();
+        
+        try {
+            const response = await fetch(`${API_URL}/admin/reports/${type}?start=${startDate}&end=${endDate}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // রিপোর্ট ডাউনলোড করুন
+                const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${type}_report_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                
+                showToast('রিপোর্ট জেনারেট করা হয়েছে', 'success');
+            }
+        } catch (error) {
+            console.error('Error generating report:', error);
+            showToast('রিপোর্ট জেনারেট করতে সমস্যা হয়েছে', 'error');
+        } finally {
+            hideLoading();
+        }
+    };
+
+    // ইউজার প্রিফারেন্স সেভ
+    function saveUserPreference(key, value) {
+        const preferences = JSON.parse(localStorage.getItem('userPreferences') || '{}');
+        preferences[key] = value;
+        localStorage.setItem('userPreferences', JSON.stringify(preferences));
+    }
+
+    function loadUserPreference(key, defaultValue = null) {
+        const preferences = JSON.parse(localStorage.getItem('userPreferences') || '{}');
+        return preferences[key] !== undefined ? preferences[key] : defaultValue;
+    }
+
+    // থিম টগল (ঐচ্ছিক)
+    window.toggleTheme = function() {
+        const isDark = document.body.classList.toggle('dark-mode');
+        saveUserPreference('darkMode', isDark);
+    };
+
+    // ডার্ক মোড লোড করুন
+    if (loadUserPreference('darkMode', false)) {
+        document.body.classList.add('dark-mode');
+    }
+
+    // ফন্ট সাইজ অ্যাডজাস্ট
+    window.adjustFontSize = function(increase) {
+        const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const newSize = increase ? currentSize + 1 : currentSize - 1;
+        
+        if (newSize >= 12 && newSize <= 20) {
+            document.documentElement.style.fontSize = newSize + 'px';
+            saveUserPreference('fontSize', newSize);
+        }
+    };
+
+    // সেভ করা ফন্ট সাইজ লোড করুন
+    const savedFontSize = loadUserPreference('fontSize', 16);
+    document.documentElement.style.fontSize = savedFontSize + 'px';
+
+    // অ্যানালিটিক্স ট্র্যাকিং (ঐচ্ছিক)
+    function trackEvent(category, action, label) {
+        console.log('Event tracked:', { category, action, label });
+        // গুগল অ্যানালিটিক্স বা অন্যান্য ট্র্যাকিং সিস্টেমে পাঠান
+    }
+
+    // পৃষ্ঠা ভিউ ট্র্যাক করুন
+    trackEvent('Page', 'View', window.location.pathname);
+
+    // ক্লিক ইভেন্ট ট্র্যাক করুন
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('[data-track]');
+        if (target) {
+            trackEvent('Click', target.dataset.track, target.textContent);
+        }
+    });
+
+    // এক্সপোর্ট সব ফাংশন
+    window.SwiftBagsAdmin = {
+        token,
+        currentSection,
+        notifications,
+        loadDashboard,
+        loadSliders,
+        loadCategories,
+        loadProducts,
+        loadOrders,
+        loadReviews,
+        loadContent,
+        logout,
+        showToast,
+        showConfirm,
+        syncData,
+        generateReport,
+        toggleTheme,
+        adjustFontSize,
+        exportData,
+        clearCache
+    };
+
+    console.log('SwiftBags অ্যাডমিন প্যানেল লোড হয়েছে');
+
+    // পেজ লোড সম্পূর্ণ হলে হাইড লোডিং
+    window.addEventListener('load', function() {
+        hideLoading();
+    });
+
+    // মেমোরি লিক প্রতিরোধ
+    window.addEventListener('unload', function() {
+        if (notificationInterval) {
+            clearInterval(notificationInterval);
+        }
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    });
 </script>
 </body>
 </html>
