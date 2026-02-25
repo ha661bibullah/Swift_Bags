@@ -9,12 +9,12 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
-    <link rel="icon" type="img/swift_bags.png" href="favicon.png">
+     <link rel="icon" type="img/swift_bags.png" href="favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Hind Siliguri Font -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* সমস্ত স্টাইল পূর্বের মতোই থাকবে, নিচে প্রয়োজনীয় আপডেট যোগ করা হয়েছে */
+        /* সমস্ত স্টাইল পূর্বের মতোই থাকবে, অপরিবর্তিত */
         * {
             font-family: 'Hind Siliguri', sans-serif;
         }
@@ -223,7 +223,6 @@
             border-radius: 4px;
         }
         
-        /* আপডেট: নির্বাচিত পণ্য এক লাইনে দেখানোর জন্য */
         .selected-product-item {
             display: flex;
             align-items: center;
@@ -927,31 +926,46 @@
                 `;
             }).join('');
 
-            // পুরোনো থাম্বনেইল লিসেনার সরিয়ে দেওয়া হয়েছে, নিচে ডেলিগেশন ব্যবহার করা হবে
+            // পৃথক ইভেন্ট লিসেনার সরিয়ে দেওয়া হয়েছে, ডেলিগেশন ব্যবহার করা হবে
         }
 
-        // Handle Thumbnail Click
+        // ============= আপডেটেড থাম্বনেইল হ্যান্ডলার =============
         function handleThumbnailClick(e) {
             const thumb = e.currentTarget;
             const productId = thumb.dataset.productId;
             const variantIndex = parseInt(thumb.dataset.variantIndex);
+            
+            // Debug log
+            console.log('Thumb clicked:', { productId, variantIndex });
+
             const productCard = thumb.closest('.product-card');
-            
-            // Find product
+            if (!productCard) {
+                console.error('Product card not found');
+                return;
+            }
+
             const product = allProducts.find(p => p._id === productId);
-            if (!product) return;
-            
+            if (!product) {
+                console.error('Product not found:', productId);
+                return;
+            }
+
             const variant = product.variants[variantIndex];
-            if (!variant) return;
-            
-            // Update main image
+            if (!variant) {
+                console.error('Variant not found for index:', variantIndex);
+                return;
+            }
+
+            // 1. Update main image
             const mainImg = productCard.querySelector('.main-image');
             if (mainImg) {
                 mainImg.src = thumb.src;
                 mainImg.dataset.variantIndex = variantIndex;
+            } else {
+                console.error('Main image not found');
             }
-            
-            // Update discount badge
+
+            // 2. Update discount badge
             const badge = productCard.querySelector('[data-badge]');
             if (badge) {
                 if (variant.discount && variant.stock > 0) {
@@ -961,26 +975,28 @@
                     badge.style.display = 'none';
                 }
             }
-            
-            // Update rating stars and value
+
+            // 3. Update rating stars and value
             const ratingStars = productCard.querySelector('.rating-stars');
             const ratingValue = productCard.querySelector('.rating-value');
             if (ratingStars && ratingValue) {
                 ratingStars.innerHTML = getStarRating(variant.rating || 4.5);
                 ratingValue.innerText = `(${variant.rating || 4.5})`;
+            } else {
+                console.error('Rating elements not found');
             }
-            
-            // Update sold count
+
+            // 4. Update sold count
             const soldSpan = productCard.querySelector('.sold-count');
             if (soldSpan) {
                 soldSpan.innerText = `বিক্রি: ${variant.sold || 0}টি`;
             }
-            
-            // Update active thumbnail
+
+            // 5. Update active thumbnail
             productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
-            
-            // Update order button
+
+            // 6. Update order button
             const orderBtn = productCard.querySelector('.order-now-btn');
             if (orderBtn) {
                 orderBtn.dataset.variantIndex = variantIndex;
@@ -995,6 +1011,8 @@
                     orderBtn.classList.remove('bg-primary', 'hover:bg-gold', 'hover:text-primary', 'transition');
                     orderBtn.innerText = 'Sold Out';
                 }
+            } else {
+                console.error('Order button not found');
             }
         }
 
@@ -1147,7 +1165,7 @@
 
             document.addEventListener('click', handleGlobalClick);
 
-            // ========== নতুন: থাম্বনেইল ক্লিকের জন্য ইভেন্ট ডেলিগেশন ==========
+            // থাম্বনেইল ক্লিকের জন্য ইভেন্ট ডেলিগেশন (আপডেটেড)
             document.getElementById('productGrid')?.addEventListener('click', function(e) {
                 const thumb = e.target.closest('.thumbnail');
                 if (thumb) {
