@@ -138,6 +138,7 @@
         .product-card {
             transition: all 0.3s;
             position: relative;
+            cursor: pointer;
         }
         .product-card:hover {
             transform: translateY(-5px);
@@ -201,6 +202,7 @@
             font-weight: 600;
             transition: all 0.3s;
             white-space: nowrap;
+            cursor: pointer;
         }
         .cat-btn.active {
             background-color: #0A1F44;
@@ -209,6 +211,10 @@
         .cat-btn:not(.active) {
             background-color: #e5e7eb;
             color: #1a1a1a;
+        }
+        .cat-btn:hover {
+            background-color: #D4AF37;
+            color: #0A1F44;
         }
         
         .whatsapp-btn {
@@ -385,6 +391,7 @@
             background-position: center;
             position: relative;
             height: 100%;
+            cursor: pointer;
         }
         .slider-item::before {
             content: '';
@@ -501,6 +508,7 @@
             border-radius: 12px;
             padding: 16px;
             transition: all 0.3s;
+            cursor: pointer;
         }
         .trending-item:hover {
             transform: translateX(5px);
@@ -520,6 +528,11 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Active state for hash links */
+        .section-active {
+            scroll-margin-top: 80px;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -528,11 +541,13 @@
     <nav class="bg-primary text-white sticky top-0 z-50 shadow-lg">
         <div class="container-custom py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <img src="img/SwiftBags.jpeg" alt="Swift Bags Logo" class="w-10 h-10 logo-animation" onerror="this.src='https://via.placeholder.com/40x40/D4AF37/0A1F44?text=SB'">
-                <div class="flex flex-col">
-                    <span class="text-2xl font-bold text-gold leading-tight">Swift Bags</span>
-                    <span class="text-xs text-gray-300" id="siteSubtitle">প্রিমিয়াম কোয়ালিটির ব্যাগ</span>
-                </div>
+                <a href="#home" class="flex items-center space-x-2">
+                    <img src="img/SwiftBags.jpeg" alt="Swift Bags Logo" class="w-10 h-10 logo-animation" onerror="this.src='https://via.placeholder.com/40x40/D4AF37/0A1F44?text=SB'">
+                    <div class="flex flex-col">
+                        <span class="text-2xl font-bold text-gold leading-tight">Swift Bags</span>
+                        <span class="text-xs text-gray-300" id="siteSubtitle">প্রিমিয়াম কোয়ালিটির ব্যাগ</span>
+                    </div>
+                </a>
             </div>
             <div class="hidden md:flex items-center space-x-6">
                 <a href="#home" class="hover:text-gold transition">হোম</a>
@@ -559,7 +574,7 @@
     </nav>
 
     <!-- ১. স্লাইডার সেকশন -->
-    <section id="home" class="py-4">
+    <section id="home" class="py-4 section-active">
         <div class="container-custom">
             <div class="relative rounded-2xl overflow-hidden shadow-xl" style="height: 400px;">
                 <div id="slider" class="relative h-full">
@@ -572,7 +587,7 @@
     </section>
 
     <!-- ২ ও ৩. ক্যাটাগরি ও প্রোডাক্ট কার্ড -->
-    <section id="products" class="py-6">
+    <section id="products" class="py-6 section-active">
         <div class="container-custom">
             <h2 class="text-2xl md:text-3xl font-bold text-primary mb-4 text-center">আমাদের পণ্য</h2>
             <div id="categoryButtons" class="flex justify-center gap-2 md:gap-4 mb-6 overflow-x-auto pb-2 px-2">
@@ -585,7 +600,7 @@
     </section>
 
     <!-- ৪. অর্ডার ফর্ম + ট্রেন্ডিং স্লাইডার -->
-    <section id="order" class="py-6 bg-white">
+    <section id="order" class="py-6 bg-white section-active">
         <div class="container-custom">
             <div class="flex flex-col md:flex-row gap-6">
                 <div class="md:w-1/2 bg-light p-4 md:p-6 rounded-2xl shadow-lg">
@@ -639,7 +654,7 @@
     </section>
 
     <!-- ৫. রিভিউ ফর্ম ও কাস্টমার রিভিউ -->
-    <section id="reviews" class="py-6">
+    <section id="reviews" class="py-6 section-active">
         <div class="container-custom">
             <div class="flex flex-col md:flex-row gap-6">
                 <div class="md:w-1/2 bg-white p-4 md:p-6 rounded-2xl shadow-lg">
@@ -714,7 +729,70 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadAllData();
             setupEventListeners();
+            checkHashAndScroll();
+            
+            // Listen for hash changes
+            window.addEventListener('hashchange', checkHashAndScroll);
         });
+
+        // Check hash and scroll to appropriate section/product
+        function checkHashAndScroll() {
+            const hash = window.location.hash;
+            if (!hash) return;
+            
+            // Remove the # symbol
+            const hashValue = hash.substring(1);
+            
+            // Check if it's a product hash (starts with 'product-')
+            if (hashValue.startsWith('product-')) {
+                const productId = hashValue.replace('product-', '');
+                highlightProduct(productId);
+            }
+            // Check if it's an image hash (starts with 'image-')
+            else if (hashValue.startsWith('image-')) {
+                const [productId, imageIndex] = hashValue.replace('image-', '').split('-');
+                highlightProductImage(productId, parseInt(imageIndex));
+            }
+            // Regular section scroll
+            else {
+                const element = document.getElementById(hashValue);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+
+        // Highlight specific product and scroll to it
+        function highlightProduct(productId) {
+            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+            if (productCard) {
+                productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                productCard.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
+                setTimeout(() => {
+                    productCard.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
+                }, 3000);
+            }
+        }
+
+        // Highlight specific product image and scroll to it
+        function highlightProductImage(productId, imageIndex) {
+            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+            if (productCard) {
+                productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Find and click the thumbnail to show that image
+                const thumbnail = productCard.querySelector(`.thumbnail[data-image-index="${imageIndex}"]`);
+                if (thumbnail) {
+                    setTimeout(() => {
+                        thumbnail.click();
+                        thumbnail.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
+                        setTimeout(() => {
+                            thumbnail.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
+                        }, 2000);
+                    }, 500);
+                }
+            }
+        }
 
         async function loadAllData() {
             await Promise.all([
@@ -765,7 +843,10 @@
                 if (data.success) {
                     allProducts = data.data;
                     renderProducts();
-                    updateStructuredData(); // Update JSON-LD with products
+                    updateStructuredData();
+                    
+                    // Check if we need to highlight a product after loading
+                    checkHashAndScroll();
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
@@ -818,12 +899,15 @@
                 return;
             }
             sliderContainer.innerHTML = allSliders.map((slider, index) => `
-                <div class="slider-item absolute inset-0 ${index === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 flex items-center justify-between p-6 md:p-12" style="background-image: url('${slider.image}'); background-size: cover; background-position: center;">
+                <div class="slider-item absolute inset-0 ${index === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 flex items-center justify-between p-6 md:p-12" 
+                     style="background-image: url('${slider.image}'); background-size: cover; background-position: center;"
+                     onclick="window.location.hash='#home'">
                     <div class="relative z-10 text-white max-w-lg">
                         <h2 class="text-2xl md:text-4xl font-bold text-gold">${slider.title}</h2>
                         ${slider.subtitle ? `<p class="text-sm md:text-base my-3">${slider.subtitle}</p>` : ''}
                         <a href="#order" class="slider-order-btn inline-block bg-gold text-primary px-4 py-2 md:px-6 md:py-3 rounded-lg font-bold hover:bg-yellow-500 transition text-sm md:text-base" 
-                           data-product='${JSON.stringify(slider.productData || {})}'>
+                           data-product='${JSON.stringify(slider.productData || {})}'
+                           onclick="event.stopPropagation()">
                             ${slider.buttonText || 'এখনই কিনুন'}
                         </a>
                     </div>
@@ -838,15 +922,15 @@
             const container = document.getElementById('categoryButtons');
             if (!container) return;
             container.innerHTML = `
-                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base">সকল পণ্য</button>
+                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" onclick="window.location.hash='#products'">সকল পণ্য</button>
                 ${allCategories.map(cat => `
-                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}">
+                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}" onclick="window.location.hash='#products'">
                         ${cat.nameBn}
                     </button>
                 `).join('')}
             `;
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function(e) {
                     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     const category = this.dataset.category || 'all';
@@ -871,23 +955,35 @@
                 const hasStock = variant.stock > 0;
                 const discount = variant.discount || '';
 
+                // Create product URL hash
+                const productHash = `#product-${product._id}`;
+                const imageHashes = images.map((img, idx) => `#image-${product._id}-${idx}`);
+
                 const thumbnailsHtml = images.length > 1 ? `
                     <div class="thumbnail-container px-2 pb-1">
                         ${images.map((img, idx) => `
-                            <img src="${img.url}" alt="${product.name} thumbnail" class="thumbnail ${idx === 0 ? 'active' : ''}" 
+                            <img src="${img.url}" alt="${product.name} thumbnail" 
+                                 class="thumbnail ${idx === 0 ? 'active' : ''}" 
                                  data-product-id="${product._id}" 
                                  data-variant-index="0" 
-                                 data-image-index="${idx}">
+                                 data-image-index="${idx}"
+                                 onclick="event.stopPropagation(); window.location.hash='#image-${product._id}-${idx}'">
                         `).join('')}
                     </div>
                 ` : '';
 
                 return `
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" data-product-id="${product._id}">
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
+                         data-product-id="${product._id}"
+                         onclick="window.location.hash='#product-${product._id}'">
                         ${discount && hasStock ? `<span class="product-badge" data-badge>${discount}</span>` : ''}
                         
                         <div class="relative">
-                            <img src="${primaryImage}" alt="${product.name}" class="main-image w-full h-36 md:h-48 object-cover" data-product-id="${product._id}" data-variant-index="0">
+                            <img src="${primaryImage}" alt="${product.name}" 
+                                 class="main-image w-full h-36 md:h-48 object-cover" 
+                                 data-product-id="${product._id}" 
+                                 data-variant-index="0"
+                                 onclick="event.stopPropagation(); window.location.hash='#image-${product._id}-0'">
                         </div>
                         
                         ${thumbnailsHtml}
@@ -910,7 +1006,10 @@
                             </div>
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
-                                    data-product-id="${product._id}" data-variant-index="0" ${!hasStock ? 'disabled' : ''}>
+                                    data-product-id="${product._id}" 
+                                    data-variant-index="0" 
+                                    ${!hasStock ? 'disabled' : ''}
+                                    onclick="event.stopPropagation()">
                                 ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
                             </button>
                         </div>
@@ -925,6 +1024,7 @@
         }
 
         function handleThumbnailClick(e) {
+            e.stopPropagation();
             const thumb = e.currentTarget;
             const productId = thumb.dataset.productId;
             const variantIndex = parseInt(thumb.dataset.variantIndex);
@@ -953,7 +1053,8 @@
                 const variant = product.variants[0] || {};
                 const image = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
                 return `
-                    <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4">
+                    <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
+                         onclick="window.location.hash='#product-${product._id}'">
                         <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
                         <div class="flex-1">
                             <h4 class="font-bold text-primary">${product.name}</h4>
@@ -971,7 +1072,8 @@
                                         originalPrice: product.originalPrice,
                                         discount: variant.discount || '',
                                         variantStock: variant.stock || 0
-                                    })}'>
+                                    })}'
+                                    onclick="event.stopPropagation()">
                                 অর্ডার করুন
                             </button>
                         </div>
@@ -1041,8 +1143,14 @@
                 link.addEventListener('click', () => mobileTopMenu?.classList.remove('active'));
             });
 
-            document.getElementById('prevSlide')?.addEventListener('click', () => moveSlide(-1));
-            document.getElementById('nextSlide')?.addEventListener('click', () => moveSlide(1));
+            document.getElementById('prevSlide')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                moveSlide(-1);
+            });
+            document.getElementById('nextSlide')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                moveSlide(1);
+            });
             document.getElementById('deliveryArea')?.addEventListener('change', function(e) {
                 currentDeliveryCharge = parseInt(e.target.value) || 0;
                 updateTotal();
@@ -1059,13 +1167,16 @@
 
         function handleGlobalClick(e) {
             if (e.target.classList.contains('order-now-btn') && !e.target.disabled) {
+                e.stopPropagation();
                 handleProductOrder(e.target);
             }
             if (e.target.classList.contains('trending-order-btn') && !e.target.disabled) {
+                e.stopPropagation();
                 handleTrendingOrder(e.target);
             }
             if (e.target.classList.contains('slider-order-btn') && !e.target.disabled) {
                 e.preventDefault();
+                e.stopPropagation();
                 handleSliderOrder(e.target);
             }
         }
@@ -1100,6 +1211,7 @@
             updateSelectedProducts();
             showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            window.location.hash = '#order';
         }
 
         function handleTrendingOrder(btn) {
@@ -1126,6 +1238,7 @@
             updateSelectedProducts();
             showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            window.location.hash = '#order';
         }
 
         function handleSliderOrder(btn) {
@@ -1156,6 +1269,7 @@
             updateSelectedProducts();
             showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            window.location.hash = '#order';
         }
 
         async function handleOrderSubmit(e) {
@@ -1207,6 +1321,7 @@
                     currentDeliveryCharge = 0;
                     document.getElementById('deliveryArea').value = '';
                     updateSelectedProducts();
+                    window.location.hash = '#home';
                 } else {
                     showPopup('ব্যর্থ!', result.message || 'অর্ডার নিতে সমস্যা হয়েছে', 'error');
                 }
@@ -1237,6 +1352,7 @@
                     e.target.reset();
                     document.getElementById('rating').value = 0;
                     document.querySelectorAll('.star-rating i').forEach(i => i.className = 'far fa-star');
+                    window.location.hash = '#reviews';
                 } else {
                     showPopup('ব্যর্থ!', result.message || 'রিভিউ জমা দিতে সমস্যা হয়েছে', 'error');
                 }
