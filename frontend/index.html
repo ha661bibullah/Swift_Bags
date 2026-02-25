@@ -753,6 +753,13 @@
                 const [productId, imageIndex] = hashValue.replace('image-', '').split('-');
                 highlightProductImage(productId, parseInt(imageIndex));
             }
+            // Check if it's an order hash with specific image (starts with 'order-')
+            else if (hashValue.startsWith('order-')) {
+                const [productId, imageIndex] = hashValue.replace('order-', '').split('-');
+                if (productId && imageIndex !== undefined) {
+                    autoAddToOrder(productId, parseInt(imageIndex));
+                }
+            }
             // Regular section scroll
             else {
                 const element = document.getElementById(hashValue);
@@ -760,6 +767,44 @@
                     element.scrollIntoView({ behavior: 'smooth' });
                 }
             }
+        }
+
+        // Auto add product to order from URL hash
+        function autoAddToOrder(productId, imageIndex) {
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) return;
+            
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                return;
+            }
+            
+            const images = variant.images || [];
+            const imageUrl = images[imageIndex]?.url || images[0]?.url || '';
+            
+            const orderProduct = {
+                id: productId + '-0',
+                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                img: imageUrl,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === productId + '-0');
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            
+            // Scroll to order section
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Highlight specific product and scroll to it
@@ -958,6 +1003,7 @@
                 // Create product URL hash
                 const productHash = `#product-${product._id}`;
                 const imageHashes = images.map((img, idx) => `#image-${product._id}-${idx}`);
+                const orderHashes = images.map((img, idx) => `#order-${product._id}-${idx}`);
 
                 const thumbnailsHtml = images.length > 1 ? `
                     <div class="thumbnail-container px-2 pb-1">
@@ -983,6 +1029,7 @@
                                  class="main-image w-full h-36 md:h-48 object-cover" 
                                  data-product-id="${product._id}" 
                                  data-variant-index="0"
+                                 data-image-index="0"
                                  onclick="event.stopPropagation(); window.location.hash='#image-${product._id}-0'">
                         </div>
                         
@@ -1005,13 +1052,19 @@
                                 <span class="original-price">৳${product.originalPrice}</span>
                             </div>
                             
-                            <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
-                                    data-product-id="${product._id}" 
-                                    data-variant-index="0" 
-                                    ${!hasStock ? 'disabled' : ''}
-                                    onclick="event.stopPropagation()">
-                                ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
-                            </button>
+                            <div class="flex gap-1 mt-2">
+                                ${images.map((img, idx) => `
+                                    <button class="flex-1 order-now-btn text-xs py-2 rounded ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
+                                            data-product-id="${product._id}" 
+                                            data-variant-index="0" 
+                                            data-image-index="${idx}"
+                                            data-image-url="${img.url}"
+                                            ${!hasStock ? 'disabled' : ''}
+                                            onclick="event.stopPropagation(); window.location.hash='#order-${product._id}-${idx}'">
+                                        ${!hasStock ? 'Sold Out' : `অর্ডার ${idx + 1}`}
+                                    </button>
+                                `).join('')}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1020,6 +1073,11 @@
             // Attach thumbnail click handlers
             document.querySelectorAll('.thumbnail').forEach(thumb => {
                 thumb.addEventListener('click', handleThumbnailClick);
+            });
+
+            // Attach order button click handlers
+            document.querySelectorAll('.order-now-btn').forEach(btn => {
+                btn.addEventListener('click', handleOrderButtonClick);
             });
         }
 
@@ -1040,6 +1098,52 @@
 
             productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
+            
+            // Update URL hash
+            window.location.hash = `#image-${productId}-${imageIndex}`;
+        }
+
+        function handleOrderButtonClick(e) {
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            const productId = btn.dataset.productId;
+            const imageIndex = parseInt(btn.dataset.imageIndex);
+            const imageUrl = btn.dataset.imageUrl;
+            
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) return;
+            
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                return;
+            }
+            
+            const orderProduct = {
+                id: productId + '-0',
+                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                img: imageUrl,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === productId + '-0');
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            
+            // Scroll to order section
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Update URL hash
+            window.location.hash = `#order-${productId}-${imageIndex}`;
         }
 
         function renderTrending() {
@@ -1051,7 +1155,8 @@
             }
             container.innerHTML = allTrending.map(product => {
                 const variant = product.variants[0] || {};
-                const image = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
+                const images = variant.images || [];
+                const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
                 return `
                     <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
                          onclick="window.location.hash='#product-${product._id}'">
@@ -1063,19 +1168,23 @@
                                 <span class="text-gray-600 ml-2">(${variant.rating || 4.5})</span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">${variant.sold || 0} জন Recently Viewed</p>
-                            <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
-                                    data-product='${JSON.stringify({
-                                        id: product._id,
-                                        name: product.name,
-                                        img: image,
-                                        price: product.price,
-                                        originalPrice: product.originalPrice,
-                                        discount: variant.discount || '',
-                                        variantStock: variant.stock || 0
-                                    })}'
-                                    onclick="event.stopPropagation()">
-                                অর্ডার করুন
-                            </button>
+                            <div class="flex gap-1 mt-2">
+                                ${images.slice(0, 3).map((img, idx) => `
+                                    <button class="trending-order-btn bg-primary text-white px-2 py-1 rounded-lg text-xs hover:bg-gold hover:text-primary transition" 
+                                            data-product='${JSON.stringify({
+                                                id: product._id,
+                                                name: product.name,
+                                                img: img.url,
+                                                price: product.price,
+                                                originalPrice: product.originalPrice,
+                                                discount: variant.discount || '',
+                                                variantStock: variant.stock || 0
+                                            })}'
+                                            onclick="event.stopPropagation(); window.location.hash='#order-${product._id}-${idx}'">
+                                        ${idx + 1}
+                                    </button>
+                                `).join('')}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1166,56 +1275,20 @@
         }
 
         function handleGlobalClick(e) {
-            if (e.target.classList.contains('order-now-btn') && !e.target.disabled) {
-                e.stopPropagation();
-                handleProductOrder(e.target);
-            }
             if (e.target.classList.contains('trending-order-btn') && !e.target.disabled) {
                 e.stopPropagation();
-                handleTrendingOrder(e.target);
+                const product = JSON.parse(e.target.dataset.product);
+                handleTrendingOrder(product);
             }
             if (e.target.classList.contains('slider-order-btn') && !e.target.disabled) {
                 e.preventDefault();
                 e.stopPropagation();
-                handleSliderOrder(e.target);
+                const product = JSON.parse(e.target.dataset.product);
+                handleSliderOrder(product);
             }
         }
 
-        function handleProductOrder(btn) {
-            const productId = btn.dataset.productId;
-            const variantIndex = parseInt(btn.dataset.variantIndex);
-            const productCard = btn.closest('.product-card');
-            const mainImg = productCard.querySelector('.main-image');
-            const product = allProducts.find(p => p._id === productId);
-            if (!product) return;
-            const variant = product.variants[variantIndex];
-            if (variant.stock === 0) {
-                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
-                return;
-            }
-            const orderProduct = {
-                id: productId + '-' + variantIndex,
-                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-                img: mainImg ? mainImg.src : (variant.images[0]?.url || ''),
-                price: product.price,
-                originalPrice: product.originalPrice,
-                variantIndex: variantIndex,
-                quantity: 1
-            };
-            const existing = selectedForOrder.find(p => p.id === productId + '-' + variantIndex);
-            if (!existing) {
-                selectedForOrder.push(orderProduct);
-            } else {
-                existing.quantity += 1;
-            }
-            updateSelectedProducts();
-            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-            window.location.hash = '#order';
-        }
-
-        function handleTrendingOrder(btn) {
-            const product = JSON.parse(btn.dataset.product);
+        function handleTrendingOrder(product) {
             if (product.variantStock === 0) {
                 showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
                 return;
@@ -1241,8 +1314,7 @@
             window.location.hash = '#order';
         }
 
-        function handleSliderOrder(btn) {
-            const product = JSON.parse(btn.dataset.product);
+        function handleSliderOrder(product) {
             if (!product.id) {
                 showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোনো পণ্য সংযুক্ত নেই', 'error');
                 return;
