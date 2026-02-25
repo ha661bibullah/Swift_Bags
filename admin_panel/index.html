@@ -2713,16 +2713,38 @@
         }, 3000);
     }
 
-    window.onclick = function(event) {
-        const modals = ['sliderModal', 'categoryModal', 'productModal', 'orderModal', 'reviewModal', 'confirmModal'];
-        modals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (event.target === modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        });
-    };
+    // মডেল ক্লোজ করার জন্য শুধুমাত্র "বাতিল" বাটন ব্যবহার করা হবে
+document.getElementById('closeSliderModal').addEventListener('click', () => {
+    document.getElementById('sliderModal').classList.add('hidden');
+    document.getElementById('sliderModal').classList.remove('flex');
+});
+
+document.getElementById('closeCategoryModal').addEventListener('click', () => {
+    document.getElementById('categoryModal').classList.add('hidden');
+    document.getElementById('categoryModal').classList.remove('flex');
+});
+
+document.getElementById('closeProductModal').addEventListener('click', () => {
+    document.getElementById('productModal').classList.add('hidden');
+    document.getElementById('productModal').classList.remove('flex');
+});
+
+document.getElementById('closeOrderModal').addEventListener('click', () => {
+    document.getElementById('orderModal').classList.add('hidden');
+    document.getElementById('orderModal').classList.remove('flex');
+});
+
+document.getElementById('closeReviewModal').addEventListener('click', () => {
+    document.getElementById('reviewModal').classList.add('hidden');
+    document.getElementById('reviewModal').classList.remove('flex');
+    document.getElementById('deleteReviewBtn').classList.add('hidden');
+});
+
+document.getElementById('cancelConfirm').addEventListener('click', () => {
+    document.getElementById('confirmModal').classList.add('hidden');
+    document.getElementById('confirmModal').classList.remove('flex');
+    confirmCallback = null;
+});
 </script>
 </body>
 </html>
