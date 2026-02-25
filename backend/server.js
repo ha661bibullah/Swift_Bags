@@ -29,9 +29,9 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 const mongooseOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 30000, // 30 seconds
-  socketTimeoutMS: 45000, // 45 seconds
-  family: 4, // Force IPv4
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  family: 4,
   keepAlive: true,
   keepAliveInitialDelay: 300000,
   maxPoolSize: 50,
@@ -56,7 +56,7 @@ const CONNECTION_STATES = {
 let isConnected = false;
 let connectionAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 50;
-const RECONNECT_INTERVAL = 5000; // 5 seconds
+const RECONNECT_INTERVAL = 5000;
 
 // MongoDB Connection with retry logic
 const connectDB = async () => {
@@ -66,7 +66,7 @@ const connectDB = async () => {
     }
 
     console.log('🔄 Connecting to MongoDB...');
-    console.log('📍 URI:', process.env.MONGODB_URI.replace(/:([^@]{4})[^@]*@/, ':****@')); // Hide password
+    console.log('📍 URI:', process.env.MONGODB_URI.replace(/:([^@]{4})[^@]*@/, ':****@'));
 
     await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
     
@@ -77,7 +77,6 @@ const connectDB = async () => {
     console.log('📡 Host:', mongoose.connection.host);
     console.log('🔌 Connection State:', CONNECTION_STATES[mongoose.connection.readyState]);
     
-    // Initialize data after successful connection
     await initializeData();
     
   } catch (err) {
@@ -90,12 +89,11 @@ const connectDB = async () => {
     if (connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
       setTimeout(connectDB, RECONNECT_INTERVAL);
     } else {
-      console.error('❌ Max reconnection attempts reached. Please check your MongoDB configuration.');
+      console.error('❌ Max reconnection attempts reached.');
     }
   }
 };
 
-// Handle MongoDB connection events
 mongoose.connection.on('connected', () => {
   console.log('🟢 MongoDB event: connected');
   isConnected = true;
@@ -112,8 +110,6 @@ mongoose.connection.on('disconnecting', () => {
 mongoose.connection.on('disconnected', () => {
   console.log('🔴 MongoDB event: disconnected');
   isConnected = false;
-  
-  // Attempt to reconnect
   if (connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
     console.log('🔄 Attempting to reconnect...');
     setTimeout(connectDB, RECONNECT_INTERVAL);
@@ -139,7 +135,6 @@ mongoose.connection.on('all', () => {
   console.log('🟢 MongoDB event: all (replica set)');
 });
 
-// Graceful shutdown
 process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 process.on('uncaughtException', handleUncaughtException);
@@ -147,24 +142,17 @@ process.on('unhandledRejection', handleUnhandledRejection);
 
 async function gracefulShutdown(signal) {
   console.log(`\n📢 Received ${signal}. Starting graceful shutdown...`);
-  
-  // Stop accepting new requests
   server.close(async () => {
     console.log('👋 HTTP server closed');
-    
     try {
-      // Close MongoDB connection
       await mongoose.connection.close();
       console.log('✅ MongoDB connection closed');
-      
       process.exit(0);
     } catch (err) {
       console.error('❌ Error during shutdown:', err);
       process.exit(1);
     }
   });
-  
-  // Force shutdown after timeout
   setTimeout(() => {
     console.error('⚠️ Forced shutdown due to timeout');
     process.exit(1);
@@ -181,7 +169,6 @@ function handleUnhandledRejection(reason, promise) {
   gracefulShutdown('unhandledRejection');
 }
 
-// Keep-alive mechanism
 setInterval(async () => {
   if (mongoose.connection.readyState === 1) {
     try {
@@ -189,37 +176,27 @@ setInterval(async () => {
       console.log('📡 MongoDB ping successful', new Date().toISOString());
     } catch (err) {
       console.error('📡 MongoDB ping failed:', err.message);
-      // Force reconnect if ping fails
       if (mongoose.connection.readyState !== 1) {
         connectDB();
       }
     }
   } else {
     console.log(`📡 MongoDB state: ${CONNECTION_STATES[mongoose.connection.readyState]}`);
-    // Attempt to reconnect if not connected
     if (!isConnected && connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
       connectDB();
     }
   }
-}, 300000); // Every 5 minutes
+}, 300000);
 
-// Middleware to check database connection
 app.use(async (req, res, next) => {
-  // Skip for health check and test routes
-  if (req.path === '/health' || req.path === '/api/health' || req.path === '/api/test') {
+  if (req.path === '/health' || req.path === '/api/health' || req.path === '/api/test' || req.path === '/sitemap.xml' || req.path === '/robots.txt') {
     return next();
   }
-  
-  // Check database connection
   if (mongoose.connection.readyState !== 1) {
     console.warn(`⚠️ Database not connected for request: ${req.method} ${req.path}`);
-    
-    // Try to reconnect if not connected
     if (!isConnected) {
       await connectDB();
     }
-    
-    // If still not connected, return error
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({
         success: false,
@@ -228,22 +205,18 @@ app.use(async (req, res, next) => {
       });
     }
   }
-  
   next();
 });
 
 // ============= MIDDLEWARE =============
 
-// Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false
 }));
 
-// Compression
 app.use(compression());
 
-// CORS configuration
 const allowedOrigins = [
   'https://swiftbags.shop',
   'https://admin.swiftbags.shop',
@@ -255,11 +228,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, etc)
     if (!origin || NODE_ENV === 'development') {
       return callback(null, true);
     }
-    
     if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
       callback(null, true);
     } else {
@@ -272,25 +243,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
-// Handle preflight requests
 app.options('*', cors());
 
-// Body parser with size limits
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Limit each IP to 1000 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.path === '/health' || req.path === '/api/health' // Skip rate limit for health checks
+  skip: (req) => req.path === '/health' || req.path === '/api/health' || req.path === '/sitemap.xml' || req.path === '/robots.txt'
 });
 app.use('/api/', limiter);
 
-// Request logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - IP: ${req.ip}`);
   next();
@@ -298,7 +265,6 @@ app.use((req, res, next) => {
 
 // ============= CLOUDINARY CONFIGURATION =============
 
-// Verify Cloudinary configuration
 if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
   console.warn('⚠️ Cloudinary configuration missing! File uploads will fail.');
 }
@@ -307,12 +273,11 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-  timeout: 60000 // 60 seconds timeout
+  timeout: 60000
 });
 
 // ============= SCHEMAS =============
 
-// Admin Schema
 const adminSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -327,7 +292,6 @@ const adminSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Slider Schema
 const sliderSchema = new mongoose.Schema({
   title: { type: String, required: true },
   subtitle: { type: String },
@@ -349,7 +313,6 @@ const sliderSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Category Schema
 const categorySchema = new mongoose.Schema({
   name: { type: String, required: true },
   nameBn: { type: String, required: true },
@@ -360,7 +323,6 @@ const categorySchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Product Schema
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -388,7 +350,6 @@ const productSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Order Schema
 const orderSchema = new mongoose.Schema({
   orderId: { type: String, required: true, unique: true },
   customer: {
@@ -429,7 +390,6 @@ const orderSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Review Schema
 const reviewSchema = new mongoose.Schema({
   productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
   customerName: { type: String, required: true },
@@ -447,7 +407,6 @@ const reviewSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Site Content Schema
 const contentSchema = new mongoose.Schema({
   key: { type: String, required: true, unique: true },
   value: { type: mongoose.Schema.Types.Mixed, required: true },
@@ -455,7 +414,6 @@ const contentSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Notification Schema
 const notificationSchema = new mongoose.Schema({
   type: { type: String, enum: ['order', 'review', 'system'], required: true },
   title: String,
@@ -465,7 +423,6 @@ const notificationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Add timestamps to all schemas
 [adminSchema, sliderSchema, categorySchema, productSchema, orderSchema, reviewSchema, contentSchema, notificationSchema].forEach(schema => {
   schema.pre('save', function(next) {
     this.updatedAt = new Date();
@@ -484,7 +441,6 @@ const Notification = mongoose.model('Notification', notificationSchema);
 
 // ============= MIDDLEWARE =============
 
-// Auth Middleware
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -517,7 +473,6 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-// Multer Storage for Cloudinary
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -530,7 +485,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -558,7 +513,6 @@ async function createInitialAdmin() {
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
     const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
     
-    // Check if admin exists
     const adminExists = await Admin.findOne({ username: adminUsername });
     
     if (!adminExists) {
@@ -576,13 +530,9 @@ async function createInitialAdmin() {
       console.log(`   Admin ID: ${newAdmin._id}`);
     } else {
       console.log('✅ Admin already exists with username:', adminExists.username);
-      
-      // Verify password (optional)
       const isValid = await bcrypt.compare(adminPassword, adminExists.password);
       console.log(`   Password valid: ${isValid}`);
-      
       if (!isValid) {
-        // Update password if it doesn't match
         const hashedPassword = await bcrypt.hash(adminPassword, 10);
         adminExists.password = hashedPassword;
         await adminExists.save();
@@ -638,7 +588,6 @@ async function createInitialContent() {
 
 // ============= API ROUTES =============
 
-// Health Check Routes
 app.get('/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   res.json({
@@ -678,7 +627,6 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// Root route
 app.get('/', (req, res) => {
   res.json({ 
     success: true, 
@@ -695,7 +643,9 @@ app.get('/', (req, res) => {
       categories: '/api/categories',
       sliders: '/api/sliders',
       reviews: '/api/reviews/approved',
-      contents: '/api/contents'
+      contents: '/api/contents',
+      sitemap: '/sitemap.xml',
+      robots: '/robots.txt'
     }
   });
 });
@@ -813,6 +763,11 @@ app.get('/api/admin/check', async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+});
+
+// Token validation endpoint for auto-logout
+app.get('/api/admin/check-session', authenticateToken, (req, res) => {
+  res.json({ success: true, valid: true });
 });
 
 // Slider Routes
@@ -1005,7 +960,6 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
     const productData = JSON.parse(req.body.data);
     
     if (req.files && req.files.length > 0) {
-      // Delete old images
       for (const variant of product.variants) {
         for (const image of variant.images) {
           if (image.cloudinaryId) {
@@ -1089,7 +1043,6 @@ app.post('/api/orders', async (req, res) => {
     
     await order.save();
 
-    // Create notification
     try {
       await Notification.create({
         type: 'order',
@@ -1160,7 +1113,6 @@ app.post('/api/reviews', async (req, res) => {
     
     await review.save();
 
-    // Create notification
     try {
       await Notification.create({
         type: 'review',
@@ -1306,6 +1258,36 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
   }
 });
 
+// ============= SITEMAP & ROBOTS =============
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const baseUrl = 'https://swiftbags.shop';
+    const products = await Product.find({ active: true }).select('slug updatedAt');
+    const categories = await Category.find({ active: true }).select('slug updatedAt');
+    const today = new Date().toISOString().split('T')[0];
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+    xml += `  <url>\n    <loc>${baseUrl}/</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
+
+    categories.forEach(cat => {
+      xml += `  <url>\n    <loc>${baseUrl}/#${cat.slug}</loc>\n    <lastmod>${new Date(cat.updatedAt).toISOString().split('T')[0]}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    });
+
+    xml += '</urlset>';
+    res.header('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (error) {
+    res.status(500).send('Error generating sitemap');
+  }
+});
+
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send('User-agent: *\nAllow: /\nSitemap: https://swiftbags.shop/sitemap.xml');
+});
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ 
@@ -1315,7 +1297,6 @@ app.use('*', (req, res) => {
   });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error('❌ Server error:', err.stack);
   
@@ -1333,9 +1314,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ============= START SERVER =============
-
-// Connect to database
 connectDB();
 
 const server = app.listen(PORT, () => {
@@ -1346,13 +1324,12 @@ const server = app.listen(PORT, () => {
   console.log(`📍 API Health: http://localhost:${PORT}/api/health`);
   console.log(`📍 Test: http://localhost:${PORT}/api/test`);
   console.log(`📍 Admin check: http://localhost:${PORT}/api/admin/check`);
+  console.log(`📍 Sitemap: http://localhost:${PORT}/sitemap.xml`);
   console.log('=====================================\n');
 });
 
-// Increase server timeout
-server.timeout = 120000; // 2 minutes
-server.keepAliveTimeout = 65000; // 65 seconds
-server.headersTimeout = 66000; // 66 seconds
+server.timeout = 120000;
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
 
-// For Vercel export
 module.exports = app;

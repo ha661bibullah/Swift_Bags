@@ -4,17 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <meta name="description" content="Swift Bags - প্রিমিয়াম কোয়ালিটির ব্যাগ ও এক্সেসরিজ। অর্ডার করুন এখনই।">
-    <meta name="keywords" content="bag, backpack, ladies bag, men bag, swift bags, ব্যাগ">
+    <meta name="keywords" content="bag, backpack, ladies bag, men bag, swift bags, ব্যাগ, ব্যাকপ্যাক, হ্যান্ডব্যাগ">
+    <meta name="author" content="Swift Bags">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://swiftbags.shop/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://swiftbags.shop/">
+    <meta property="og:title" id="ogTitle" content="Swift Bags - আপনার স্বপ্নের ব্যাগ">
+    <meta property="og:description" content="প্রিমিয়াম কোয়ালিটির ব্যাগ ও এক্সেসরিজ। অর্ডার করুন এখনই।">
+    <meta property="og:image" content="https://swiftbags.shop/img/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://swiftbags.shop/">
+    <meta property="twitter:title" id="twitterTitle" content="Swift Bags - আপনার স্বপ্নের ব্যাগ">
+    <meta property="twitter:description" content="প্রিমিয়াম কোয়ালিটির ব্যাগ ও এক্সেসরিজ। অর্ডার করুন এখনই।">
+    <meta property="twitter:image" content="https://swiftbags.shop/img/og-image.jpg">
+
     <title id="siteTitleTag">Swift Bags - আপনার স্বপ্নের ব্যাগ</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
-    <link rel="icon" type="img/swift_bags.png" href="favicon.png">
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Hind Siliguri Font -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD Structured Data (will be updated dynamically) -->
+    <script type="application/ld+json" id="structuredData">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Swift Bags",
+      "url": "https://swiftbags.shop/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://swiftbags.shop/?s={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
     <style>
-        /* সমস্ত স্টাইল পূর্বের মতোই থাকবে, অপরিবর্তিত */
         * {
             font-family: 'Hind Siliguri', sans-serif;
         }
@@ -665,7 +698,7 @@
 
     <script>
         // API Configuration
-        const API_URL = 'https://swift-bags.onrender.com/api'; // আপনার ব্যাকএন্ড URL
+        const API_URL = 'https://swift-bags.onrender.com/api';
         
         // State
         let currentCat = 'all';
@@ -732,6 +765,7 @@
                 if (data.success) {
                     allProducts = data.data;
                     renderProducts();
+                    updateStructuredData(); // Update JSON-LD with products
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
@@ -821,7 +855,6 @@
             });
         }
 
-        // ============= আপডেটেড প্রোডাক্ট রেন্ডার =============
         function renderProducts() {
             const grid = document.getElementById('productGrid');
             if (!grid) return;
@@ -832,18 +865,16 @@
             }
 
             grid.innerHTML = allProducts.map(product => {
-                // আমরা ধরে নিচ্ছি প্রতিটি পণ্যের একটি মাত্র ভেরিয়েন্ট আছে (যাতে একাধিক ছবি থাকতে পারে)
                 const variant = product.variants[0] || {};
                 const images = variant.images || [];
                 const primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
                 const hasStock = variant.stock > 0;
                 const discount = variant.discount || '';
 
-                // থাম্বনেইল তৈরি: প্রতিটি ছবির জন্য, data-variant-index সবসময় 0 (কারণ একটি মাত্র ভেরিয়েন্ট)
                 const thumbnailsHtml = images.length > 1 ? `
                     <div class="thumbnail-container px-2 pb-1">
                         ${images.map((img, idx) => `
-                            <img src="${img.url}" alt="thumb" class="thumbnail ${idx === 0 ? 'active' : ''}" 
+                            <img src="${img.url}" alt="${product.name} thumbnail" class="thumbnail ${idx === 0 ? 'active' : ''}" 
                                  data-product-id="${product._id}" 
                                  data-variant-index="0" 
                                  data-image-index="${idx}">
@@ -886,29 +917,29 @@
                     </div>
                 `;
             }).join('');
+
+            // Attach thumbnail click handlers
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.addEventListener('click', handleThumbnailClick);
+            });
         }
 
-        // ============= আপডেটেড থাম্বনেইল হ্যান্ডলার =============
         function handleThumbnailClick(e) {
             const thumb = e.currentTarget;
             const productId = thumb.dataset.productId;
-            const variantIndex = parseInt(thumb.dataset.variantIndex); // সবসময় 0 হবে
-            const imageIndex = parseInt(thumb.dataset.imageIndex); // কোন ছবি সেটি চিহ্নিত করতে
+            const variantIndex = parseInt(thumb.dataset.variantIndex);
+            const imageIndex = parseInt(thumb.dataset.imageIndex);
 
             const productCard = thumb.closest('.product-card');
             if (!productCard) return;
 
-            // মূল ছবির src আপডেট করি
             const mainImg = productCard.querySelector('.main-image');
             if (mainImg) {
                 mainImg.src = thumb.src;
             }
 
-            // active থাম্বনেইল পরিবর্তন
             productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
-
-            // পণ্যের অন্যান্য তথ্য পরিবর্তনের প্রয়োজন নেই, কারণ সব ছবি একই ভেরিয়েন্টের
         }
 
         function renderTrending() {
@@ -968,11 +999,40 @@
         function updateContent(content) {
             if (content.footerText) document.getElementById('footerText').textContent = content.footerText;
             if (content.address) document.getElementById('footerAddress').textContent = content.address;
-            if (content.siteTitle) document.getElementById('siteTitleTag').textContent = content.siteTitle;
+            if (content.siteTitle) {
+                document.getElementById('siteTitleTag').textContent = content.siteTitle;
+                document.getElementById('ogTitle').setAttribute('content', content.siteTitle);
+                document.getElementById('twitterTitle').setAttribute('content', content.siteTitle);
+            }
             if (content.siteSubtitle) document.getElementById('siteSubtitle').textContent = content.siteSubtitle;
         }
 
-        // ইভেন্ট লিসেনার সেটআপ
+        function updateStructuredData() {
+            const script = document.getElementById('structuredData');
+            if (!script) return;
+            const itemList = {
+                "@context": "https://schema.org",
+                "@type": "ItemList",
+                "itemListElement": allProducts.slice(0, 20).map((p, i) => ({
+                    "@type": "ListItem",
+                    "position": i + 1,
+                    "item": {
+                        "@type": "Product",
+                        "name": p.name,
+                        "description": p.description,
+                        "image": p.variants[0]?.images[0]?.url || '',
+                        "offers": {
+                            "@type": "Offer",
+                            "price": p.price,
+                            "priceCurrency": "BDT",
+                            "availability": p.variants[0]?.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+                        }
+                    }
+                }))
+            };
+            script.textContent = JSON.stringify(itemList);
+        }
+
         function setupEventListeners() {
             const menuBtn = document.getElementById('menuBtn');
             const mobileTopMenu = document.getElementById('mobileTopMenu');
@@ -995,14 +1055,6 @@
             document.getElementById('closePopup')?.addEventListener('click', closePopup);
             document.getElementById('popupOverlay')?.addEventListener('click', closePopup);
             document.addEventListener('click', handleGlobalClick);
-
-            // থাম্বনেইল ক্লিকের জন্য ইভেন্ট ডেলিগেশন
-            document.getElementById('productGrid')?.addEventListener('click', function(e) {
-                const thumb = e.target.closest('.thumbnail');
-                if (thumb) {
-                    handleThumbnailClick({ currentTarget: thumb });
-                }
-            });
         }
 
         function handleGlobalClick(e) {
