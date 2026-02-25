@@ -456,8 +456,6 @@
             transition: all 0.3s;
             border: none;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
         }
         .order-now-btn:hover:not(:disabled) {
             background-color: #D4AF37;
@@ -467,19 +465,6 @@
             background-color: #9ca3af;
             cursor: not-allowed;
             opacity: 0.7;
-        }
-        .order-now-btn .btn-text {
-            display: inline-block;
-            transition: all 0.3s;
-        }
-        .order-now-btn .btn-hash {
-            display: inline-block;
-            font-size: 10px;
-            background: rgba(255,255,255,0.2);
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 8px;
-            font-family: monospace;
         }
         
         .trending-order-btn {
@@ -563,6 +548,15 @@
             font-size: 11px;
             font-weight: bold;
             z-index: 15;
+        }
+
+        /* URL preview (small text at bottom of button) */
+        .url-preview {
+            font-size: 8px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+            font-family: monospace;
+            text-align: center;
         }
     </style>
 </head>
@@ -756,10 +750,6 @@
         let allTrending = [];
         let currentSlide = 0;
         let slideInterval;
-        
-        // Track current product and image for order button
-        let currentOrderProduct = null;
-        let currentImageIndex = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadAllData();
@@ -1050,20 +1040,6 @@
                     </div>
                 ` : '';
 
-                // Set first image as current for this product
-                if (product._id === currentOrderProduct?._id) {
-                    // Keep existing selection
-                } else {
-                    // Initialize with first image
-                    if (images.length > 0) {
-                        currentOrderProduct = {
-                            ...product,
-                            currentImageIndex: 0,
-                            currentImageUrl: images[0].url
-                        };
-                    }
-                }
-
                 return `
                     <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
                          data-product-id="${product._id}"
@@ -1108,8 +1084,7 @@
                                     data-image-url="${primaryImage}"
                                     ${!hasStock ? 'disabled' : ''}
                                     onclick="event.stopPropagation(); handleOrderButtonClick(this)">
-                                <span class="btn-text">${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}</span>
-                                <span class="btn-hash">#image-${product._id}-0</span>
+                                ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
                             </button>
                         </div>
                     </div>
@@ -1154,24 +1129,13 @@
             if (orderBtn) {
                 orderBtn.dataset.imageIndex = imageIndex;
                 orderBtn.dataset.imageUrl = imageUrl;
-                const hashSpan = orderBtn.querySelector('.btn-hash');
-                if (hashSpan) {
-                    hashSpan.textContent = `#image-${productId}-${imageIndex}`;
-                }
             }
 
-            // Update URL hash
+            // Update URL hash in browser address bar (without reloading)
             window.location.hash = `#image-${productId}-${imageIndex}`;
-
-            // Update current order product
-            const product = allProducts.find(p => p._id === productId);
-            if (product) {
-                currentOrderProduct = {
-                    ...product,
-                    currentImageIndex: imageIndex,
-                    currentImageUrl: imageUrl
-                };
-            }
+            
+            // Also update history state to show the hash in address bar
+            history.replaceState(null, null, `#image-${productId}-${imageIndex}`);
         }
 
         function handleOrderButtonClick(btn) {
@@ -1212,7 +1176,7 @@
             // Scroll to order section
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
             
-            // Update URL hash
+            // Update URL hash for order
             window.location.hash = `#order-${productId}-${imageIndex}`;
         }
 
