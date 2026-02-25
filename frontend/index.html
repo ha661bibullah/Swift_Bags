@@ -436,7 +436,7 @@
         .delivery-select:focus {
             outline: none;
             border-color: #D4AF37;
-            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
         }
         .delivery-select option {
             color: #1a1a1a;
@@ -536,20 +536,6 @@
             scroll-margin-top: 80px;
         }
 
-        /* Current image indicator */
-        .current-image-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(10,31,68,0.8);
-            color: #D4AF37;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            z-index: 15;
-        }
-
         /* Flash animation for order form */
         @keyframes flash {
             0%, 50%, 100% { opacity: 1; }
@@ -561,11 +547,44 @@
             border-radius: 12px;
         }
 
+        /* Flash animation for delivery area */
+        @keyframes field-flash {
+            0%, 50%, 100% { 
+                border-color: #ef4444;
+                box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+            }
+            25%, 75% { 
+                border-color: #D4AF37;
+                box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
+            }
+        }
+        .delivery-flash {
+            animation: field-flash 1s ease-in-out 3;
+        }
+
         /* Focus style for name input */
-        #name:focus {
+        #name:focus,
+        #deliveryArea:focus {
             border-color: #D4AF37;
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
             outline: none;
+        }
+
+        /* Rating container - center aligned */
+        .rating-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .rating-stars {
+            display: inline-flex;
+            align-items: center;
+        }
+        .rating-number {
+            font-size: 12px;
+            color: #6b7280;
+            margin-left: 2px;
         }
     </style>
 </head>
@@ -769,7 +788,7 @@
             window.addEventListener('hashchange', checkHashAndScroll);
         });
 
-        // Check hash and scroll to appropriate section/product
+        // Check hash and scroll to appropriate section
         function checkHashAndScroll() {
             const hash = window.location.hash;
             if (!hash) return;
@@ -782,43 +801,11 @@
                 const productId = hashValue.replace('product-', '');
                 highlightProduct(productId);
             }
-            // Check if it's an image hash (starts with 'image-')
-            else if (hashValue.startsWith('image-')) {
-                const [productId, imageIndex] = hashValue.replace('image-', '').split('-');
-                highlightProductImage(productId, parseInt(imageIndex));
-            }
             // Check if it's an order hash with specific image (starts with 'order-')
             else if (hashValue.startsWith('order-')) {
                 const [productId, imageIndex] = hashValue.replace('order-', '').split('-');
                 if (productId && imageIndex !== undefined) {
-                    // First scroll to order section
-                    const orderSection = document.getElementById('order');
-                    if (orderSection) {
-                        orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        
-                        // Add flash effect to order form
-                        setTimeout(() => {
-                            const orderForm = document.getElementById('orderFormContainer');
-                            if (orderForm) {
-                                orderForm.classList.add('order-form-flash');
-                                
-                                // Remove flash after animation completes
-                                setTimeout(() => {
-                                    orderForm.classList.remove('order-form-flash');
-                                }, 3000);
-                            }
-                            
-                            // Focus on name input
-                            const nameInput = document.getElementById('name');
-                            if (nameInput) {
-                                nameInput.focus();
-                                nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                            
-                            // Auto add product to order
-                            autoAddToOrder(productId, parseInt(imageIndex));
-                        }, 500);
-                    }
+                    handleOrderHash(productId, parseInt(imageIndex));
                 }
             }
             // Regular section scroll
@@ -834,6 +821,56 @@
                         }, 500);
                     }
                 }
+            }
+        }
+
+        // Handle order hash
+        function handleOrderHash(productId, imageIndex) {
+            // First scroll to order section
+            const orderSection = document.getElementById('order');
+            if (orderSection) {
+                orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Add flash effect to order form
+                setTimeout(() => {
+                    const orderForm = document.getElementById('orderFormContainer');
+                    if (orderForm) {
+                        orderForm.classList.add('order-form-flash');
+                        
+                        // Remove flash after animation completes
+                        setTimeout(() => {
+                            orderForm.classList.remove('order-form-flash');
+                        }, 3000);
+                    }
+                    
+                    // Check if delivery area is selected
+                    const deliveryArea = document.getElementById('deliveryArea');
+                    if (!deliveryArea.value) {
+                        // Flash the delivery area
+                        deliveryArea.classList.add('delivery-flash');
+                        deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // Remove flash after animation
+                        setTimeout(() => {
+                            deliveryArea.classList.remove('delivery-flash');
+                        }, 3000);
+                        
+                        // Focus on delivery area
+                        setTimeout(() => {
+                            deliveryArea.focus();
+                        }, 500);
+                    } else {
+                        // Focus on name input
+                        const nameInput = document.getElementById('name');
+                        if (nameInput) {
+                            nameInput.focus();
+                            nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                    
+                    // Auto add product to order
+                    autoAddToOrder(productId, imageIndex);
+                }, 500);
             }
         }
 
@@ -882,26 +919,6 @@
                 setTimeout(() => {
                     productCard.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
                 }, 3000);
-            }
-        }
-
-        // Highlight specific product image and scroll to it
-        function highlightProductImage(productId, imageIndex) {
-            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
-            if (productCard) {
-                productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Find and click the thumbnail to show that image
-                const thumbnail = productCard.querySelector(`.thumbnail[data-image-index="${imageIndex}"]`);
-                if (thumbnail) {
-                    setTimeout(() => {
-                        thumbnail.click();
-                        thumbnail.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
-                        setTimeout(() => {
-                            thumbnail.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
-                        }, 2000);
-                    }, 500);
-                }
             }
         }
 
@@ -1093,9 +1110,6 @@
                                  data-variant-index="0"
                                  data-image-index="0"
                                  data-image-url="${primaryImage}">
-                            <div class="current-image-badge" id="badge-${product._id}">
-                                ইমেজ ১/${images.length}
-                            </div>
                         </div>
                         
                         ${thumbnailsHtml}
@@ -1104,12 +1118,12 @@
                             <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
                             <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
                             
-                            <div class="flex items-center justify-between mt-1">
-                                <div class="flex text-yellow-500 text-xs rating-stars">
+                            <div class="rating-container mt-1">
+                                <div class="rating-stars text-yellow-500 text-xs">
                                     ${getStarRating(variant.rating || 4.5)}
                                 </div>
-                                <span class="rating-value text-gray-500 ml-1">(${variant.rating || 4.5})</span>
-                                <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}টি</span>
+                                <span class="rating-number">(${variant.rating || 4.5})</span>
+                                <span class="sold-count text-xs text-gray-500 ml-2">বিক্রি: ${variant.sold || 0}টি</span>
                             </div>
                             
                             <div class="flex items-center gap-2 mt-1">
@@ -1157,13 +1171,6 @@
             productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
 
-            // Update image badge
-            const images = productCard.querySelectorAll('.thumbnail');
-            const badge = productCard.querySelector('.current-image-badge');
-            if (badge) {
-                badge.textContent = `ইমেজ ${imageIndex + 1}/${images.length}`;
-            }
-
             // Update order button
             const orderBtn = productCard.querySelector('.order-now-btn');
             if (orderBtn) {
@@ -1171,11 +1178,7 @@
                 orderBtn.dataset.imageUrl = imageUrl;
             }
 
-            // Update URL hash in browser address bar (without reloading)
-            window.location.hash = `#image-${productId}-${imageIndex}`;
-            
-            // Also update history state to show the hash in address bar
-            history.replaceState(null, null, `#image-${productId}-${imageIndex}`);
+            // Do NOT update URL hash for images - only order button will update hash
         }
 
         function handleOrderButtonClick(btn) {
@@ -1216,12 +1219,28 @@
             // Scroll to order section
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
             
-            // Focus on name input
+            // Check if delivery area is selected
             setTimeout(() => {
-                document.getElementById('name')?.focus();
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    // Flash the delivery area
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove flash after animation
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    
+                    // Focus on delivery area
+                    deliveryArea.focus();
+                } else {
+                    // Focus on name input
+                    document.getElementById('name')?.focus();
+                }
             }, 500);
             
-            // Update URL hash for order
+            // Update URL hash for order only
             window.location.hash = `#order-${productId}-${imageIndex}`;
         }
 
@@ -1242,9 +1261,11 @@
                         <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
                         <div class="flex-1">
                             <h4 class="font-bold text-primary">${product.name}</h4>
-                            <div class="flex items-center text-yellow-500 text-xs md:text-sm">
-                                ${getStarRating(variant.rating || 4.5)}
-                                <span class="text-gray-600 ml-2">(${variant.rating || 4.5})</span>
+                            <div class="rating-container text-xs md:text-sm">
+                                <div class="rating-stars text-yellow-500">
+                                    ${getStarRating(variant.rating || 4.5)}
+                                </div>
+                                <span class="rating-number text-gray-600">(${variant.rating || 4.5})</span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">${variant.sold || 0} জন Recently Viewed</p>
                             <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
@@ -1276,7 +1297,10 @@
             container.innerHTML = reviews.map(review => `
                 <div class="bg-white p-3 rounded-lg shadow">
                     <p class="font-bold">${review.customerName} (${review.customerAddress})</p>
-                    <div class="text-yellow-500">${getStars(review.rating)}</div>
+                    <div class="rating-container">
+                        <div class="rating-stars text-yellow-500">${getStars(review.rating)}</div>
+                        <span class="rating-number text-gray-600">(${review.rating})</span>
+                    </div>
                     <p class="text-gray-700 text-sm">${review.review}</p>
                 </div>
             `).join('');
@@ -1338,6 +1362,8 @@
             document.getElementById('deliveryArea')?.addEventListener('change', function(e) {
                 currentDeliveryCharge = parseInt(e.target.value) || 0;
                 updateTotal();
+                // Remove flash class when selected
+                this.classList.remove('delivery-flash');
             });
             document.getElementById('orderForm')?.addEventListener('submit', handleOrderSubmit);
             document.getElementById('reviewForm')?.addEventListener('submit', handleReviewSubmit);
@@ -1374,9 +1400,19 @@
             showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
             
-            // Focus on name input
+            // Check if delivery area is selected
             setTimeout(() => {
-                document.getElementById('name')?.focus();
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    deliveryArea.focus();
+                } else {
+                    document.getElementById('name')?.focus();
+                }
             }, 500);
             
             window.location.hash = `#order-${product.id}-0`;
@@ -1388,18 +1424,28 @@
             const phone = document.getElementById('phone').value.trim();
             const address = document.getElementById('address').value.trim();
             const deliveryArea = document.getElementById('deliveryArea').value;
+            
             if (!name || !phone || !address) {
                 showPopup('ব্যর্থ!', 'সব ফিল্ড পূরণ করুন', 'error');
                 return;
             }
             if (!deliveryArea) {
                 showPopup('ব্যর্থ!', 'ডেলিভারি এলাকা নির্বাচন করুন', 'error');
+                // Flash the delivery area
+                const deliverySelect = document.getElementById('deliveryArea');
+                deliverySelect.classList.add('delivery-flash');
+                deliverySelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                    deliverySelect.classList.remove('delivery-flash');
+                }, 3000);
+                deliverySelect.focus();
                 return;
             }
             if (selectedForOrder.length === 0) {
                 showPopup('ব্যর্থ!', 'কমপক্ষে একটি পণ্য নির্বাচন করুন', 'error');
                 return;
             }
+            
             const subtotal = selectedForOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
             const orderData = {
@@ -1418,12 +1464,14 @@
                 total: subtotal + delivery,
                 deliveryArea: deliveryArea === '80' ? 'ঢাকার মধ্যে' : 'ঢাকার বাইরে'
             };
+            
             try {
                 const result = await fetch(`${API_URL}/orders`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderData)
                 }).then(res => res.json());
+                
                 if (result.success) {
                     showPopup('অর্ডার সফল!', 'আপনার অর্ডার নেওয়া হয়েছে', 'success', 'খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
                     e.target.reset();
@@ -1446,17 +1494,21 @@
             const address = document.getElementById('reviewAddress').value.trim();
             const review = document.getElementById('reviewText').value.trim();
             const rating = document.getElementById('rating').value;
+            
             if (!name || !address || !review || rating == 0) {
                 showPopup('ব্যর্থ!', 'সব তথ্য দিন এবং রেটিং দিন', 'error');
                 return;
             }
+            
             const reviewData = { customerName: name, customerAddress: address, review, rating: parseInt(rating) };
+            
             try {
                 const result = await fetch(`${API_URL}/reviews`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(reviewData)
                 }).then(res => res.json());
+                
                 if (result.success) {
                     showPopup('ধন্যবাদ!', 'আপনার রিভিউ জমা হয়েছে', 'success', 'এডমিন অ্যাপ্রুভ করার পর দেখানো হবে।');
                     e.target.reset();
