@@ -1932,16 +1932,28 @@
         }
     }
 
-    document.getElementById('addProductBtn').addEventListener('click', () => {
-        document.getElementById('productModalTitle').textContent = 'নতুন পণ্য';
-        document.getElementById('productForm').reset();
-        document.getElementById('productId').value = '';
-        document.getElementById('productActive').checked = true;
-        document.getElementById('productImagePreviews').innerHTML = '';
-        document.getElementById('productModal').classList.remove('hidden');
-        document.getElementById('productModal').classList.add('flex');
-    });
-
+   document.getElementById('addProductBtn').addEventListener('click', async () => {
+    // ক্যাটাগরি লোড করুন
+    try {
+        const response = await fetch(`${API_URL}/categories`);
+        const data = await response.json();
+        if (data.success) {
+            const select = document.getElementById('productCategory');
+            select.innerHTML = '<option value="">সিলেক্ট করুন</option>' + 
+                data.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+    
+    document.getElementById('productModalTitle').textContent = 'নতুন পণ্য';
+    document.getElementById('productForm').reset();
+    document.getElementById('productId').value = '';
+    document.getElementById('productActive').checked = true;
+    document.getElementById('productImagePreviews').innerHTML = '';
+    document.getElementById('productModal').classList.remove('hidden');
+    document.getElementById('productModal').classList.add('flex');
+});
     document.getElementById('closeProductModal').addEventListener('click', () => {
         document.getElementById('productModal').classList.add('hidden');
         document.getElementById('productModal').classList.remove('flex');
@@ -2020,52 +2032,70 @@
         }
     });
 
-    window.editProduct = async (id) => {
-        try {
-            const response = await fetch(`${API_URL}/products`);
-            const data = await response.json();
-            const product = data.data.find(p => p._id === id);
-            
-            if (product) {
-                const variant = product.variants[0] || {};
-                
-                document.getElementById('productModalTitle').textContent = 'এডিট পণ্য';
-                document.getElementById('productId').value = product._id;
-                document.getElementById('productName').value = product.name;
-                document.getElementById('productDescription').value = product.description;
-                document.getElementById('productCategory').value = product.categorySlug;
-                document.getElementById('productPrice').value = product.price;
-                document.getElementById('productOriginalPrice').value = product.originalPrice;
-                document.getElementById('productStock').value = variant.stock || 0;
-                document.getElementById('productSold').value = variant.sold || 0;
-                document.getElementById('productDiscount').value = variant.discount || '';
-                document.getElementById('productColor').value = variant.color || '';
-                document.getElementById('productSize').value = variant.size || '';
-                document.getElementById('productRating').value = variant.rating || 4.5;
-                document.getElementById('productFeatured').checked = product.featured;
-                document.getElementById('productTrending').checked = product.trending;
-                document.getElementById('productActive').checked = product.active;
-                
-                const previews = document.getElementById('productImagePreviews');
-                previews.innerHTML = '';
-                if (variant.images) {
-                    variant.images.forEach(img => {
-                        const imgEl = document.createElement('img');
-                        imgEl.src = img.url;
-                        imgEl.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold';
-                        previews.appendChild(imgEl);
-                    });
-                }
-                
-                document.getElementById('productModal').classList.remove('hidden');
-                document.getElementById('productModal').classList.add('flex');
-            }
-        } catch (error) {
-            console.error('Error editing product:', error);
-            showToast('সমস্যা হয়েছে', 'error');
+  window.editProduct = async (id) => {
+    try {
+        // প্রথমে ক্যাটাগরি লোড হওয়া নিশ্চিত করুন
+        const categoriesResponse = await fetch(`${API_URL}/categories`);
+        const categoriesData = await categoriesResponse.json();
+        
+        // ক্যাটাগরি সিলেক্ট আপডেট করুন
+        if (categoriesData.success) {
+            const select = document.getElementById('productCategory');
+            select.innerHTML = '<option value="">সিলেক্ট করুন</option>' + 
+                categoriesData.data.map(cat => `<option value="${cat.slug}">${cat.nameBn}</option>`).join('');
         }
-    };
-
+        
+        // তারপর পণ্যের ডাটা লোড করুন
+        const response = await fetch(`${API_URL}/products`);
+        const data = await response.json();
+        const product = data.data.find(p => p._id === id);
+        
+        if (product) {
+            const variant = product.variants[0] || {};
+            
+            document.getElementById('productModalTitle').textContent = 'এডিট পণ্য';
+            document.getElementById('productId').value = product._id;
+            document.getElementById('productName').value = product.name;
+            document.getElementById('productDescription').value = product.description;
+            
+            // ক্যাটাগরি সেট করার আগে একটু সময় নিন
+            setTimeout(() => {
+                const categorySelect = document.getElementById('productCategory');
+                categorySelect.value = product.categorySlug;
+                console.log('Category set to:', product.categorySlug); // ডিবাগ করার জন্য
+            }, 100);
+            
+            document.getElementById('productPrice').value = product.price;
+            document.getElementById('productOriginalPrice').value = product.originalPrice;
+            document.getElementById('productStock').value = variant.stock || 0;
+            document.getElementById('productSold').value = variant.sold || 0;
+            document.getElementById('productDiscount').value = variant.discount || '';
+            document.getElementById('productColor').value = variant.color || '';
+            document.getElementById('productSize').value = variant.size || '';
+            document.getElementById('productRating').value = variant.rating || 4.5;
+            document.getElementById('productFeatured').checked = product.featured || false;
+            document.getElementById('productTrending').checked = product.trending || false;
+            document.getElementById('productActive').checked = product.active !== false;
+            
+            const previews = document.getElementById('productImagePreviews');
+            previews.innerHTML = '';
+            if (variant.images && variant.images.length > 0) {
+                variant.images.forEach(img => {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = img.url;
+                    imgEl.className = 'w-20 h-20 object-cover rounded-lg border-2 border-gold';
+                    previews.appendChild(imgEl);
+                });
+            }
+            
+            document.getElementById('productModal').classList.remove('hidden');
+            document.getElementById('productModal').classList.add('flex');
+        }
+    } catch (error) {
+        console.error('Error editing product:', error);
+        showToast('সমস্যা হয়েছে', 'error');
+    }
+};
     window.deleteProduct = async (id) => {
         showConfirm('পণ্য ডিলিট করবেন?', async () => {
             try {
