@@ -1470,81 +1470,75 @@
             window.location.hash = `#order-${productId}-${imageIndex}`;
         }
 
-       function renderTrending() {
-    const container = document.getElementById('trendingItems');
-    if (!container) return;
-    if (allTrending.length === 0) {
-        container.innerHTML = '<p class="text-white">কোন ট্রেন্ডিং পণ্য নেই</p>';
-        return;
-    }
-    container.innerHTML = allTrending.map(product => {
-        const variant = product.variants[0] || {};
-        const images = variant.images || [];
-        const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
-        
-        // Extract discount percentage and amount from discount text
-        let discountDisplay = '';
-        if (variant.discount) {
-            const percentMatch = variant.discount.match(/(\d+)%/);
-            const amountMatch = variant.discount.match(/\((\d+)\s*টাকা\)/);
-            
-            if (percentMatch && amountMatch) {
-                const percent = percentMatch[1];
-                const amount = amountMatch[1];
-                discountDisplay = `${percent}% ছাড় (${amount} টাকা)`;
-            } else {
-                discountDisplay = variant.discount;
+        function renderTrending() {
+            const container = document.getElementById('trendingItems');
+            if (!container) return;
+            if (allTrending.length === 0) {
+                container.innerHTML = '<p class="text-white">কোন ট্রেন্ডিং পণ্য নেই</p>';
+                return;
             }
-        }
-        
-        return `
-            <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
-                 onclick="window.location.hash='#product-${product._id}'">
-                <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
-                <div class="flex-1">
-                    <h4 class="font-bold text-primary">${product.name}</h4>
-                    <div class="product-stats">
-                        <div class="rating-container">
-                            <div class="rating-stars text-xs md:text-sm text-yellow-500">
-                                ${getStarRating(variant.rating || 4.5)}
-                            </div>
-                            <span class="rating-number text-gray-600">(${variant.rating || 4.5})</span>
-                        </div>
-                        <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
-                    </div>
-                    
-                    <!-- Price Section with Highlight -->
-                    <div class="flex items-center gap-2 mt-1 bg-gradient-to-r from-yellow-50 to-gold-50 p-2 rounded-lg">
+            container.innerHTML = allTrending.map(product => {
+                const variant = product.variants[0] || {};
+                const images = variant.images || [];
+                const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
+                
+                // Calculate discount info
+                let discountText = '';
+                let discountAmount = 0;
+                if (variant.discount) {
+                    const match = variant.discount.match(/(\d+)%/);
+                    if (match) {
+                        discountText = match[1] + '% ছাড়';
+                        if (product.originalPrice && product.price) {
+                            discountAmount = product.originalPrice - product.price;
+                        }
+                    } else {
+                        discountText = variant.discount;
+                    }
+                }
+                
+                return `
+                    <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
+                         onclick="window.location.hash='#product-${product._id}'">
+                        <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
                         <div class="flex-1">
-                            <span class="text-xl font-bold text-primary">৳${product.price}</span>
-                            ${product.originalPrice > product.price ? 
-                                `<span class="text-xs text-gray-500 line-through ml-1">৳${product.originalPrice}</span>` : ''}
-                        </div>
-                        ${discountDisplay ? `
-                            <div class="bg-green-500 text-white px-2 py-1 rounded-full text-[10px] font-bold whitespace-nowrap">
-                                ${discountDisplay}
+                            <h4 class="font-bold text-primary">${product.name}</h4>
+                            <div class="product-stats">
+                                <div class="rating-container">
+                                    <div class="rating-stars text-xs md:text-sm text-yellow-500">
+                                        ${getStarRating(variant.rating || 4.5)}
+                                    </div>
+                                    <span class="rating-number text-gray-600">(${variant.rating || 4.5})</span>
+                                </div>
+                                <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
                             </div>
-                        ` : ''}
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-gold font-bold">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>` : ''}
+                            </div>
+                            ${discountText ? `
+                                <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
+                            ` : ''}
+                            <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
+                                    data-product='${JSON.stringify({
+                                        id: product._id,
+                                        name: product.name,
+                                        img: image,
+                                        price: product.price,
+                                        originalPrice: product.originalPrice,
+                                        discount: variant.discount || '',
+                                        variantStock: variant.stock || 0
+                                    })}'
+                                    onclick="event.stopPropagation(); handleTrendingOrder(this)">
+                                অর্ডার করুন
+                            </button>
+                        </div>
                     </div>
-                    
-                    <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
-                            data-product='${JSON.stringify({
-                                id: product._id,
-                                name: product.name,
-                                img: image,
-                                price: product.price,
-                                originalPrice: product.originalPrice,
-                                discount: discountDisplay,
-                                variantStock: variant.stock || 0
-                            })}'
-                            onclick="event.stopPropagation(); handleTrendingOrder(this)">
-                        অর্ডার করুন
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join();
-}
+                `;
+            }).join('');
+        }
+
         function renderReviews(reviews) {
             const container = document.getElementById('customerReviews');
             if (!container) return;
