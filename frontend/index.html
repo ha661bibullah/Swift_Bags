@@ -75,607 +75,866 @@
 
   gtag('config', 'G-84MDZDEKLS');
 </script>
-    <style>
-        * {
-            font-family: 'Hind Siliguri', sans-serif;
+   <style>
+    * {
+        font-family: 'Hind Siliguri', sans-serif;
+    }
+    body {
+        color: #1C1E21;
+        background-color: #F5F7FA;
+    }
+    
+    /* ===== Color Classes ===== */
+    .bg-primary { background-color: #0A1F44; }
+    .text-primary { color: #0A1F44; }
+    .bg-gold { background-color: #D4AF37; }
+    .text-gold { color: #D4AF37; }
+    .border-gold { border-color: #D4AF37; }
+    .bg-light { background-color: #F5F7FA; }
+    .text-dark { color: #1A1A1A; }
+    
+    /* ===== Mobile Menu ===== */
+    .mobile-top-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #0A1F44;
+        padding: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 40;
+        border-top: 1px solid rgba(212, 175, 55, 0.2);
+    }
+    .mobile-top-menu.active {
+        display: block;
+    }
+    .mobile-top-menu a {
+        display: block;
+        padding: 12px 0;
+        color: white;
+        font-size: 18px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        text-align: center;
+    }
+    .mobile-top-menu a:last-child {
+        border-bottom: none;
+    }
+    .mobile-top-menu .call-btn {
+        background-color: #D4AF37;
+        color: #0A1F44;
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+    
+    /* ===== Logo Animation ===== */
+    .logo-animation {
+        border-radius: 7%;
+        animation: pulse 2s infinite;
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    }
+    
+    /* ===== Popup Modal ===== */
+    .popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+    }
+    .popup.active {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+        display: none;
+    }
+    .popup-overlay.active {
+        display: block;
+    }
+    
+    /* ===== Product Card Styles ===== */
+    .product-card {
+        transition: all 0.3s;
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+    }
+    
+    /* Product Badge (Discount Tag) */
+    .product-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: linear-gradient(135deg, #D4AF37 0%, #b5942e 100%);
+        color: #0A1F44;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 10;
+        box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3);
+        border: 1px solid rgba(255,255,255,0.3);
+        animation: badgePulse 2s infinite;
+    }
+    @keyframes badgePulse {
+        0% { box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3); }
+        50% { box-shadow: 0 4px 15px rgba(212, 175, 55, 0.6); }
+        100% { box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3); }
+    }
+    
+    .sold-out-badge {
+        background: #dc2626;
+        color: white;
+    }
+    
+    /* Price Highlight Section */
+    .price-highlight {
+        background: linear-gradient(90deg, #fef9e7 0%, #fcf3d4 100%);
+        border: 1px solid rgba(212, 175, 55, 0.2);
+        border-radius: 12px;
+        padding: 8px 12px;
+        margin-top: 8px;
+        transition: all 0.3s ease;
+    }
+    .product-card:hover .price-highlight {
+        background: linear-gradient(90deg, #fcf3d4 0%, #f9e6b3 100%);
+        border-color: rgba(212, 175, 55, 0.4);
+    }
+    
+    .current-price-large {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0A1F44;
+        line-height: 1.2;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    @media (max-width: 768px) {
+        .current-price-large {
+            font-size: 1.5rem;
         }
-        body {
-            color: #1C1E21;
-            background-color: #F5F7FA;
+    }
+    @media (max-width: 480px) {
+        .current-price-large {
+            font-size: 1.3rem;
         }
-        .bg-primary { background-color: #0A1F44; }
-        .text-primary { color: #0A1F44; }
-        .bg-gold { background-color: #D4AF37; }
-        .text-gold { color: #D4AF37; }
-        .border-gold { border-color: #D4AF37; }
-        .bg-light { background-color: #F5F7FA; }
-        .text-dark { color: #1A1A1A; }
-        
-        .mobile-top-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background-color: #0A1F44;
-            padding: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 40;
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
+    }
+    
+    /* Discount Badge (Green) */
+    .discount-badge {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    @media (max-width: 480px) {
+        .discount-badge {
+            padding: 3px 8px;
+            font-size: 10px;
         }
-        .mobile-top-menu.active {
-            display: block;
-        }
-        .mobile-top-menu a {
-            display: block;
-            padding: 12px 0;
-            color: white;
-            font-size: 18px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-            text-align: center;
-        }
-        .mobile-top-menu a:last-child {
-            border-bottom: none;
-        }
-        .mobile-top-menu .call-btn {
-            background-color: #D4AF37;
-            color: #0A1F44;
-            text-align: center;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        
-        .logo-animation {
-            border-radius: 7%;
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-        }
-        
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-        .popup.active {
-            transform: translate(-50%, -50%) scale(1);
-        }
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-            display: none;
-        }
-        .popup-overlay.active {
-            display: block;
-        }
-        
-        .product-card {
-            transition: all 0.3s;
-            position: relative;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
-        }
-        .product-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #D4AF37;
-            color: #0A1F44;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 10;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .sold-out-badge {
-            background: #dc2626;
-            color: white;
-        }
-        
-        /* Image container for proper display */
-        .product-image-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        .product-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            transition: transform 0.3s;
-        }
-        .product-image-container:hover img {
-            transform: scale(1.05);
-        }
-        
-        .thumbnail-container {
-            display: flex;
-            gap: 5px;
-            margin-top: 5px;
-            overflow-x: auto;
-            padding: 0 5px;
-            flex-shrink: 0;
-        }
-        .thumbnail {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-        .thumbnail.active {
-            border-color: #D4AF37;
-            transform: scale(1.05);
-        }
-        .thumbnail.sold-out-thumb {
-            opacity: 0.6;
-            position: relative;
-        }
-        .thumbnail.sold-out-thumb::after {
-            content: 'Sold Out';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(220, 38, 38, 0.8);
-            color: white;
-            font-size: 8px;
-            text-align: center;
-            border-radius: 0 0 4px 4px;
-        }
-        
-        .cat-btn {
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-weight: 600;
-            transition: all 0.3s;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-        .cat-btn.active {
-            background-color: #0A1F44;
-            color: white;
-        }
-        .cat-btn:not(.active) {
-            background-color: #e5e7eb;
-            color: #1a1a1a;
-        }
-        .cat-btn:hover {
-            background-color: #D4AF37;
-            color: #0A1F44;
-        }
-        
-        .whatsapp-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 50;
-            background-color: #25D366;
-            color: white;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: transform 0.3s;
-        }
-        .whatsapp-btn:hover {
-            transform: scale(1.1);
-        }
-        
+    }
+    
+    /* Image container for proper display */
+    .product-image-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    .product-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.3s;
+    }
+    .product-image-container:hover img {
+        transform: scale(1.05);
+    }
+    
+    /* Thumbnail Styles */
+    .thumbnail-container {
+        display: flex;
+        gap: 5px;
+        margin-top: 5px;
+        overflow-x: auto;
+        padding: 0 5px;
+        flex-shrink: 0;
+        scrollbar-width: thin;
+        scrollbar-color: #D4AF37 #e5e7eb;
+    }
+    .thumbnail-container::-webkit-scrollbar {
+        height: 3px;
+    }
+    .thumbnail-container::-webkit-scrollbar-track {
+        background: #e5e7eb;
+        border-radius: 10px;
+    }
+    .thumbnail-container::-webkit-scrollbar-thumb {
+        background: #D4AF37;
+        border-radius: 10px;
+    }
+    
+    .thumbnail {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    .thumbnail.active {
+        border-color: #D4AF37;
+        transform: scale(1.05);
+    }
+    .thumbnail.sold-out-thumb {
+        opacity: 0.6;
+        position: relative;
+    }
+    .thumbnail.sold-out-thumb::after {
+        content: 'Sold Out';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(220, 38, 38, 0.8);
+        color: white;
+        font-size: 8px;
+        text-align: center;
+        border-radius: 0 0 4px 4px;
+    }
+    
+    /* Category Buttons */
+    .cat-btn {
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+    .cat-btn.active {
+        background-color: #0A1F44;
+        color: white;
+    }
+    .cat-btn:not(.active) {
+        background-color: #e5e7eb;
+        color: #1a1a1a;
+    }
+    .cat-btn:hover {
+        background-color: #D4AF37;
+        color: #0A1F44;
+    }
+    
+    /* WhatsApp Button */
+    .whatsapp-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 50;
+        background-color: #25D366;
+        color: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        transition: transform 0.3s;
+    }
+    .whatsapp-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    /* Selected Products Container */
+    #selectedProducts {
+        max-height: 200px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #D4AF37 #e5e7eb;
+    }
+    @media (max-width: 768px) {
         #selectedProducts {
-            max-height: 200px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #D4AF37 #e5e7eb;
+            max-height: none;
+            overflow-y: visible;
         }
-        @media (max-width: 768px) {
-            #selectedProducts {
-                max-height: none;
-                overflow-y: visible;
-            }
-        }
-        #selectedProducts::-webkit-scrollbar {
-            width: 4px;
-        }
-        #selectedProducts::-webkit-scrollbar-track {
-            background: #e5e7eb;
-            border-radius: 4px;
-        }
-        #selectedProducts::-webkit-scrollbar-thumb {
-            background: #D4AF37;
-            border-radius: 4px;
-        }
-        
+    }
+    #selectedProducts::-webkit-scrollbar {
+        width: 4px;
+    }
+    #selectedProducts::-webkit-scrollbar-track {
+        background: #e5e7eb;
+        border-radius: 4px;
+    }
+    #selectedProducts::-webkit-scrollbar-thumb {
+        background: #D4AF37;
+        border-radius: 4px;
+    }
+    
+    /* Selected Product Items */
+    .selected-product-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        padding: 6px 8px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+        border: 1px solid #e5e7eb;
+        flex-wrap: nowrap;
+    }
+    .selected-product-item img {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+    .product-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: nowrap;
+        min-width: 0;
+    }
+    .product-name {
+        font-weight: 600;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+        flex-shrink: 1;
+    }
+    
+    /* Quantity Controls */
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+    .quantity-btn {
+        width: 26px;
+        height: 26px;
+        border-radius: 4px;
+        background: #0A1F44;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+    .quantity-btn:hover {
+        background: #D4AF37;
+        color: #0A1F44;
+    }
+    .quantity-value {
+        min-width: 24px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+    
+    /* Price Info */
+    .price-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        min-width: 70px;
+        flex-shrink: 0;
+    }
+    .current-price {
+        color: #D4AF37;
+        font-weight: bold;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+    .original-price-small {
+        text-decoration: line-through;
+        color: #9ca3af;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+    .remove-item {
+        color: #ef4444;
+        font-size: 14px;
+        padding: 4px;
+        flex-shrink: 0;
+    }
+    
+    /* Mobile Responsive for Selected Items */
+    @media (max-width: 480px) {
         .selected-product-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: white;
-            padding: 6px 8px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            border: 1px solid #e5e7eb;
-            flex-wrap: nowrap;
+            gap: 4px;
+            padding: 4px;
         }
         .selected-product-item img {
-            width: 45px;
-            height: 45px;
-            object-fit: cover;
-            border-radius: 4px;
-            flex-shrink: 0;
-        }
-        .product-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            flex-wrap: nowrap;
-            min-width: 0;
+            width: 35px;
+            height: 35px;
         }
         .product-name {
-            font-weight: 600;
-            font-size: 13px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 120px;
-            flex-shrink: 1;
-        }
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
+            font-size: 12px;
+            max-width: 80px;
         }
         .quantity-btn {
-            width: 26px;
-            height: 26px;
-            border-radius: 4px;
-            background: #0A1F44;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .quantity-btn:hover {
-            background: #D4AF37;
-            color: #0A1F44;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
         }
         .quantity-value {
-            min-width: 24px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 13px;
-            flex-shrink: 0;
+            font-size: 12px;
+            min-width: 20px;
+        }
+        .current-price, .original-price-small {
+            font-size: 12px;
         }
         .price-info {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            min-width: 70px;
-            flex-shrink: 0;
+            min-width: 60px;
         }
-        .current-price {
-            color: #D4AF37;
-            font-weight: bold;
-            font-size: 13px;
-            white-space: nowrap;
+    }
+    
+    /* Slider Styles */
+    .slider-item {
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        height: 100%;
+        cursor: pointer;
+    }
+    .slider-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, rgba(10,31,68,0.7) 0%, rgba(10,31,68,0.3) 100%);
+    }
+    
+    /* Price Styles */
+    .original-price {
+        text-decoration: line-through;
+        color: #9ca3af;
+        font-size: 12px;
+        margin-right: 5px;
+    }
+    .offer-price {
+        color: #D4AF37;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    /* Container */
+    .container-custom {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    /* Delivery Select */
+    .delivery-select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background-color: white;
+        font-size: 14px;
+        cursor: pointer;
+        color: #6b7280;
+    }
+    .delivery-select:focus {
+        outline: none;
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+    }
+    .delivery-select option {
+        color: #1a1a1a;
+    }
+    .delivery-select option:first-child {
+        color: #6b7280;
+    }
+    
+    /* Order Button */
+    .order-now-btn {
+        width: 100%;
+        background-color: #0A1F44;
+        color: white;
+        font-weight: bold;
+        padding: 8px 0;
+        border-radius: 8px;
+        margin-top: 8px;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+    .order-now-btn:hover:not(:disabled) {
+        background-color: #D4AF37;
+        color: #0A1F44;
+    }
+    .order-now-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    
+    /* Trending Order Button */
+    .trending-order-btn {
+        background-color: #0A1F44;
+        color: white;
+        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+    .trending-order-btn:hover:not(:disabled) {
+        background-color: #D4AF37;
+        color: #0A1F44;
+    }
+    .trending-order-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+    }
+    
+    /* Slider Order Button */
+    .slider-order-btn {
+        display: inline-block;
+        background-color: #D4AF37;
+        color: #0A1F44;
+        font-weight: bold;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    .slider-order-btn:hover:not(:disabled) {
+        background-color: #e6c456;
+    }
+    .slider-order-btn:disabled {
+        background-color: #9ca3af;
+        color: white;
+        cursor: not-allowed;
+    }
+    
+    /* Trending Item */
+    .trending-item {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    .trending-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    /* Trending Item Price Highlight */
+    .trending-item .price-highlight {
+        background: linear-gradient(90deg, #fef9e7 0%, #fcf3d4 100%);
+        border-radius: 8px;
+        padding: 6px 10px;
+        margin-top: 6px;
+    }
+    .trending-item:hover .price-highlight {
+        background: linear-gradient(90deg, #fcf3d4 0%, #f9e6b3 100%);
+    }
+    
+    /* Loader */
+    .loader {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #D4AF37;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Active state for hash links */
+    .section-active {
+        scroll-margin-top: 80px;
+    }
+
+    /* Flash animation for order form */
+    @keyframes flash {
+        0%, 50%, 100% { opacity: 1; }
+        25%, 75% { opacity: 0.5; background-color: rgba(212, 175, 55, 0.2); }
+    }
+    .order-form-flash {
+        animation: flash 1s ease-in-out 3;
+        border: 2px solid #D4AF37;
+        border-radius: 12px;
+    }
+
+    /* Flash animation for delivery area */
+    @keyframes field-flash {
+        0%, 50%, 100% { 
+            border-color: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
         }
-        .original-price-small {
-            text-decoration: line-through;
-            color: #9ca3af;
-            font-size: 11px;
-            white-space: nowrap;
-        }
-        .remove-item {
-            color: #ef4444;
-            font-size: 14px;
-            padding: 4px;
-            flex-shrink: 0;
-        }
-        
-        @media (max-width: 480px) {
-            .selected-product-item {
-                gap: 4px;
-                padding: 4px;
-            }
-            .selected-product-item img {
-                width: 35px;
-                height: 35px;
-            }
-            .product-name {
-                font-size: 12px;
-                max-width: 80px;
-            }
-            .quantity-btn {
-                width: 22px;
-                height: 22px;
-                font-size: 14px;
-            }
-            .quantity-value {
-                font-size: 12px;
-                min-width: 20px;
-            }
-            .current-price, .original-price-small {
-                font-size: 12px;
-            }
-            .price-info {
-                min-width: 60px;
-            }
-        }
-        
-        .slider-item {
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            height: 100%;
-            cursor: pointer;
-        }
-        .slider-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, rgba(10,31,68,0.7) 0%, rgba(10,31,68,0.3) 100%);
-        }
-        
-        .original-price {
-            text-decoration: line-through;
-            color: #9ca3af;
-            font-size: 12px;
-            margin-right: 5px;
-        }
-        .offer-price {
-            color: #D4AF37;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        .container-custom {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-        
-        .delivery-select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            background-color: white;
-            font-size: 14px;
-            cursor: pointer;
-            color: #6b7280;
-        }
-        .delivery-select:focus {
-            outline: none;
+        25%, 75% { 
             border-color: #D4AF37;
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
         }
-        .delivery-select option {
-            color: #1a1a1a;
+    }
+    .delivery-flash {
+        animation: field-flash 1s ease-in-out 3;
+    }
+
+    /* Focus style for inputs */
+    #name:focus,
+    #phone:focus,
+    #address:focus,
+    #deliveryArea:focus {
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+        outline: none;
+    }
+
+    /* Rating and sold container */
+    .product-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+        width: 100%;
+    }
+    .rating-container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .rating-stars {
+        display: inline-flex;
+        align-items: center;
+        color: #eab308;
+    }
+    .rating-number {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    .sold-count {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    /* Smooth image transition */
+    .main-image {
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    /* Discount text in selected items */
+    .discount-tag-small {
+        font-size: 10px;
+        color: #10b981;
+        font-weight: 600;
+        margin-left: 4px;
+    }
+
+    /* Grid Layout */
+    .grid {
+        display: grid;
+    }
+    
+    /* Utility Classes */
+    .hidden {
+        display: none;
+    }
+    
+    .flex {
+        display: flex;
+    }
+    
+    .items-center {
+        align-items: center;
+    }
+    
+    .justify-between {
+        justify-content: space-between;
+    }
+    
+    .text-center {
+        text-align: center;
+    }
+    
+    /* Responsive Text */
+    @media (max-width: 640px) {
+        .text-2xl {
+            font-size: 1.5rem;
         }
-        .delivery-select option:first-child {
-            color: #6b7280;
+        .text-xl {
+            font-size: 1.25rem;
         }
-        
-        .order-now-btn {
-            width: 100%;
-            background-color: #0A1F44;
-            color: white;
-            font-weight: bold;
-            padding: 8px 0;
-            border-radius: 8px;
-            margin-top: 8px;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
+    }
+    
+    /* Smooth Transitions */
+    .transition {
+        transition: all 0.3s ease;
+    }
+    
+    /* Shadow Effects */
+    .shadow-lg {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .shadow-xl {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Hover Scale Effect */
+    .hover\\:scale-105:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Ring Effect for Highlight */
+    .ring-4 {
+        ring-width: 4px;
+    }
+    .ring-gold {
+        ring-color: #D4AF37;
+    }
+    .ring-opacity-50 {
+        ring-opacity: 0.5;
+    }
+    
+    /* Gradient Backgrounds */
+    .bg-gradient-gold {
+        background: linear-gradient(135deg, #D4AF37 0%, #b5942e 100%);
+    }
+    
+    .bg-gradient-green {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    /* Animation for new items */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .product-card {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    /* Price highlight container */
+    .price-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(90deg, #fef9e7 0%, #fcf3d4 100%);
+        border: 1px solid rgba(212, 175, 55, 0.2);
+        border-radius: 12px;
+        padding: 10px 15px;
+        margin: 10px 0;
+    }
+    
+    .price-wrapper {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .current-price-big {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0A1F44;
+        line-height: 1.2;
+    }
+    
+    .original-price-small {
+        font-size: 0.9rem;
+        color: #9ca3af;
+        text-decoration: line-through;
+    }
+    
+    /* Discount pill */
+    .discount-pill {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Mobile responsive for price */
+    @media (max-width: 768px) {
+        .current-price-big {
+            font-size: 1.5rem;
         }
-        .order-now-btn:hover:not(:disabled) {
-            background-color: #D4AF37;
-            color: #0A1F44;
+        .price-container {
+            padding: 8px 12px;
         }
-        .order-now-btn:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        .trending-order-btn {
-            background-color: #0A1F44;
-            color: white;
-            font-weight: bold;
+        .discount-pill {
             padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
+            font-size: 0.75rem;
         }
-        .trending-order-btn:hover:not(:disabled) {
-            background-color: #D4AF37;
-            color: #0A1F44;
+    }
+    
+    @media (max-width: 480px) {
+        .current-price-big {
+            font-size: 1.3rem;
         }
-        .trending-order-btn:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
+        .price-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
         }
-        
-        .slider-order-btn {
-            display: inline-block;
-            background-color: #D4AF37;
-            color: #0A1F44;
-            font-weight: bold;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: all 0.3s;
-            cursor: pointer;
+        .discount-pill {
+            align-self: flex-start;
         }
-        .slider-order-btn:hover:not(:disabled) {
-            background-color: #e6c456;
-        }
-        .slider-order-btn:disabled {
-            background-color: #9ca3af;
-            color: white;
-            cursor: not-allowed;
-        }
-        
-        .trending-item {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        .trending-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #D4AF37;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Active state for hash links */
-        .section-active {
-            scroll-margin-top: 80px;
-        }
-
-        /* Flash animation for order form */
-        @keyframes flash {
-            0%, 50%, 100% { opacity: 1; }
-            25%, 75% { opacity: 0.5; background-color: rgba(212, 175, 55, 0.2); }
-        }
-        .order-form-flash {
-            animation: flash 1s ease-in-out 3;
-            border: 2px solid #D4AF37;
-            border-radius: 12px;
-        }
-
-        /* Flash animation for delivery area */
-        @keyframes field-flash {
-            0%, 50%, 100% { 
-                border-color: #ef4444;
-                box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
-            }
-            25%, 75% { 
-                border-color: #D4AF37;
-                box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
-            }
-        }
-        .delivery-flash {
-            animation: field-flash 1s ease-in-out 3;
-        }
-
-        /* Focus style for inputs */
-        #name:focus,
-        #phone:focus,
-        #address:focus,
-        #deliveryArea:focus {
-            border-color: #D4AF37;
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
-            outline: none;
-        }
-
-        /* Rating and sold container */
-        .product-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 4px;
-            width: 100%;
-        }
-        .rating-container {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .rating-stars {
-            display: inline-flex;
-            align-items: center;
-            color: #eab308;
-        }
-        .rating-number {
-            font-size: 12px;
-            color: #6b7280;
-        }
-        .sold-count {
-            font-size: 12px;
-            color: #6b7280;
-        }
-
-        /* Smooth image transition */
-        .main-image {
-            transition: opacity 0.2s ease-in-out;
-        }
-
-        /* Discount tag styles */
-        .discount-badge {
-            background: #ef4444;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        
-        .discount-text {
-            font-size: 11px;
-            color: #10b981;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-    </style>
+    }
+</style>
 </head>
 <body class="bg-light">
 
@@ -1257,117 +1516,115 @@
             });
         }
 
-        function renderProducts() {
-            const grid = document.getElementById('productGrid');
-            if (!grid) return;
+       function renderProducts() {
+    const grid = document.getElementById('productGrid');
+    if (!grid) return;
 
-            if (allProducts.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
-                return;
+    if (allProducts.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
+        return;
+    }
+
+    grid.innerHTML = allProducts.map(product => {
+        const variant = product.variants[0] || {};
+        const images = variant.images || [];
+        const primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+        const hasStock = variant.stock > 0;
+        const discount = variant.discount || '';
+
+        // Extract discount percentage and amount from discount text
+        let discountDisplay = '';
+        if (discount) {
+            const percentMatch = discount.match(/(\d+)%/);
+            const amountMatch = discount.match(/\((\d+)\s*টাকা\)/);
+            
+            if (percentMatch && amountMatch) {
+                const percent = percentMatch[1];
+                const amount = amountMatch[1];
+                discountDisplay = `${percent}% ছাড় (${amount} টাকা)`;
+            } else {
+                discountDisplay = discount; // fallback to original text
             }
-
-            grid.innerHTML = allProducts.map(product => {
-                const variant = product.variants[0] || {};
-                const images = variant.images || [];
-                const primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
-                const hasStock = variant.stock > 0;
-                const discount = variant.discount || '';
-
-                // Calculate discount percentage if not already in text
-                let discountPercent = '';
-                let discountAmount = 0;
-                
-                if (discount) {
-                    const match = discount.match(/(\d+)%/);
-                    if (match) {
-                        discountPercent = match[1] + '% ছাড়';
-                        // Calculate actual discount amount
-                        if (product.originalPrice && product.price) {
-                            discountAmount = product.originalPrice - product.price;
-                        }
-                    } else {
-                        discountPercent = discount;
-                    }
-                }
-
-                const thumbnailsHtml = images.length > 1 ? `
-                    <div class="thumbnail-container px-2 pb-1">
-                        ${images.map((img, idx) => `
-                            <img src="${img.url}" alt="${product.name} thumbnail" 
-                                 class="thumbnail ${idx === 0 ? 'active' : ''}" 
-                                 data-product-id="${product._id}" 
-                                 data-variant-index="0" 
-                                 data-image-index="${idx}"
-                                 data-image-url="${img.url}"
-                                 onclick="event.stopPropagation(); handleThumbnailClick(this)">
-                        `).join('')}
-                    </div>
-                ` : '';
-
-                return `
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
-                         data-product-id="${product._id}">
-                        
-                        ${discount && hasStock ? `<span class="product-badge" data-badge>${discountPercent || discount}</span>` : ''}
-                        
-                        <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
-                            <img src="${primaryImage}" alt="${product.name}" 
-                                 class="main-image" 
-                                 data-product-id="${product._id}" 
-                                 data-variant-index="0"
-                                 data-image-index="0"
-                                 data-image-url="${primaryImage}">
-                        </div>
-                        
-                        ${thumbnailsHtml}
-                        
-                        <div class="p-2 md:p-3 flex-grow">
-                            <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
-                            <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
-                            
-                            <div class="product-stats">
-                                <div class="rating-container">
-                                    <div class="rating-stars text-xs">
-                                        ${getStarRating(variant.rating || 4.5)}
-                                    </div>
-                                    <span class="rating-number">(${variant.rating || 4.5})</span>
-                                </div>
-                                <span class="sold-count">বিক্রি: ${variant.sold || 0}টি</span>
-                            </div>
-                            
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="offer-price">৳${product.price}</span>
-                                ${product.originalPrice > product.price ? 
-                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-                            </div>
-                            
-                            ${discount ? `
-                                <div class="discount-text text-xs text-green-600 font-bold mt-1">
-                                    <i class="fas fa-tag mr-1"></i> ${discount}
-                                    ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}
-                                </div>
-                            ` : ''}
-                            
-                            <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
-                                    data-product-id="${product._id}" 
-                                    data-variant-index="0" 
-                                    data-image-index="0"
-                                    data-image-url="${primaryImage}"
-                                    ${!hasStock ? 'disabled' : ''}
-                                    onclick="event.stopPropagation(); handleOrderButtonClick(this)">
-                                ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Attach thumbnail click handlers
-            document.querySelectorAll('.thumbnail').forEach(thumb => {
-                thumb.addEventListener('click', handleThumbnailClick);
-            });
         }
 
+        const thumbnailsHtml = images.length > 1 ? `
+            <div class="thumbnail-container px-2 pb-1">
+                ${images.map((img, idx) => `
+                    <img src="${img.url}" alt="${product.name} thumbnail" 
+                         class="thumbnail ${idx === 0 ? 'active' : ''}" 
+                         data-product-id="${product._id}" 
+                         data-variant-index="0" 
+                         data-image-index="${idx}"
+                         data-image-url="${img.url}"
+                         onclick="event.stopPropagation(); handleThumbnailClick(this)">
+                `).join('')}
+            </div>
+        ` : '';
+
+        return `
+            <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
+                 data-product-id="${product._id}">
+                
+                ${discount && hasStock ? `<span class="product-badge" data-badge>${discountDisplay}</span>` : ''}
+                
+                <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
+                    <img src="${primaryImage}" alt="${product.name}" 
+                         class="main-image" 
+                         data-product-id="${product._id}" 
+                         data-variant-index="0"
+                         data-image-index="0"
+                         data-image-url="${primaryImage}">
+                </div>
+                
+                ${thumbnailsHtml}
+                
+                <div class="p-2 md:p-3 flex-grow">
+                    <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
+                    <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
+                    
+                    <div class="product-stats">
+                        <div class="rating-container">
+                            <div class="rating-stars text-xs">
+                                ${getStarRating(variant.rating || 4.5)}
+                            </div>
+                            <span class="rating-number">(${variant.rating || 4.5})</span>
+                        </div>
+                        <span class="sold-count">বিক্রি: ${variant.sold || 0}টি</span>
+                    </div>
+                    
+                    <!-- Price Section with Highlight -->
+                    <div class="flex items-center gap-2 mt-2 bg-gradient-to-r from-yellow-50 to-gold-50 p-2 rounded-lg">
+                        <div class="flex-1">
+                            <span class="text-2xl font-bold text-primary">৳${product.price}</span>
+                            ${product.originalPrice > product.price ? 
+                                `<span class="text-sm text-gray-500 line-through ml-2">৳${product.originalPrice}</span>` : ''}
+                        </div>
+                        ${discountDisplay ? `
+                            <div class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
+                                ${discountDisplay}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
+                            data-product-id="${product._id}" 
+                            data-variant-index="0" 
+                            data-image-index="0"
+                            data-image-url="${primaryImage}"
+                            ${!hasStock ? 'disabled' : ''}
+                            onclick="event.stopPropagation(); handleOrderButtonClick(this)">
+                        ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Attach thumbnail click handlers
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.addEventListener('click', handleThumbnailClick);
+    });
+}
         function handleThumbnailClick(thumb) {
             const productId = thumb.dataset.productId;
             const imageIndex = parseInt(thumb.dataset.imageIndex);
@@ -1472,75 +1729,81 @@
             window.location.hash = `#order-${productId}-${imageIndex}`;
         }
 
-        function renderTrending() {
-            const container = document.getElementById('trendingItems');
-            if (!container) return;
-            if (allTrending.length === 0) {
-                container.innerHTML = '<p class="text-white">কোন ট্রেন্ডিং পণ্য নেই</p>';
-                return;
+       function renderTrending() {
+    const container = document.getElementById('trendingItems');
+    if (!container) return;
+    if (allTrending.length === 0) {
+        container.innerHTML = '<p class="text-white">কোন ট্রেন্ডিং পণ্য নেই</p>';
+        return;
+    }
+    container.innerHTML = allTrending.map(product => {
+        const variant = product.variants[0] || {};
+        const images = variant.images || [];
+        const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
+        
+        // Extract discount percentage and amount from discount text
+        let discountDisplay = '';
+        if (variant.discount) {
+            const percentMatch = variant.discount.match(/(\d+)%/);
+            const amountMatch = variant.discount.match(/\((\d+)\s*টাকা\)/);
+            
+            if (percentMatch && amountMatch) {
+                const percent = percentMatch[1];
+                const amount = amountMatch[1];
+                discountDisplay = `${percent}% ছাড় (${amount} টাকা)`;
+            } else {
+                discountDisplay = variant.discount;
             }
-            container.innerHTML = allTrending.map(product => {
-                const variant = product.variants[0] || {};
-                const images = variant.images || [];
-                const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
-                
-                // Calculate discount info
-                let discountText = '';
-                let discountAmount = 0;
-                if (variant.discount) {
-                    const match = variant.discount.match(/(\d+)%/);
-                    if (match) {
-                        discountText = match[1] + '% ছাড়';
-                        if (product.originalPrice && product.price) {
-                            discountAmount = product.originalPrice - product.price;
-                        }
-                    } else {
-                        discountText = variant.discount;
-                    }
-                }
-                
-                return `
-                    <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
-                         onclick="window.location.hash='#product-${product._id}'">
-                        <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
-                        <div class="flex-1">
-                            <h4 class="font-bold text-primary">${product.name}</h4>
-                            <div class="product-stats">
-                                <div class="rating-container">
-                                    <div class="rating-stars text-xs md:text-sm text-yellow-500">
-                                        ${getStarRating(variant.rating || 4.5)}
-                                    </div>
-                                    <span class="rating-number text-gray-600">(${variant.rating || 4.5})</span>
-                                </div>
-                                <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
-                            </div>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="text-gold font-bold">৳${product.price}</span>
-                                ${product.originalPrice > product.price ? 
-                                    `<span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>` : ''}
-                            </div>
-                            ${discountText ? `
-                                <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
-                            ` : ''}
-                            <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
-                                    data-product='${JSON.stringify({
-                                        id: product._id,
-                                        name: product.name,
-                                        img: image,
-                                        price: product.price,
-                                        originalPrice: product.originalPrice,
-                                        discount: variant.discount || '',
-                                        variantStock: variant.stock || 0
-                                    })}'
-                                    onclick="event.stopPropagation(); handleTrendingOrder(this)">
-                                অর্ডার করুন
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
         }
-
+        
+        return `
+            <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
+                 onclick="window.location.hash='#product-${product._id}'">
+                <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
+                <div class="flex-1">
+                    <h4 class="font-bold text-primary">${product.name}</h4>
+                    <div class="product-stats">
+                        <div class="rating-container">
+                            <div class="rating-stars text-xs md:text-sm text-yellow-500">
+                                ${getStarRating(variant.rating || 4.5)}
+                            </div>
+                            <span class="rating-number text-gray-600">(${variant.rating || 4.5})</span>
+                        </div>
+                        <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
+                    </div>
+                    
+                    <!-- Price Section with Highlight -->
+                    <div class="flex items-center gap-2 mt-1 bg-gradient-to-r from-yellow-50 to-gold-50 p-2 rounded-lg">
+                        <div class="flex-1">
+                            <span class="text-xl font-bold text-primary">৳${product.price}</span>
+                            ${product.originalPrice > product.price ? 
+                                `<span class="text-xs text-gray-500 line-through ml-1">৳${product.originalPrice}</span>` : ''}
+                        </div>
+                        ${discountDisplay ? `
+                            <div class="bg-green-500 text-white px-2 py-1 rounded-full text-[10px] font-bold whitespace-nowrap">
+                                ${discountDisplay}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
+                            data-product='${JSON.stringify({
+                                id: product._id,
+                                name: product.name,
+                                img: image,
+                                price: product.price,
+                                originalPrice: product.originalPrice,
+                                discount: discountDisplay,
+                                variantStock: variant.stock || 0
+                            })}'
+                            onclick="event.stopPropagation(); handleTrendingOrder(this)">
+                        অর্ডার করুন
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join();
+}
         function renderReviews(reviews) {
             const container = document.getElementById('customerReviews');
             if (!container) return;
@@ -1799,39 +2062,50 @@
         }
 
         function updateSelectedProducts() {
-            const container = document.getElementById('selectedProducts');
-            if (selectedForOrder.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>';
-                updateTotal();
-                return;
+    const container = document.getElementById('selectedProducts');
+    if (selectedForOrder.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>';
+        updateTotal();
+        return;
+    }
+    container.innerHTML = '';
+    selectedForOrder.forEach((p, index) => {
+        // Extract clean discount text for display
+        let discountText = '';
+        if (p.name.includes('(') && p.name.includes(')')) {
+            const match = p.name.match(/\((.*?)\)/);
+            if (match) {
+                discountText = match[1];
             }
-            container.innerHTML = '';
-            selectedForOrder.forEach((p, index) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'selected-product-item';
-                itemDiv.innerHTML = `
-                    <img src="${p.img}" alt="${p.name}">
-                    <div class="product-info">
-                        <span class="product-name">${p.name}</span>
-                        <div class="quantity-control">
-                            <span class="quantity-btn" onclick="changeQuantity(${index}, -1)">−</span>
-                            <span class="quantity-value">${p.quantity}</span>
-                            <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
-                        </div>
-                        <div class="price-info">
-                            <span class="current-price">৳${p.price}</span>
-                            <span class="original-price-small">৳${p.originalPrice}</span>
-                        </div>
-                    </div>
-                    <button class="remove-item" onclick="removeFromOrder(${index})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                `;
-                container.appendChild(itemDiv);
-            });
-            updateTotal();
         }
-
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'selected-product-item';
+        itemDiv.innerHTML = `
+            <img src="${p.img}" alt="${p.name}">
+            <div class="product-info">
+                <div>
+                    <span class="product-name">${p.name.replace(/\s*\(.*?\)\s*/, '')}</span>
+                    ${discountText ? `<span class="text-xs text-green-600 font-bold ml-1">(${discountText})</span>` : ''}
+                </div>
+                <div class="quantity-control">
+                    <span class="quantity-btn" onclick="changeQuantity(${index}, -1)">−</span>
+                    <span class="quantity-value">${p.quantity}</span>
+                    <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
+                </div>
+                <div class="price-info">
+                    <span class="current-price">৳${p.price}</span>
+                    <span class="original-price-small">৳${p.originalPrice}</span>
+                </div>
+            </div>
+            <button class="remove-item" onclick="removeFromOrder(${index})">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        container.appendChild(itemDiv);
+    });
+    updateTotal();
+}
         window.changeQuantity = function(index, change) {
             if (selectedForOrder[index]) {
                 const newQty = selectedForOrder[index].quantity + change;
