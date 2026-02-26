@@ -46,8 +46,7 @@
       }
     }
     </script>
-
-    <!-- Meta Pixel Code -->
+<!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -64,7 +63,6 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
-
     <style>
         * {
             font-family: 'Hind Siliguri', sans-serif;
@@ -188,12 +186,17 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             width: 100%;
             aspect-ratio: 1 / 1;
             overflow: hidden;
+            cursor: pointer;
         }
         .product-image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             object-position: center;
+            transition: transform 0.3s;
+        }
+        .product-image-container:hover img {
+            transform: scale(1.05);
         }
         
         .thumbnail-container {
@@ -635,6 +638,20 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             font-size: 12px;
             color: #6b7280;
         }
+
+        /* Image link indicator */
+        .image-link-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.6);
+            color: #D4AF37;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            z-index: 15;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -850,6 +867,13 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 const productId = hashValue.replace('product-', '');
                 highlightProduct(productId);
             }
+            // Check if it's an image hash (starts with 'image-')
+            else if (hashValue.startsWith('image-')) {
+                const [productId, imageIndex] = hashValue.replace('image-', '').split('-');
+                if (productId && imageIndex !== undefined) {
+                    highlightProductImage(productId, parseInt(imageIndex));
+                }
+            }
             // Check if it's an order hash with specific image (starts with 'order-')
             else if (hashValue.startsWith('order-')) {
                 const [productId, imageIndex] = hashValue.replace('order-', '').split('-');
@@ -968,6 +992,26 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 setTimeout(() => {
                     productCard.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
                 }, 3000);
+            }
+        }
+
+        // Highlight specific product image and scroll to it
+        function highlightProductImage(productId, imageIndex) {
+            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+            if (productCard) {
+                productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Find the thumbnail for this image index
+                const thumbnail = productCard.querySelector(`.thumbnail[data-image-index="${imageIndex}"]`);
+                if (thumbnail) {
+                    setTimeout(() => {
+                        thumbnail.click();
+                        thumbnail.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
+                        setTimeout(() => {
+                            thumbnail.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
+                        }, 2000);
+                    }, 500);
+                }
             }
         }
 
@@ -1148,17 +1192,18 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
 
                 return `
                     <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
-                         data-product-id="${product._id}"
-                         onclick="window.location.hash='#product-${product._id}'">
+                         data-product-id="${product._id}">
+                        
                         ${discount && hasStock ? `<span class="product-badge" data-badge>${discount}</span>` : ''}
                         
-                        <div class="product-image-container">
+                        <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
                             <img src="${primaryImage}" alt="${product.name}" 
                                  class="main-image" 
                                  data-product-id="${product._id}" 
                                  data-variant-index="0"
                                  data-image-index="0"
                                  data-image-url="${primaryImage}">
+                            <div class="image-link-badge">📷 #image-${product._id}-0</div>
                         </div>
                         
                         ${thumbnailsHtml}
@@ -1218,6 +1263,18 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 mainImg.dataset.imageUrl = imageUrl;
             }
 
+            // Update image container link
+            const imageContainer = productCard.querySelector('.product-image-container');
+            if (imageContainer) {
+                imageContainer.setAttribute('onclick', `window.location.hash='#image-${productId}-${imageIndex}'`);
+                
+                // Update the link badge
+                const linkBadge = imageContainer.querySelector('.image-link-badge');
+                if (linkBadge) {
+                    linkBadge.textContent = `📷 #image-${productId}-${imageIndex}`;
+                }
+            }
+
             // Update active thumbnail
             productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
@@ -1229,7 +1286,8 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 orderBtn.dataset.imageUrl = imageUrl;
             }
 
-            // Do NOT update URL hash for images - only order button will update hash
+            // Update URL hash for image
+            window.location.hash = `#image-${productId}-${imageIndex}`;
         }
 
         function handleOrderButtonClick(btn) {
@@ -1291,7 +1349,7 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 }
             }, 500);
             
-            // Update URL hash for order only
+            // Update URL hash for order
             window.location.hash = `#order-${productId}-${imageIndex}`;
         }
 
