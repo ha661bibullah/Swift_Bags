@@ -46,7 +46,7 @@
       }
     }
     </script>
-    <!-- Meta Pixel Code -->
+<!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -59,7 +59,10 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 fbq('init', '1680090143363538');
 fbq('track', 'PageView');
 </script>
-
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
     <style>
         * {
             font-family: 'Hind Siliguri', sans-serif;
@@ -584,20 +587,6 @@ fbq('track', 'PageView');
             border-radius: 12px;
         }
 
-        /* Flash animation for product card - only used for shared links */
-        @keyframes card-flash {
-            0%, 50%, 100% { 
-                box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
-            }
-            25%, 75% { 
-                box-shadow: 0 0 20px 10px rgba(212, 175, 55, 0.7);
-                transform: scale(1.02);
-            }
-        }
-        .product-card-flash {
-            animation: card-flash 0.8s ease-in-out 3;
-        }
-
         /* Flash animation for delivery area */
         @keyframes field-flash {
             0%, 50%, 100% { 
@@ -648,6 +637,20 @@ fbq('track', 'PageView');
         .sold-count {
             font-size: 12px;
             color: #6b7280;
+        }
+
+        /* Image link indicator */
+        .image-link-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.6);
+            color: #D4AF37;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            z-index: 15;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -841,22 +844,14 @@ fbq('track', 'PageView');
         let allTrending = [];
         let currentSlide = 0;
         let slideInterval;
-        
-        // Flag to track if we're processing a hash load
-        let isProcessingHash = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadAllData();
             setupEventListeners();
+            checkHashAndScroll();
             
             // Listen for hash changes
-            window.addEventListener('hashchange', () => {
-                isProcessingHash = true;
-                checkHashAndScroll();
-                setTimeout(() => {
-                    isProcessingHash = false;
-                }, 1000);
-            });
+            window.addEventListener('hashchange', checkHashAndScroll);
         });
 
         // Check hash and scroll to appropriate section
@@ -993,16 +988,10 @@ fbq('track', 'PageView');
             const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
             if (productCard) {
                 productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Add flash effect only when coming from shared link
-                if (isProcessingHash) {
-                    productCard.classList.add('product-card-flash');
-                    
-                    // Remove flash after animation completes
-                    setTimeout(() => {
-                        productCard.classList.remove('product-card-flash');
-                    }, 2400);
-                }
+                productCard.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
+                setTimeout(() => {
+                    productCard.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
+                }, 3000);
             }
         }
 
@@ -1016,31 +1005,11 @@ fbq('track', 'PageView');
                 const thumbnail = productCard.querySelector(`.thumbnail[data-image-index="${imageIndex}"]`);
                 if (thumbnail) {
                     setTimeout(() => {
-                        // Click the thumbnail to show the image (without triggering flash)
-                        const wasProcessing = isProcessingHash;
-                        isProcessingHash = false; // Temporarily disable flash for thumbnail click
                         thumbnail.click();
-                        isProcessingHash = wasProcessing; // Restore original state
-                        
-                        // Add flash effect only when coming from shared link
-                        if (wasProcessing) {
-                            productCard.classList.add('product-card-flash');
-                            
-                            // Remove flash after animation
-                            setTimeout(() => {
-                                productCard.classList.remove('product-card-flash');
-                            }, 2400);
-                        }
-                    }, 500);
-                } else {
-                    // If thumbnail not found, just flash the card if from shared link
-                    setTimeout(() => {
-                        if (isProcessingHash) {
-                            productCard.classList.add('product-card-flash');
-                            setTimeout(() => {
-                                productCard.classList.remove('product-card-flash');
-                            }, 2400);
-                        }
+                        thumbnail.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
+                        setTimeout(() => {
+                            thumbnail.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
+                        }, 2000);
                     }, 500);
                 }
             }
@@ -1098,13 +1067,7 @@ fbq('track', 'PageView');
                     updateStructuredData();
                     
                     // Check if we need to highlight a product after loading
-                    setTimeout(() => {
-                        isProcessingHash = true;
-                        checkHashAndScroll();
-                        setTimeout(() => {
-                            isProcessingHash = false;
-                        }, 1000);
-                    }, 500);
+                    checkHashAndScroll();
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
@@ -1233,13 +1196,14 @@ fbq('track', 'PageView');
                         
                         ${discount && hasStock ? `<span class="product-badge" data-badge>${discount}</span>` : ''}
                         
-                        <div class="product-image-container" onclick="event.stopPropagation(); handleImageClick('${product._id}', 0)">
+                        <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
                             <img src="${primaryImage}" alt="${product.name}" 
                                  class="main-image" 
                                  data-product-id="${product._id}" 
                                  data-variant-index="0"
                                  data-image-index="0"
                                  data-image-url="${primaryImage}">
+                            <div class="image-link-badge">📷 #image-${product._id}-0</div>
                         </div>
                         
                         ${thumbnailsHtml}
@@ -1283,11 +1247,6 @@ fbq('track', 'PageView');
             });
         }
 
-        // Handle image click - update URL hash without any visual indicator
-        function handleImageClick(productId, imageIndex) {
-            window.location.hash = `#image-${productId}-${imageIndex}`;
-        }
-
         function handleThumbnailClick(thumb) {
             const productId = thumb.dataset.productId;
             const imageIndex = parseInt(thumb.dataset.imageIndex);
@@ -1304,10 +1263,16 @@ fbq('track', 'PageView');
                 mainImg.dataset.imageUrl = imageUrl;
             }
 
-            // Update image container click handler
+            // Update image container link
             const imageContainer = productCard.querySelector('.product-image-container');
             if (imageContainer) {
-                imageContainer.setAttribute('onclick', `event.stopPropagation(); handleImageClick('${productId}', ${imageIndex})`);
+                imageContainer.setAttribute('onclick', `window.location.hash='#image-${productId}-${imageIndex}'`);
+                
+                // Update the link badge
+                const linkBadge = imageContainer.querySelector('.image-link-badge');
+                if (linkBadge) {
+                    linkBadge.textContent = `📷 #image-${productId}-${imageIndex}`;
+                }
             }
 
             // Update active thumbnail
@@ -1321,12 +1286,8 @@ fbq('track', 'PageView');
                 orderBtn.dataset.imageUrl = imageUrl;
             }
 
-            // Update URL hash for image (without any visual indicator)
-            // Don't trigger flash for manual thumbnail clicks
-            const wasProcessing = isProcessingHash;
-            isProcessingHash = false;
+            // Update URL hash for image
             window.location.hash = `#image-${productId}-${imageIndex}`;
-            isProcessingHash = wasProcessing;
         }
 
         function handleOrderButtonClick(btn) {
