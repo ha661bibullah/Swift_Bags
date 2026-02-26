@@ -1257,115 +1257,117 @@
             });
         }
 
-       function renderProducts() {
-    const grid = document.getElementById('productGrid');
-    if (!grid) return;
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            if (!grid) return;
 
-    if (allProducts.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
-        return;
-    }
-
-    grid.innerHTML = allProducts.map(product => {
-        const variant = product.variants[0] || {};
-        const images = variant.images || [];
-        const primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
-        const hasStock = variant.stock > 0;
-        const discount = variant.discount || '';
-
-        // Extract discount percentage and amount from discount text
-        let discountDisplay = '';
-        if (discount) {
-            const percentMatch = discount.match(/(\d+)%/);
-            const amountMatch = discount.match(/\((\d+)\s*টাকা\)/);
-            
-            if (percentMatch && amountMatch) {
-                const percent = percentMatch[1];
-                const amount = amountMatch[1];
-                discountDisplay = `${percent}% ছাড় (${amount} টাকা)`;
-            } else {
-                discountDisplay = discount; // fallback to original text
+            if (allProducts.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
+                return;
             }
+
+            grid.innerHTML = allProducts.map(product => {
+                const variant = product.variants[0] || {};
+                const images = variant.images || [];
+                const primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+                const hasStock = variant.stock > 0;
+                const discount = variant.discount || '';
+
+                // Calculate discount percentage if not already in text
+                let discountPercent = '';
+                let discountAmount = 0;
+                
+                if (discount) {
+                    const match = discount.match(/(\d+)%/);
+                    if (match) {
+                        discountPercent = match[1] + '% ছাড়';
+                        // Calculate actual discount amount
+                        if (product.originalPrice && product.price) {
+                            discountAmount = product.originalPrice - product.price;
+                        }
+                    } else {
+                        discountPercent = discount;
+                    }
+                }
+
+                const thumbnailsHtml = images.length > 1 ? `
+                    <div class="thumbnail-container px-2 pb-1">
+                        ${images.map((img, idx) => `
+                            <img src="${img.url}" alt="${product.name} thumbnail" 
+                                 class="thumbnail ${idx === 0 ? 'active' : ''}" 
+                                 data-product-id="${product._id}" 
+                                 data-variant-index="0" 
+                                 data-image-index="${idx}"
+                                 data-image-url="${img.url}"
+                                 onclick="event.stopPropagation(); handleThumbnailClick(this)">
+                        `).join('')}
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
+                         data-product-id="${product._id}">
+                        
+                        ${discount && hasStock ? `<span class="product-badge" data-badge>${discountPercent || discount}</span>` : ''}
+                        
+                        <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
+                            <img src="${primaryImage}" alt="${product.name}" 
+                                 class="main-image" 
+                                 data-product-id="${product._id}" 
+                                 data-variant-index="0"
+                                 data-image-index="0"
+                                 data-image-url="${primaryImage}">
+                        </div>
+                        
+                        ${thumbnailsHtml}
+                        
+                        <div class="p-2 md:p-3 flex-grow">
+                            <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
+                            <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
+                            
+                            <div class="product-stats">
+                                <div class="rating-container">
+                                    <div class="rating-stars text-xs">
+                                        ${getStarRating(variant.rating || 4.5)}
+                                    </div>
+                                    <span class="rating-number">(${variant.rating || 4.5})</span>
+                                </div>
+                                <span class="sold-count">বিক্রি: ${variant.sold || 0}টি</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="offer-price">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
+                            </div>
+                            
+                            ${discount ? `
+                                <div class="discount-text text-xs text-green-600 font-bold mt-1">
+                                    <i class="fas fa-tag mr-1"></i> ${discount}
+                                    ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}
+                                </div>
+                            ` : ''}
+                            
+                            <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
+                                    data-product-id="${product._id}" 
+                                    data-variant-index="0" 
+                                    data-image-index="0"
+                                    data-image-url="${primaryImage}"
+                                    ${!hasStock ? 'disabled' : ''}
+                                    onclick="event.stopPropagation(); handleOrderButtonClick(this)">
+                                ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Attach thumbnail click handlers
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.addEventListener('click', handleThumbnailClick);
+            });
         }
 
-        const thumbnailsHtml = images.length > 1 ? `
-            <div class="thumbnail-container px-2 pb-1">
-                ${images.map((img, idx) => `
-                    <img src="${img.url}" alt="${product.name} thumbnail" 
-                         class="thumbnail ${idx === 0 ? 'active' : ''}" 
-                         data-product-id="${product._id}" 
-                         data-variant-index="0" 
-                         data-image-index="${idx}"
-                         data-image-url="${img.url}"
-                         onclick="event.stopPropagation(); handleThumbnailClick(this)">
-                `).join('')}
-            </div>
-        ` : '';
-
-        return `
-            <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
-                 data-product-id="${product._id}">
-                
-                ${discount && hasStock ? `<span class="product-badge" data-badge>${discountDisplay}</span>` : ''}
-                
-                <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
-                    <img src="${primaryImage}" alt="${product.name}" 
-                         class="main-image" 
-                         data-product-id="${product._id}" 
-                         data-variant-index="0"
-                         data-image-index="0"
-                         data-image-url="${primaryImage}">
-                </div>
-                
-                ${thumbnailsHtml}
-                
-                <div class="p-2 md:p-3 flex-grow">
-                    <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
-                    <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
-                    
-                    <div class="product-stats">
-                        <div class="rating-container">
-                            <div class="rating-stars text-xs">
-                                ${getStarRating(variant.rating || 4.5)}
-                            </div>
-                            <span class="rating-number">(${variant.rating || 4.5})</span>
-                        </div>
-                        <span class="sold-count">বিক্রি: ${variant.sold || 0}টি</span>
-                    </div>
-                    
-                    <!-- Price Section with Highlight -->
-                    <div class="flex items-center gap-2 mt-2 bg-gradient-to-r from-yellow-50 to-gold-50 p-2 rounded-lg">
-                        <div class="flex-1">
-                            <span class="text-2xl font-bold text-primary">৳${product.price}</span>
-                            ${product.originalPrice > product.price ? 
-                                `<span class="text-sm text-gray-500 line-through ml-2">৳${product.originalPrice}</span>` : ''}
-                        </div>
-                        ${discountDisplay ? `
-                            <div class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                                ${discountDisplay}
-                            </div>
-                        ` : ''}
-                    </div>
-                    
-                    <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
-                            data-product-id="${product._id}" 
-                            data-variant-index="0" 
-                            data-image-index="0"
-                            data-image-url="${primaryImage}"
-                            ${!hasStock ? 'disabled' : ''}
-                            onclick="event.stopPropagation(); handleOrderButtonClick(this)">
-                        ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    // Attach thumbnail click handlers
-    document.querySelectorAll('.thumbnail').forEach(thumb => {
-        thumb.addEventListener('click', handleThumbnailClick);
-    });
-}
         function handleThumbnailClick(thumb) {
             const productId = thumb.dataset.productId;
             const imageIndex = parseInt(thumb.dataset.imageIndex);
