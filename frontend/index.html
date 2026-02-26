@@ -1341,7 +1341,9 @@
                                     `<span class="original-price">৳${product.originalPrice}</span>` : ''}
                             </div>
                             
-                            
+                                                        ${discountText ? `
+                                <p class="text-xs text-green-600 font-bold">${discountText}</p>
+                            ` : ''}
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
                                     data-product-id="${product._id}" 
                                     data-variant-index="0" 
