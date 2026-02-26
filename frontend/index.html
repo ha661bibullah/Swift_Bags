@@ -1275,16 +1275,10 @@
 
                 // Calculate discount percentage if not already in text
                 let discountPercent = '';
-                let discountAmount = 0;
-                
                 if (discount) {
                     const match = discount.match(/(\d+)%/);
                     if (match) {
                         discountPercent = match[1] + '% ছাড়';
-                        // Calculate actual discount amount
-                        if (product.originalPrice && product.price) {
-                            discountAmount = product.originalPrice - product.price;
-                        }
                     } else {
                         discountPercent = discount;
                     }
@@ -1341,6 +1335,11 @@
                                     `<span class="original-price">৳${product.originalPrice}</span>` : ''}
                             </div>
                             
+                            ${discount ? `
+                                <div class="discount-text text-xs text-green-600 font-bold mt-1">
+                                    <i class="fas fa-tag mr-1"></i> ${discount}
+                                </div>
+                            ` : ''}
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
                                     data-product-id="${product._id}" 
@@ -1480,14 +1479,10 @@
                 
                 // Calculate discount info
                 let discountText = '';
-                let discountAmount = 0;
                 if (variant.discount) {
                     const match = variant.discount.match(/(\d+)%/);
                     if (match) {
                         discountText = match[1] + '% ছাড়';
-                        if (product.originalPrice && product.price) {
-                            discountAmount = product.originalPrice - product.price;
-                        }
                     } else {
                         discountText = variant.discount;
                     }
@@ -1514,7 +1509,7 @@
                                     `<span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>` : ''}
                             </div>
                             ${discountText ? `
-                                <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
+                                <p class="text-xs text-green-600 font-bold">${discountText}</p>
                             ` : ''}
                             <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
                                     data-product='${JSON.stringify({
