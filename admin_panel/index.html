@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Swift Bags - অ্যাডমিন প্যানেল</title>
+    <title>Swift Bags - অ্যাডমিন প্যানেল (ডিসকাউন্ট অটো)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -35,7 +35,7 @@
 
         .sidebar {
             transition: all 0.3s;
-            height: calc(100vh - 60px); /* Full height minus top nav */
+            height: calc(100vh - 60px);
             overflow-y: auto;
             position: sticky;
             top: 60px;
@@ -348,6 +348,17 @@
             background: #dc2626;
             transform: scale(1.1);
         }
+
+        /* Discount input styles */
+        .discount-info {
+            font-size: 12px;
+            color: #10b981;
+            margin-top: 4px;
+        }
+        .savings-amount {
+            font-weight: bold;
+            color: #059669;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -526,7 +537,6 @@
                     </button>
                 </div>
             </div>
-            <!-- No extra gap; sidebar now uses flex-1 -->
         </div>
 
         <!-- Main Content -->
@@ -954,7 +964,7 @@
     </div>
 </div>
 
-<!-- Product Modal -->
+<!-- Product Modal with Auto Discount -->
 <div id="productModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-start md:items-center justify-center z-50 p-4 pt-8 md:pt-4 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8 md:my-0 max-h-[calc(100vh-6rem)] md:max-h-[90vh] overflow-y-auto transform transition-all scale-95 hover:scale-100">
         <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
@@ -981,22 +991,55 @@
                 <textarea id="productDescription" rows="3" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required></textarea>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Price Section with Auto Discount -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block font-medium mb-2">পুরাতন মূল্য (টাকা) *</label>
+                    <input type="number" id="productOriginalPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required min="0" oninput="calculateDiscountedPrice()">
+                </div>
+                <div>
+                    <label class="block font-medium mb-2">ডিসকাউন্ট (%)</label>
+                    <div class="flex items-center">
+                        <input type="number" id="productDiscountPercent" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" min="0" max="100" step="1" value="0" oninput="calculateDiscountedPrice()">
+                        <span class="ml-2 font-bold text-primary">%</span>
+                    </div>
+                </div>
                 <div>
                     <label class="block font-medium mb-2">মূল্য (টাকা) *</label>
-                    <input type="number" id="productPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" required>
+                    <input type="number" id="productPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold bg-gray-50" readonly required>
+                    <p class="text-xs text-gray-500 mt-1">অটো ক্যালকুলেট হবে</p>
+                </div>
+            </div>
+
+            <!-- Manual Discount Option -->
+            <div class="flex items-center mb-2">
+                <input type="checkbox" id="manualDiscount" class="mr-2 w-5 h-5" onchange="toggleDiscountMode()">
+                <label class="font-medium">ম্যানুয়ালি ডিসকাউন্ট দিন (টাকায়)</label>
+            </div>
+
+            <div id="manualDiscountSection" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-medium mb-2">ডিসকাউন্ট (টাকা)</label>
+                    <input type="number" id="productDiscountAmount" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" min="0" oninput="calculateManualDiscount()">
                 </div>
                 <div>
-                    <label class="block font-medium mb-2">পুরাতন মূল্য (টাকা)</label>
-                    <input type="number" id="productOriginalPrice" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" value="0">
+                    <label class="block font-medium mb-2">ডিসকাউন্ট টেক্সট</label>
+                    <input type="text" id="productDiscountText" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="যেমন: ৫০০ টাকা ছাড়" readonly>
                 </div>
+            </div>
+
+            <!-- Display savings -->
+            <div id="savingsInfo" class="bg-green-50 p-3 rounded-lg text-sm hidden">
+                <span class="font-bold text-green-700">সাশ্রয়: </span>
+                <span id="savingsAmount" class="text-green-700">০ টাকা</span>
+                <span id="savingsPercent" class="text-green-700 ml-2">(০%)</span>
             </div>
 
             <div>
                 <label class="block font-medium mb-2">ইমেজ * (সর্বোচ্চ ১০টি)</label>
                 <input type="file" id="productImages" accept="image/*" multiple class="w-full border rounded-lg p-2">
                 <div id="productImagePreviews" class="flex flex-wrap gap-2 mt-2"></div>
-                <input type="hidden" id="removedImages" value=""> <!-- Comma-separated cloudinaryIds to delete -->
+                <input type="hidden" id="removedImages" value="">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1012,23 +1055,18 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block font-medium mb-2">ডিসকাউন্ট</label>
-                    <input type="text" id="productDiscount" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" placeholder="যেমন: 20% Off">
+                    <label class="block font-medium mb-2">রঙ</label>
+                    <input type="text" id="productColor" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
                 </div>
                 <div>
-                    <label class="block font-medium mb-2">রেটিং</label>
-                    <input type="number" id="productRating" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" step="0.1" min="0" max="5" value="4.5">
+                    <label class="block font-medium mb-2">সাইজ</label>
+                    <input type="text" id="productSize" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
                 </div>
             </div>
 
             <div>
-                <label class="block font-medium mb-2">রঙ</label>
-                <input type="text" id="productColor" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
-            </div>
-
-            <div>
-                <label class="block font-medium mb-2">সাইজ</label>
-                <input type="text" id="productSize" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold">
+                <label class="block font-medium mb-2">রেটিং</label>
+                <input type="number" id="productRating" class="w-full border rounded-lg p-3 focus:outline-none focus:border-gold" step="0.1" min="0" max="5" value="4.5">
             </div>
 
             <div class="flex flex-wrap items-center gap-4">
@@ -1126,6 +1164,76 @@
 
     // Store removed image IDs during product edit
     let removedImageIds = [];
+
+    // ============= DISCOUNT CALCULATION FUNCTIONS =============
+
+    // Calculate discounted price based on percentage
+    function calculateDiscountedPrice() {
+        const originalPrice = parseFloat(document.getElementById('productOriginalPrice').value) || 0;
+        const discountPercent = parseFloat(document.getElementById('productDiscountPercent').value) || 0;
+        
+        if (originalPrice > 0 && discountPercent > 0) {
+            const discountAmount = (originalPrice * discountPercent) / 100;
+            const finalPrice = originalPrice - discountAmount;
+            document.getElementById('productPrice').value = Math.round(finalPrice);
+            
+            // Auto-generate discount text
+            document.getElementById('productDiscountText').value = `${discountPercent}% ছাড় (${Math.round(discountAmount)} টাকা)`;
+            
+            // Show savings info
+            document.getElementById('savingsInfo').classList.remove('hidden');
+            document.getElementById('savingsAmount').textContent = `${Math.round(discountAmount)} টাকা`;
+            document.getElementById('savingsPercent').textContent = `(${discountPercent}%)`;
+        } else {
+            document.getElementById('productPrice').value = originalPrice;
+            document.getElementById('productDiscountText').value = '';
+            document.getElementById('savingsInfo').classList.add('hidden');
+        }
+    }
+
+    // Toggle between percentage and manual discount
+    function toggleDiscountMode() {
+        const manualCheck = document.getElementById('manualDiscount');
+        const manualSection = document.getElementById('manualDiscountSection');
+        const discountPercent = document.getElementById('productDiscountPercent');
+        
+        if (manualCheck.checked) {
+            manualSection.classList.remove('hidden');
+            discountPercent.disabled = true;
+            discountPercent.value = 0;
+            calculateDiscountedPrice();
+        } else {
+            manualSection.classList.add('hidden');
+            discountPercent.disabled = false;
+            calculateManualDiscount();
+        }
+    }
+
+    // Calculate manual discount in taka
+    function calculateManualDiscount() {
+        const originalPrice = parseFloat(document.getElementById('productOriginalPrice').value) || 0;
+        const discountAmount = parseFloat(document.getElementById('productDiscountAmount').value) || 0;
+        
+        if (originalPrice > 0 && discountAmount > 0 && discountAmount < originalPrice) {
+            const finalPrice = originalPrice - discountAmount;
+            document.getElementById('productPrice').value = finalPrice;
+            
+            // Calculate discount percentage
+            const discountPercent = Math.round((discountAmount / originalPrice) * 100);
+            
+            // Auto-generate discount text
+            document.getElementById('productDiscountText').value = `${discountPercent}% ছাড় (${discountAmount} টাকা)`;
+            
+            // Show savings info
+            document.getElementById('savingsInfo').classList.remove('hidden');
+            document.getElementById('savingsAmount').textContent = `${discountAmount} টাকা`;
+            document.getElementById('savingsPercent').textContent = `(${discountPercent}%)`;
+        } else if (originalPrice > 0) {
+            document.getElementById('productPrice').value = originalPrice;
+            document.getElementById('productDiscountText').value = '';
+            document.getElementById('savingsInfo').classList.add('hidden');
+        }
+    }
 
     // Loading functions
     function showLoading() {
@@ -2052,7 +2160,7 @@
         });
     };
 
-    // Products
+    // Products with discount
     async function loadProducts() {
         if (!token) return;
         
@@ -2089,20 +2197,29 @@
                     const image = variant.images && variant.images[0] ? variant.images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
                     const hasStock = variant.stock > 0;
                     
+                    // Calculate discount info for display
+                    let discountInfo = '';
+                    if (variant.discount) {
+                        discountInfo = `<p class="text-xs text-green-600 font-bold mt-1">${variant.discount}</p>`;
+                    }
+                    
                     return `
                     <div class="bg-white rounded-lg shadow overflow-hidden transform transition hover:scale-105">
                         <div class="relative">
                             <img src="${image}" alt="${product.name}" class="w-full h-36 md:h-48 object-cover">
                             ${!hasStock ? '<span class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded">Sold Out</span>' : ''}
                             ${product.featured ? '<span class="absolute top-2 right-2 bg-gold text-primary px-2 py-1 text-xs rounded">ফিচার্ড</span>' : ''}
+                            ${variant.discount ? '<span class="absolute bottom-2 left-2 bg-green-500 text-white px-2 py-1 text-xs rounded">ছাড়</span>' : ''}
                         </div>
                         <div class="p-2 md:p-3">
                             <h3 class="font-bold text-sm">${product.name}</h3>
                             <p class="text-xs text-gray-600">${product.description.substring(0, 40)}...</p>
                             <div class="flex justify-between items-center mt-2">
                                 <span class="text-gold font-bold">৳${product.price}</span>
-                                <span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>` : ''}
                             </div>
+                            ${discountInfo}
                             <div class="flex justify-between items-center mt-1 text-xs">
                                 <span>স্টক: ${variant.stock || 0}</span>
                                 <span>বিক্রি: ${variant.sold || 0}</span>
@@ -2136,26 +2253,15 @@
         document.getElementById('productForm').reset();
         document.getElementById('productId').value = '';
         document.getElementById('productActive').checked = true;
+        document.getElementById('productDiscountPercent').value = 0;
+        document.getElementById('productDiscountAmount').value = 0;
+        document.getElementById('productDiscountText').value = '';
         document.getElementById('productImagePreviews').innerHTML = '';
-        removedImageIds = []; // reset removed images
+        document.getElementById('savingsInfo').classList.add('hidden');
+        removedImageIds = [];
         document.getElementById('removedImages').value = '';
         document.getElementById('productModal').classList.remove('hidden');
         document.getElementById('productModal').classList.add('flex');
-    });
-
-    document.getElementById('productImages').addEventListener('change', function() {
-        const previews = document.getElementById('productImagePreviews');
-        // Keep existing previews (if any) and append new ones
-        // For new images, we add them without remove buttons (can only remove after save? but we allow removal of newly added files before save)
-        // Actually we should allow removal of newly selected files as well. Let's implement a more robust preview with remove for all.
-        // We'll redesign: when files are selected, we show them with remove buttons that remove the file from the input.
-        // However, clearing the input completely is tricky. We'll instead maintain an array of selected files and rebuild the input? Too complex.
-        // Simpler: we'll add a remove button on each preview, and when clicked, we remove that image from the list of files to upload.
-        // But FileList is read-only. So we need to use DataTransfer to manage files. Let's implement that.
-
-        // For simplicity, we'll only allow removal of existing images (from DB) via the remove button on preview.
-        // Newly selected files can be removed by clearing the input and re-adding? Not ideal. We'll skip this for now.
-        // We'll implement removal of existing images only.
     });
 
     // Function to add a preview for an existing image (with remove button)
@@ -2183,7 +2289,7 @@
         }
     };
 
-    // Override editProduct to populate previews with remove buttons
+    // Override editProduct to populate previews with remove buttons and discount info
     window.editProduct = async (id) => {
         try {
             const categoriesResponse = await fetch(`${API_URL}/categories`);
@@ -2208,11 +2314,28 @@
                     document.getElementById('productCategory').value = product.categorySlug;
                 }, 100);
                 
-                document.getElementById('productPrice').value = product.price;
                 document.getElementById('productOriginalPrice').value = product.originalPrice || 0;
+                document.getElementById('productPrice').value = product.price;
+                
+                // Parse discount from existing data
+                const discountText = variant.discount || '';
+                const discountMatch = discountText.match(/(\d+)%/);
+                const discountPercent = discountMatch ? parseInt(discountMatch[1]) : 0;
+                document.getElementById('productDiscountPercent').value = discountPercent;
+                
+                // Check if it's a manual discount
+                const amountMatch = discountText.match(/\((\d+) টাকা\)/);
+                if (amountMatch && !discountMatch) {
+                    const discountAmount = parseInt(amountMatch[1]);
+                    document.getElementById('productDiscountAmount').value = discountAmount;
+                    document.getElementById('manualDiscount').checked = true;
+                    toggleDiscountMode();
+                    calculateManualDiscount();
+                }
+                
                 document.getElementById('productStock').value = variant.stock || 0;
                 document.getElementById('productSold').value = variant.sold || 0;
-                document.getElementById('productDiscount').value = variant.discount || '';
+                document.getElementById('productDiscountText').value = discountText;
                 document.getElementById('productColor').value = variant.color || '';
                 document.getElementById('productSize').value = variant.size || '';
                 document.getElementById('productRating').value = variant.rating || 4.5;
@@ -2220,9 +2343,20 @@
                 document.getElementById('productTrending').checked = product.trending || false;
                 document.getElementById('productActive').checked = product.active !== false;
                 
+                // Calculate and show savings if applicable
+                if (product.originalPrice && product.price) {
+                    const savings = product.originalPrice - product.price;
+                    if (savings > 0) {
+                        const percent = Math.round((savings / product.originalPrice) * 100);
+                        document.getElementById('savingsInfo').classList.remove('hidden');
+                        document.getElementById('savingsAmount').textContent = `${savings} টাকা`;
+                        document.getElementById('savingsPercent').textContent = `(${percent}%)`;
+                    }
+                }
+                
                 const previews = document.getElementById('productImagePreviews');
                 previews.innerHTML = '';
-                removedImageIds = []; // reset
+                removedImageIds = [];
                 document.getElementById('removedImages').value = '';
                 if (variant.images && variant.images.length > 0) {
                     variant.images.forEach(img => {
@@ -2239,7 +2373,7 @@
         }
     };
 
-    // Modify product form submit to include removedImages
+    // Modify product form submit to include removedImages and discount
     document.getElementById('productForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -2252,6 +2386,21 @@
         btnText.textContent = 'সংরক্ষণ হচ্ছে...';
         
         const formData = new FormData();
+        
+        // Get discount text
+        let discountText = document.getElementById('productDiscountText').value;
+        const manualDiscount = document.getElementById('manualDiscount').checked;
+        
+        // If manual discount is not checked but discount percent is set, generate text
+        if (!manualDiscount) {
+            const discountPercent = parseInt(document.getElementById('productDiscountPercent').value) || 0;
+            if (discountPercent > 0) {
+                const originalPrice = parseInt(document.getElementById('productOriginalPrice').value) || 0;
+                const discountAmount = Math.round((originalPrice * discountPercent) / 100);
+                discountText = `${discountPercent}% ছাড় (${discountAmount} টাকা)`;
+            }
+        }
+        
         const data = {
             name: document.getElementById('productName').value,
             description: document.getElementById('productDescription').value,
@@ -2262,7 +2411,7 @@
             variants: [{
                 stock: parseInt(document.getElementById('productStock').value) || 0,
                 sold: parseInt(document.getElementById('productSold').value) || 0,
-                discount: document.getElementById('productDiscount').value,
+                discount: discountText,
                 color: document.getElementById('productColor').value,
                 size: document.getElementById('productSize').value,
                 rating: parseFloat(document.getElementById('productRating').value) || 4.5
@@ -2270,7 +2419,7 @@
             featured: document.getElementById('productFeatured').checked,
             trending: document.getElementById('productTrending').checked,
             active: document.getElementById('productActive').checked,
-            removedImages: removedImageIds // send list of cloudinaryIds to delete
+            removedImages: removedImageIds
         };
         
         formData.append('data', JSON.stringify(data));

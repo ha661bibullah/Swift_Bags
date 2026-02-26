@@ -46,23 +46,36 @@
       }
     }
     </script>
-<!-- Meta Pixel Code -->
+
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1680090143363538');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+
+
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-84MDZDEKLS"></script>
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1680090143363538');
-fbq('track', 'PageView');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-84MDZDEKLS');
 </script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
+    
     <style>
         * {
             font-family: 'Hind Siliguri', sans-serif;
@@ -174,6 +187,7 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             font-size: 12px;
             font-weight: bold;
             z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .sold-out-badge {
             background: #dc2626;
@@ -644,6 +658,24 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
         .main-image {
             transition: opacity 0.2s ease-in-out;
         }
+
+        /* Discount tag styles */
+        .discount-badge {
+            background: #ef4444;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        .discount-text {
+            font-size: 11px;
+            color: #10b981;
+            font-weight: 600;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -1029,7 +1061,7 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             }
         }
 
-        // আপডেটেড renderSliders ফাংশন - স্লাইডার বাটন ঠিক করা হয়েছে
+        // Updated renderSliders function - slider buttons fixed
         function renderSliders() {
             const sliderContainer = document.getElementById('slider');
             if (!sliderContainer) return;
@@ -1057,17 +1089,17 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             startSlideshow();
         }
 
-        // নতুন ফাংশন - স্লাইডার থেকে অর্ডার করার জন্য
+        // New function - handle slider order click
         function handleSliderOrderClick(btn) {
             const productData = JSON.parse(btn.dataset.product);
             
-            // চেক করুন যে পণ্যের ডাটা আছে কিনা
+            // Check if product data exists
             if (!productData || !productData.id) {
                 showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোন পণ্য সংযুক্ত নেই', 'error');
                 return;
             }
             
-            // পণ্যটি allProducts থেকে খুঁজে বের করুন
+            // Find product in allProducts
             const product = allProducts.find(p => p._id === productData.id);
             if (!product) {
                 showPopup('দুঃখিত!', 'পণ্যটি খুঁজে পাওয়া যায়নি', 'error');
@@ -1080,7 +1112,7 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 return;
             }
             
-            // ইমেজ URL সেট করুন
+            // Set image URL
             const images = variant.images || [];
             const imageUrl = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
             
@@ -1242,6 +1274,23 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 const hasStock = variant.stock > 0;
                 const discount = variant.discount || '';
 
+                // Calculate discount percentage if not already in text
+                let discountPercent = '';
+                let discountAmount = 0;
+                
+                if (discount) {
+                    const match = discount.match(/(\d+)%/);
+                    if (match) {
+                        discountPercent = match[1] + '% ছাড়';
+                        // Calculate actual discount amount
+                        if (product.originalPrice && product.price) {
+                            discountAmount = product.originalPrice - product.price;
+                        }
+                    } else {
+                        discountPercent = discount;
+                    }
+                }
+
                 const thumbnailsHtml = images.length > 1 ? `
                     <div class="thumbnail-container px-2 pb-1">
                         ${images.map((img, idx) => `
@@ -1260,7 +1309,7 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                     <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
                          data-product-id="${product._id}">
                         
-                        ${discount && hasStock ? `<span class="product-badge" data-badge>${discount}</span>` : ''}
+                        ${discount && hasStock ? `<span class="product-badge" data-badge>${discountPercent || discount}</span>` : ''}
                         
                         <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
                             <img src="${primaryImage}" alt="${product.name}" 
@@ -1289,8 +1338,16 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                             
                             <div class="flex items-center gap-2 mt-1">
                                 <span class="offer-price">৳${product.price}</span>
-                                <span class="original-price">৳${product.originalPrice}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
                             </div>
+                            
+                            ${discount ? `
+                                <div class="discount-text text-xs text-green-600 font-bold mt-1">
+                                    <i class="fas fa-tag mr-1"></i> ${discount}
+                                    ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}
+                                </div>
+                            ` : ''}
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
                                     data-product-id="${product._id}" 
@@ -1427,6 +1484,22 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 const variant = product.variants[0] || {};
                 const images = variant.images || [];
                 const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
+                
+                // Calculate discount info
+                let discountText = '';
+                let discountAmount = 0;
+                if (variant.discount) {
+                    const match = variant.discount.match(/(\d+)%/);
+                    if (match) {
+                        discountText = match[1] + '% ছাড়';
+                        if (product.originalPrice && product.price) {
+                            discountAmount = product.originalPrice - product.price;
+                        }
+                    } else {
+                        discountText = variant.discount;
+                    }
+                }
+                
                 return `
                     <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
                          onclick="window.location.hash='#product-${product._id}'">
@@ -1442,7 +1515,14 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                                 </div>
                                 <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">${variant.sold || 0} জন Recently Viewed</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-gold font-bold">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>` : ''}
+                            </div>
+                            ${discountText ? `
+                                <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
+                            ` : ''}
                             <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
                                     data-product='${JSON.stringify({
                                         id: product._id,
@@ -1520,7 +1600,7 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             script.textContent = JSON.stringify(itemList);
         }
 
-        // আপডেটেড setupEventListeners ফাংশন
+        // Updated setupEventListeners function
         function setupEventListeners() {
             const menuBtn = document.getElementById('menuBtn');
             const mobileTopMenu = document.getElementById('mobileTopMenu');
@@ -1538,13 +1618,12 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 moveSlide(1);
             });
             
-            // স্লাইডার অর্ডার বাটনের জন্য গ্লোবাল ক্লিক হ্যান্ডলার
+            // Slider order button global click handler
             document.addEventListener('click', function(e) {
-                // যদি ক্লিক করা এলিমেন্টটি slider-order-btn ক্লাসযুক্ত হয়
+                // If clicked element has slider-order-btn class
                 if (e.target.classList.contains('slider-order-btn')) {
-                    // এই ইভেন্টটি ইতিমধ্যে onclick অ্যাট্রিবিউট দ্বারা handleSliderOrderClick ফাংশন কল করবে
-                    // তাই এখানে আলাদা কিছু করার দরকার নেই
-                    // শুধু নিশ্চিত করা যে ইভেন্টটি সঠিকভাবে কাজ করছে
+                    // This event will already call handleSliderOrderClick via onclick attribute
+                    // So nothing extra needed here
                 }
             });
             

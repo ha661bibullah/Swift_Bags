@@ -12,7 +12,6 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const os = require('os');
-const cluster = require('cluster');
 
 dotenv.config();
 
@@ -650,7 +649,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// Auth Routes
+// ============= AUTH ROUTES =============
+
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -770,7 +770,8 @@ app.get('/api/admin/check-session', authenticateToken, (req, res) => {
   res.json({ success: true, valid: true });
 });
 
-// Slider Routes
+// ============= SLIDER ROUTES =============
+
 app.get('/api/sliders', async (req, res) => {
   try {
     const sliders = await Slider.find({ active: true }).sort({ order: 1 });
@@ -847,7 +848,8 @@ app.delete('/api/admin/sliders/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Category Routes
+// ============= CATEGORY ROUTES =============
+
 app.get('/api/categories', async (req, res) => {
   try {
     const categories = await Category.find({ active: true }).sort({ order: 1 });
@@ -889,7 +891,8 @@ app.delete('/api/admin/categories/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Product Routes
+// ============= PRODUCT ROUTES =============
+
 app.get('/api/products', async (req, res) => {
   try {
     const { category } = req.query;
@@ -950,7 +953,7 @@ app.post('/api/admin/products', authenticateToken, upload.array('images', 10), a
   }
 });
 
-// FIXED: Product PUT route - Preserves images properly
+// ============= FIXED: PRODUCT PUT ROUTE WITH DISCOUNT HANDLING =============
 app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -982,7 +985,7 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
           images: [...existingImages, ...newImages],
           stock: product.variants[0]?.stock || 0,
           sold: product.variants[0]?.sold || 0,
-          discount: product.variants[0]?.discount || '',
+          discount: productData.variants?.[0]?.discount || product.variants[0]?.discount || '',
           color: product.variants[0]?.color || '',
           size: product.variants[0]?.size || '',
           rating: product.variants[0]?.rating || 4.5
@@ -1008,7 +1011,8 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
             ...product.variants[0]?.toObject(),
             images: product.variants[0]?.images?.filter(img => 
               !removedImages.includes(img.cloudinaryId)
-            ) || []
+            ) || [],
+            discount: productData.variants?.[0]?.discount || product.variants[0]?.discount || ''
           }];
         } else {
           const existingImages = product.variants[0]?.images?.filter(img => 
@@ -1026,27 +1030,44 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
           }
         }
       } else {
-        // No changes to images - preserve existing images
+        // No changes to images - preserve existing images and discount
         if (!productData.variants || productData.variants.length === 0) {
-          productData.variants = [product.variants[0]?.toObject()];
+          productData.variants = [{
+            ...product.variants[0]?.toObject(),
+            discount: productData.discount || product.variants[0]?.discount || ''
+          }];
         } else {
           // Preserve images from existing product if not provided in update
-          productData.variants[0].images = product.variants[0]?.images || [];
+          if (!productData.variants[0].images || productData.variants[0].images.length === 0) {
+            productData.variants[0].images = product.variants[0]?.images || [];
+          }
+          // Preserve discount if not provided
+          if (!productData.variants[0].discount) {
+            productData.variants[0].discount = product.variants[0]?.discount || '';
+          }
         }
       }
     }
 
+    // Find category
     const category = await Category.findOne({ slug: productData.category });
     if (!category) {
       return res.status(400).json({ success: false, message: 'Category not found' });
     }
 
-    productData.category = category._id;
-    productData.categorySlug = productData.category;
-    productData.updatedAt = new Date();
+    // Update product fields
+    product.name = productData.name;
+    product.description = productData.description;
+    product.category = category._id;
+    product.categorySlug = productData.category;
+    product.price = productData.price;
+    product.originalPrice = productData.originalPrice;
+    product.variants = productData.variants;
+    product.featured = productData.featured || false;
+    product.trending = productData.trending || false;
+    product.active = productData.active !== false;
+    product.updatedAt = new Date();
 
-    // Update the product
-    Object.assign(product, productData);
     await product.save();
 
     res.json({ success: true, data: product });
@@ -1082,7 +1103,8 @@ app.delete('/api/admin/products/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Order Routes
+// ============= ORDER ROUTES =============
+
 app.post('/api/orders', async (req, res) => {
   try {
     const orderData = req.body;
@@ -1155,7 +1177,8 @@ app.put('/api/admin/orders/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Review Routes
+// ============= REVIEW ROUTES =============
+
 app.post('/api/reviews', async (req, res) => {
   try {
     const review = new Review({
@@ -1236,7 +1259,8 @@ app.delete('/api/admin/reviews/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Content Routes
+// ============= CONTENT ROUTES =============
+
 app.get('/api/contents', async (req, res) => {
   try {
     const contents = await Content.find();
@@ -1264,7 +1288,8 @@ app.post('/api/admin/contents', authenticateToken, async (req, res) => {
   }
 });
 
-// Notifications Routes
+// ============= NOTIFICATIONS ROUTES =============
+
 app.get('/api/admin/notifications', authenticateToken, async (req, res) => {
   try {
     const notifications = await Notification.find()
@@ -1285,7 +1310,8 @@ app.put('/api/admin/notifications/:id/read', authenticateToken, async (req, res)
   }
 });
 
-// Dashboard Stats
+// ============= DASHBOARD STATS =============
+
 app.get('/api/admin/stats', authenticateToken, async (req, res) => {
   try {
     const today = new Date();
@@ -1311,6 +1337,7 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
 });
 
 // ============= SITEMAP & ROBOTS =============
+
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const baseUrl = 'https://swiftbags.shop';
@@ -1340,7 +1367,8 @@ app.get('/robots.txt', (req, res) => {
   res.send('User-agent: *\nAllow: /\nSitemap: https://swiftbags.shop/sitemap.xml');
 });
 
-// 404 handler
+// ============= 404 HANDLER =============
+
 app.use('*', (req, res) => {
   res.status(404).json({ 
     success: false, 
@@ -1348,6 +1376,8 @@ app.use('*', (req, res) => {
     path: req.originalUrl
   });
 });
+
+// ============= ERROR HANDLER =============
 
 app.use((err, req, res, next) => {
   console.error('❌ Server error:', err.stack);
@@ -1365,6 +1395,8 @@ app.use((err, req, res, next) => {
     error: NODE_ENV === 'development' ? err.message : undefined
   });
 });
+
+// ============= START SERVER =============
 
 connectDB();
 
