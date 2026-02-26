@@ -1803,50 +1803,39 @@
         }
 
         function updateSelectedProducts() {
-    const container = document.getElementById('selectedProducts');
-    if (selectedForOrder.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>';
-        updateTotal();
-        return;
-    }
-    container.innerHTML = '';
-    selectedForOrder.forEach((p, index) => {
-        // Extract clean discount text for display
-        let discountText = '';
-        if (p.name.includes('(') && p.name.includes(')')) {
-            const match = p.name.match(/\((.*?)\)/);
-            if (match) {
-                discountText = match[1];
+            const container = document.getElementById('selectedProducts');
+            if (selectedForOrder.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>';
+                updateTotal();
+                return;
             }
+            container.innerHTML = '';
+            selectedForOrder.forEach((p, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'selected-product-item';
+                itemDiv.innerHTML = `
+                    <img src="${p.img}" alt="${p.name}">
+                    <div class="product-info">
+                        <span class="product-name">${p.name}</span>
+                        <div class="quantity-control">
+                            <span class="quantity-btn" onclick="changeQuantity(${index}, -1)">−</span>
+                            <span class="quantity-value">${p.quantity}</span>
+                            <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
+                        </div>
+                        <div class="price-info">
+                            <span class="current-price">৳${p.price}</span>
+                            <span class="original-price-small">৳${p.originalPrice}</span>
+                        </div>
+                    </div>
+                    <button class="remove-item" onclick="removeFromOrder(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(itemDiv);
+            });
+            updateTotal();
         }
-        
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'selected-product-item';
-        itemDiv.innerHTML = `
-            <img src="${p.img}" alt="${p.name}">
-            <div class="product-info">
-                <div>
-                    <span class="product-name">${p.name.replace(/\s*\(.*?\)\s*/, '')}</span>
-                    ${discountText ? `<span class="text-xs text-green-600 font-bold ml-1">(${discountText})</span>` : ''}
-                </div>
-                <div class="quantity-control">
-                    <span class="quantity-btn" onclick="changeQuantity(${index}, -1)">−</span>
-                    <span class="quantity-value">${p.quantity}</span>
-                    <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
-                </div>
-                <div class="price-info">
-                    <span class="current-price">৳${p.price}</span>
-                    <span class="original-price-small">৳${p.originalPrice}</span>
-                </div>
-            </div>
-            <button class="remove-item" onclick="removeFromOrder(${index})">
-                <i class="fas fa-trash"></i>
-            </button>
-        `;
-        container.appendChild(itemDiv);
-    });
-    updateTotal();
-}
+
         window.changeQuantity = function(index, change) {
             if (selectedForOrder[index]) {
                 const newQty = selectedForOrder[index].quantity + change;
