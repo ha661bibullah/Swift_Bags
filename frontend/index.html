@@ -1257,6 +1257,7 @@
             });
         }
 
+        // আপডেটেড renderProducts ফাংশন - ডিসকাউন্ট ব্যাজে শুধু শতাংশ দেখাবে
         function renderProducts() {
             const grid = document.getElementById('productGrid');
             if (!grid) return;
@@ -1273,13 +1274,16 @@
                 const hasStock = variant.stock > 0;
                 const discount = variant.discount || '';
 
-                // Calculate discount percentage if not already in text
+                // ব্যাজের জন্য শুধু শতাংশ বের করা
+                let badgeText = '';
                 let discountPercent = '';
                 if (discount) {
                     const match = discount.match(/(\d+)%/);
                     if (match) {
+                        badgeText = match[1] + '% ছাড়';
                         discountPercent = match[1] + '% ছাড়';
                     } else {
+                        badgeText = 'ছাড়';
                         discountPercent = discount;
                     }
                 }
@@ -1302,7 +1306,7 @@
                     <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
                          data-product-id="${product._id}">
                         
-                        ${discount && hasStock ? `<span class="product-badge" data-badge>${discountPercent || discount}</span>` : ''}
+                        ${discount && hasStock ? `<span class="product-badge" data-badge>${badgeText}</span>` : ''}
                         
                         <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
                             <img src="${primaryImage}" alt="${product.name}" 
@@ -1465,6 +1469,7 @@
             window.location.hash = `#order-${productId}-${imageIndex}`;
         }
 
+        // আপডেটেড renderTrending ফাংশন - ডিসকাউন্ট ব্যাজ নিচে দেখাবে
         function renderTrending() {
             const container = document.getElementById('trendingItems');
             if (!container) return;
@@ -1476,17 +1481,6 @@
                 const variant = product.variants[0] || {};
                 const images = variant.images || [];
                 const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
-                
-                // Calculate discount info
-                let discountText = '';
-                if (variant.discount) {
-                    const match = variant.discount.match(/(\d+)%/);
-                    if (match) {
-                        discountText = match[1] + '% ছাড়';
-                    } else {
-                        discountText = variant.discount;
-                    }
-                }
                 
                 return `
                     <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
@@ -1508,8 +1502,10 @@
                                 ${product.originalPrice > product.price ? 
                                     `<span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>` : ''}
                             </div>
-                            ${discountText ? `
-                                <p class="text-xs text-green-600 font-bold">${discountText}</p>
+                            ${variant.discount ? `
+                                <p class="text-xs text-green-600 font-bold mt-1">
+                                    <i class="fas fa-tag mr-1"></i> ${variant.discount}
+                                </p>
                             ` : ''}
                             <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
                                     data-product='${JSON.stringify({
