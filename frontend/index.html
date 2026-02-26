@@ -535,6 +535,7 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             padding: 8px 16px;
             border-radius: 8px;
             transition: all 0.3s;
+            cursor: pointer;
         }
         .slider-order-btn:hover:not(:disabled) {
             background-color: #e6c456;
@@ -1028,6 +1029,110 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             }
         }
 
+        // আপডেটেড renderSliders ফাংশন - স্লাইডার বাটন ঠিক করা হয়েছে
+        function renderSliders() {
+            const sliderContainer = document.getElementById('slider');
+            if (!sliderContainer) return;
+            if (allSliders.length === 0) {
+                sliderContainer.innerHTML = '<div class="text-center text-white p-12">কোন স্লাইডার নেই</div>';
+                return;
+            }
+            sliderContainer.innerHTML = allSliders.map((slider, index) => `
+                <div class="slider-item absolute inset-0 ${index === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 flex items-center justify-between p-6 md:p-12" 
+                     style="background-image: url('${slider.image}'); background-size: cover; background-position: center;"
+                     onclick="window.location.hash='#home'">
+                    <div class="relative z-10 text-white max-w-lg">
+                        <h2 class="text-2xl md:text-4xl font-bold text-gold">${slider.title}</h2>
+                        ${slider.subtitle ? `<p class="text-sm md:text-base my-3">${slider.subtitle}</p>` : ''}
+                        <button class="slider-order-btn inline-block bg-gold text-primary px-4 py-2 md:px-6 md:py-3 rounded-lg font-bold hover:bg-yellow-500 transition text-sm md:text-base" 
+                                data-product='${JSON.stringify(slider.productData || {})}'
+                                onclick="event.stopPropagation(); handleSliderOrderClick(this)">
+                            ${slider.buttonText || 'এখনই কিনুন'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            currentSlide = 0;
+            if (slideInterval) clearInterval(slideInterval);
+            startSlideshow();
+        }
+
+        // নতুন ফাংশন - স্লাইডার থেকে অর্ডার করার জন্য
+        function handleSliderOrderClick(btn) {
+            const productData = JSON.parse(btn.dataset.product);
+            
+            // চেক করুন যে পণ্যের ডাটা আছে কিনা
+            if (!productData || !productData.id) {
+                showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোন পণ্য সংযুক্ত নেই', 'error');
+                return;
+            }
+            
+            // পণ্যটি allProducts থেকে খুঁজে বের করুন
+            const product = allProducts.find(p => p._id === productData.id);
+            if (!product) {
+                showPopup('দুঃখিত!', 'পণ্যটি খুঁজে পাওয়া যায়নি', 'error');
+                return;
+            }
+            
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                return;
+            }
+            
+            // ইমেজ URL সেট করুন
+            const images = variant.images || [];
+            const imageUrl = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+            
+            const orderProduct = {
+                id: product._id + '-0',
+                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                img: imageUrl,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1,
+                imageIndex: 0
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === product._id + '-0');
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            
+            // Scroll to order section
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Check if delivery area is selected
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    // Flash the delivery area
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove flash after animation
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    
+                    // Focus on delivery area
+                    deliveryArea.focus();
+                } else {
+                    // Focus on name input
+                    document.getElementById('name')?.focus();
+                }
+            }, 500);
+            
+            // Update URL hash for order
+            window.location.hash = `#order-${product._id}-0`;
+        }
+
         async function loadCategories() {
             try {
                 const response = await fetch(`${API_URL}/categories`);
@@ -1098,33 +1203,6 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             } catch (error) {
                 console.error('Error loading content:', error);
             }
-        }
-
-        function renderSliders() {
-            const sliderContainer = document.getElementById('slider');
-            if (!sliderContainer) return;
-            if (allSliders.length === 0) {
-                sliderContainer.innerHTML = '<div class="text-center text-white p-12">কোন স্লাইডার নেই</div>';
-                return;
-            }
-            sliderContainer.innerHTML = allSliders.map((slider, index) => `
-                <div class="slider-item absolute inset-0 ${index === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 flex items-center justify-between p-6 md:p-12" 
-                     style="background-image: url('${slider.image}'); background-size: cover; background-position: center;"
-                     onclick="window.location.hash='#home'">
-                    <div class="relative z-10 text-white max-w-lg">
-                        <h2 class="text-2xl md:text-4xl font-bold text-gold">${slider.title}</h2>
-                        ${slider.subtitle ? `<p class="text-sm md:text-base my-3">${slider.subtitle}</p>` : ''}
-                        <a href="#order" class="slider-order-btn inline-block bg-gold text-primary px-4 py-2 md:px-6 md:py-3 rounded-lg font-bold hover:bg-yellow-500 transition text-sm md:text-base" 
-                           data-product='${JSON.stringify(slider.productData || {})}'
-                           onclick="event.stopPropagation()">
-                            ${slider.buttonText || 'এখনই কিনুন'}
-                        </a>
-                    </div>
-                </div>
-            `).join('');
-            currentSlide = 0;
-            if (slideInterval) clearInterval(slideInterval);
-            startSlideshow();
         }
 
         function renderCategories() {
@@ -1442,6 +1520,7 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             script.textContent = JSON.stringify(itemList);
         }
 
+        // আপডেটেড setupEventListeners ফাংশন
         function setupEventListeners() {
             const menuBtn = document.getElementById('menuBtn');
             const mobileTopMenu = document.getElementById('mobileTopMenu');
@@ -1458,6 +1537,17 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 e.stopPropagation();
                 moveSlide(1);
             });
+            
+            // স্লাইডার অর্ডার বাটনের জন্য গ্লোবাল ক্লিক হ্যান্ডলার
+            document.addEventListener('click', function(e) {
+                // যদি ক্লিক করা এলিমেন্টটি slider-order-btn ক্লাসযুক্ত হয়
+                if (e.target.classList.contains('slider-order-btn')) {
+                    // এই ইভেন্টটি ইতিমধ্যে onclick অ্যাট্রিবিউট দ্বারা handleSliderOrderClick ফাংশন কল করবে
+                    // তাই এখানে আলাদা কিছু করার দরকার নেই
+                    // শুধু নিশ্চিত করা যে ইভেন্টটি সঠিকভাবে কাজ করছে
+                }
+            });
+            
             document.getElementById('deliveryArea')?.addEventListener('change', function(e) {
                 currentDeliveryCharge = parseInt(e.target.value) || 0;
                 updateTotal();
