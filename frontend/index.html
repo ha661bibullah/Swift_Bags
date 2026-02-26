@@ -393,10 +393,14 @@
             flex-shrink: 0;
         }
         .current-price {
-            color: #D4AF37;
-            font-weight: bold;
-            font-size: 13px;
-            white-space: nowrap;
+            background: #D4AF37;
+            color: white !important;
+            padding: 2px 8px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 14px;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(212, 175, 55, 0.4);
         }
         .original-price-small {
             text-decoration: line-through;
@@ -658,22 +662,171 @@
             transition: opacity 0.2s ease-in-out;
         }
 
-        /* Discount tag styles */
+        /* ============== হাইলাইটেড প্রাইস স্টাইল ============== */
+        
+        /* প্রোডাক্ট কার্ডে দাম হাইলাইট */
+        .offer-price {
+            background: linear-gradient(145deg, #D4AF37, #b8960f);
+            color: white !important;
+            font-weight: 800;
+            font-size: 1.25rem;
+            padding: 6px 16px;
+            border-radius: 30px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            animation: priceGlow 2s ease-in-out infinite;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes priceGlow {
+            0%, 100% { 
+                box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 8px 25px rgba(212, 175, 55, 0.8);
+                transform: scale(1.02);
+            }
+        }
+
+        /* অরিজিনাল প্রাইস স্টাইল */
+        .original-price {
+            text-decoration: line-through;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            background: #f3f4f6;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 500;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* ডিসকাউন্ট ব্যাজ */
         .discount-badge {
             background: #ef4444;
             color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            margin-left: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            animation: pulse-red 2s infinite;
         }
-        
+
+        @keyframes pulse-red {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* ডিসকাউন্ট টেক্সট */
         .discount-text {
-            font-size: 11px;
+            font-size: 0.75rem;
             color: #10b981;
+            font-weight: 700;
+            margin-top: 4px;
+            background: #d1fae5;
+            padding: 2px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* ট্রেন্ডিং আইটেমে দাম */
+        .trending-item .text-gold {
+            background: linear-gradient(145deg, #D4AF37, #b8960f);
+            color: white !important;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-weight: 800;
+            display: inline-block;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4);
+        }
+
+        /* প্রাইস ট্যাগ ইউনিভার্সাল */
+        .price-tag {
+            background: linear-gradient(135deg, #D4AF37, #f5d742);
+            color: #0A1F44;
+            font-weight: 900;
+            padding: 6px 20px;
+            border-radius: 40px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            position: relative;
+            overflow: hidden;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        .price-tag::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        /* মোবাইলের জন্য অ্যাডজাস্টমেন্ট */
+        @media (max-width: 768px) {
+            .offer-price {
+                font-size: 1rem;
+                padding: 4px 12px;
+            }
+            .price-tag {
+                font-size: 1rem;
+                padding: 4px 15px;
+            }
+            .original-price {
+                font-size: 0.75rem;
+                padding: 3px 8px;
+            }
+        }
+
+        /* টোটাল প্রাইস হাইলাইট */
+        #subtotalPrice, #totalPrice {
+            background: linear-gradient(145deg, #D4AF37, #b8960f);
+            color: white !important;
+            padding: 4px 16px;
+            border-radius: 30px;
+            display: inline-block;
+            font-size: 1.3rem !important;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4);
+        }
+
+        /* সাবটোটাল এবং টোটাল কন্টেইনার */
+        .flex.justify-between.items-center.mb-3.font-bold span:first-child {
+            font-size: 1rem;
+            color: #0A1F44;
+        }
+
+        /* ডেলিভারি চার্জ স্টাইল */
+        #deliveryCharge {
+            background: #0A1F44;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 20px;
             font-weight: 600;
-            margin-top: 2px;
         }
     </style>
 </head>
@@ -1275,10 +1428,16 @@
 
                 // Calculate discount percentage if not already in text
                 let discountPercent = '';
+                let discountAmount = 0;
+                
                 if (discount) {
                     const match = discount.match(/(\d+)%/);
                     if (match) {
                         discountPercent = match[1] + '% ছাড়';
+                        // Calculate actual discount amount
+                        if (product.originalPrice && product.price) {
+                            discountAmount = product.originalPrice - product.price;
+                        }
                     } else {
                         discountPercent = discount;
                     }
@@ -1335,11 +1494,8 @@
                                     `<span class="original-price">৳${product.originalPrice}</span>` : ''}
                             </div>
                             
-                            ${discount ? `
-                                <div class="discount-text text-xs text-green-600 font-bold mt-1">
-                                    <i class="fas fa-tag mr-1"></i> ${discount}
-                                </div>
-                            ` : ''}
+                            ${product.originalPrice > product.price ? 
+                                `<p class="discount-text">সাশ্রয় ৳${product.originalPrice - product.price}</p>` : ''}
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
                                     data-product-id="${product._id}" 
@@ -1479,10 +1635,14 @@
                 
                 // Calculate discount info
                 let discountText = '';
+                let discountAmount = 0;
                 if (variant.discount) {
                     const match = variant.discount.match(/(\d+)%/);
                     if (match) {
                         discountText = match[1] + '% ছাড়';
+                        if (product.originalPrice && product.price) {
+                            discountAmount = product.originalPrice - product.price;
+                        }
                     } else {
                         discountText = variant.discount;
                     }
@@ -1509,7 +1669,7 @@
                                     `<span class="text-xs text-gray-500 line-through">৳${product.originalPrice}</span>` : ''}
                             </div>
                             ${discountText ? `
-                                <p class="text-xs text-green-600 font-bold">${discountText}</p>
+                                <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
                             ` : ''}
                             <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
                                     data-product='${JSON.stringify({
