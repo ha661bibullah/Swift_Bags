@@ -584,7 +584,7 @@ fbq('track', 'PageView');
             border-radius: 12px;
         }
 
-        /* Flash animation for product card */
+        /* Flash animation for product card - only used for shared links */
         @keyframes card-flash {
             0%, 50%, 100% { 
                 box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
@@ -648,11 +648,6 @@ fbq('track', 'PageView');
         .sold-count {
             font-size: 12px;
             color: #6b7280;
-        }
-
-        /* No extra badges on images */
-        .product-image-container {
-            position: relative;
         }
     </style>
 </head>
@@ -846,14 +841,22 @@ fbq('track', 'PageView');
         let allTrending = [];
         let currentSlide = 0;
         let slideInterval;
+        
+        // Flag to track if we're processing a hash load
+        let isProcessingHash = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadAllData();
             setupEventListeners();
-            checkHashAndScroll();
             
             // Listen for hash changes
-            window.addEventListener('hashchange', checkHashAndScroll);
+            window.addEventListener('hashchange', () => {
+                isProcessingHash = true;
+                checkHashAndScroll();
+                setTimeout(() => {
+                    isProcessingHash = false;
+                }, 1000);
+            });
         });
 
         // Check hash and scroll to appropriate section
@@ -991,13 +994,15 @@ fbq('track', 'PageView');
             if (productCard) {
                 productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 
-                // Add flash effect
-                productCard.classList.add('product-card-flash');
-                
-                // Remove flash after animation completes
-                setTimeout(() => {
-                    productCard.classList.remove('product-card-flash');
-                }, 2400);
+                // Add flash effect only when coming from shared link
+                if (isProcessingHash) {
+                    productCard.classList.add('product-card-flash');
+                    
+                    // Remove flash after animation completes
+                    setTimeout(() => {
+                        productCard.classList.remove('product-card-flash');
+                    }, 2400);
+                }
             }
         }
 
@@ -1011,24 +1016,31 @@ fbq('track', 'PageView');
                 const thumbnail = productCard.querySelector(`.thumbnail[data-image-index="${imageIndex}"]`);
                 if (thumbnail) {
                     setTimeout(() => {
-                        // Click the thumbnail to show the image
+                        // Click the thumbnail to show the image (without triggering flash)
+                        const wasProcessing = isProcessingHash;
+                        isProcessingHash = false; // Temporarily disable flash for thumbnail click
                         thumbnail.click();
+                        isProcessingHash = wasProcessing; // Restore original state
                         
-                        // Add flash effect to the product card
-                        productCard.classList.add('product-card-flash');
-                        
-                        // Remove flash after animation
-                        setTimeout(() => {
-                            productCard.classList.remove('product-card-flash');
-                        }, 2400);
+                        // Add flash effect only when coming from shared link
+                        if (wasProcessing) {
+                            productCard.classList.add('product-card-flash');
+                            
+                            // Remove flash after animation
+                            setTimeout(() => {
+                                productCard.classList.remove('product-card-flash');
+                            }, 2400);
+                        }
                     }, 500);
                 } else {
-                    // If thumbnail not found, just flash the card
+                    // If thumbnail not found, just flash the card if from shared link
                     setTimeout(() => {
-                        productCard.classList.add('product-card-flash');
-                        setTimeout(() => {
-                            productCard.classList.remove('product-card-flash');
-                        }, 2400);
+                        if (isProcessingHash) {
+                            productCard.classList.add('product-card-flash');
+                            setTimeout(() => {
+                                productCard.classList.remove('product-card-flash');
+                            }, 2400);
+                        }
                     }, 500);
                 }
             }
@@ -1087,7 +1099,11 @@ fbq('track', 'PageView');
                     
                     // Check if we need to highlight a product after loading
                     setTimeout(() => {
+                        isProcessingHash = true;
                         checkHashAndScroll();
+                        setTimeout(() => {
+                            isProcessingHash = false;
+                        }, 1000);
                     }, 500);
                 }
             } catch (error) {
@@ -1306,7 +1322,11 @@ fbq('track', 'PageView');
             }
 
             // Update URL hash for image (without any visual indicator)
+            // Don't trigger flash for manual thumbnail clicks
+            const wasProcessing = isProcessingHash;
+            isProcessingHash = false;
             window.location.hash = `#image-${productId}-${imageIndex}`;
+            isProcessingHash = wasProcessing;
         }
 
         function handleOrderButtonClick(btn) {
