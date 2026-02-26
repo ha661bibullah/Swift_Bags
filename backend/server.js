@@ -950,6 +950,7 @@ app.post('/api/admin/products', authenticateToken, upload.array('images', 10), a
   }
 });
 
+// FIXED: Product PUT route - Preserves images properly
 app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -959,30 +960,79 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
 
     const productData = JSON.parse(req.body.data);
     
+    // Get removed images from request
+    const removedImages = productData.removedImages || [];
+    
+    // Handle new images if uploaded
     if (req.files && req.files.length > 0) {
-      for (const variant of product.variants) {
-        for (const image of variant.images) {
-          if (image.cloudinaryId) {
-            try {
-              await cloudinary.uploader.destroy(image.cloudinaryId);
-            } catch (cloudErr) {
-              console.error('Error deleting old image:', cloudErr);
-            }
-          }
-        }
-      }
-      
-      const images = req.files.map((file, index) => ({
+      const newImages = req.files.map((file, index) => ({
         url: file.path,
         cloudinaryId: file.filename,
-        isPrimary: index === 0
+        isPrimary: index === 0 && (!product.variants[0]?.images || product.variants[0].images.length === 0)
       }));
       
-      productData.variants = productData.variants || [];
-      if (productData.variants.length === 0) {
-        productData.variants.push({ images });
+      // Get existing images that are not removed
+      const existingImages = product.variants[0]?.images?.filter(img => 
+        !removedImages.includes(img.cloudinaryId)
+      ) || [];
+      
+      // Combine existing images with new ones
+      if (!productData.variants || productData.variants.length === 0) {
+        productData.variants = [{
+          images: [...existingImages, ...newImages],
+          stock: product.variants[0]?.stock || 0,
+          sold: product.variants[0]?.sold || 0,
+          discount: product.variants[0]?.discount || '',
+          color: product.variants[0]?.color || '',
+          size: product.variants[0]?.size || '',
+          rating: product.variants[0]?.rating || 4.5
+        }];
       } else {
-        productData.variants[0].images = images;
+        productData.variants[0].images = [...existingImages, ...newImages];
+      }
+      
+      // Delete removed images from Cloudinary
+      for (const cloudinaryId of removedImages) {
+        try {
+          await cloudinary.uploader.destroy(cloudinaryId);
+        } catch (cloudErr) {
+          console.error('Error deleting image from Cloudinary:', cloudErr);
+        }
+      }
+    } else {
+      // No new images uploaded - just handle removed ones
+      if (removedImages.length > 0) {
+        // Filter out removed images
+        if (!productData.variants || productData.variants.length === 0) {
+          productData.variants = [{
+            ...product.variants[0]?.toObject(),
+            images: product.variants[0]?.images?.filter(img => 
+              !removedImages.includes(img.cloudinaryId)
+            ) || []
+          }];
+        } else {
+          const existingImages = product.variants[0]?.images?.filter(img => 
+            !removedImages.includes(img.cloudinaryId)
+          ) || [];
+          productData.variants[0].images = existingImages;
+        }
+        
+        // Delete removed images from Cloudinary
+        for (const cloudinaryId of removedImages) {
+          try {
+            await cloudinary.uploader.destroy(cloudinaryId);
+          } catch (cloudErr) {
+            console.error('Error deleting image from Cloudinary:', cloudErr);
+          }
+        }
+      } else {
+        // No changes to images - preserve existing images
+        if (!productData.variants || productData.variants.length === 0) {
+          productData.variants = [product.variants[0]?.toObject()];
+        } else {
+          // Preserve images from existing product if not provided in update
+          productData.variants[0].images = product.variants[0]?.images || [];
+        }
       }
     }
 
@@ -993,13 +1043,15 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
 
     productData.category = category._id;
     productData.categorySlug = productData.category;
+    productData.updatedAt = new Date();
 
+    // Update the product
     Object.assign(product, productData);
-    product.updatedAt = new Date();
     await product.save();
 
     res.json({ success: true, data: product });
   } catch (error) {
+    console.error('Error updating product:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
