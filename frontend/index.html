@@ -639,18 +639,9 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             color: #6b7280;
         }
 
-        /* Image link indicator */
-        .image-link-badge {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            background: rgba(0,0,0,0.6);
-            color: #D4AF37;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            z-index: 15;
-            pointer-events: none;
+        /* Smooth image transition */
+        .main-image {
+            transition: opacity 0.2s ease-in-out;
         }
     </style>
 </head>
@@ -1005,11 +996,8 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                 const thumbnail = productCard.querySelector(`.thumbnail[data-image-index="${imageIndex}"]`);
                 if (thumbnail) {
                     setTimeout(() => {
-                        thumbnail.click();
-                        thumbnail.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
-                        setTimeout(() => {
-                            thumbnail.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
-                        }, 2000);
+                        // Smoothly change the image without flash
+                        handleThumbnailClick(thumbnail);
                     }, 500);
                 }
             }
@@ -1203,7 +1191,6 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
                                  data-variant-index="0"
                                  data-image-index="0"
                                  data-image-url="${primaryImage}">
-                            <div class="image-link-badge">📷 #image-${product._id}-0</div>
                         </div>
                         
                         ${thumbnailsHtml}
@@ -1255,24 +1242,22 @@ src="https://www.facebook.com/tr?id=1680090143363538&ev=PageView&noscript=1"
             const productCard = thumb.closest('.product-card');
             if (!productCard) return;
 
-            // Update main image
+            // Smoothly update main image
             const mainImg = productCard.querySelector('.main-image');
             if (mainImg) {
-                mainImg.src = imageUrl;
-                mainImg.dataset.imageIndex = imageIndex;
-                mainImg.dataset.imageUrl = imageUrl;
+                mainImg.style.opacity = '0.5';
+                setTimeout(() => {
+                    mainImg.src = imageUrl;
+                    mainImg.dataset.imageIndex = imageIndex;
+                    mainImg.dataset.imageUrl = imageUrl;
+                    mainImg.style.opacity = '1';
+                }, 100);
             }
 
             // Update image container link
             const imageContainer = productCard.querySelector('.product-image-container');
             if (imageContainer) {
                 imageContainer.setAttribute('onclick', `window.location.hash='#image-${productId}-${imageIndex}'`);
-                
-                // Update the link badge
-                const linkBadge = imageContainer.querySelector('.image-link-badge');
-                if (linkBadge) {
-                    linkBadge.textContent = `📷 #image-${productId}-${imageIndex}`;
-                }
             }
 
             // Update active thumbnail
