@@ -32,18 +32,13 @@
     <!-- Hind Siliguri Font -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- JSON-LD Structured Data (will be updated dynamically) -->
+    <!-- JSON-LD Structured Data -->
     <script type="application/ld+json" id="structuredData">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Swift Bags",
-      "url": "https://swiftbags.shop/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://swiftbags.shop/?s={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "url": "https://swiftbags.shop/"
     }
     </script>
 
@@ -72,7 +67,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-84MDZDEKLS');
 </script>
     <style>
@@ -193,7 +187,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             color: white;
         }
         
-        /* Image container for proper display */
         .product-image-container {
             position: relative;
             width: 100%;
@@ -233,22 +226,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         .thumbnail.active {
             border-color: #D4AF37;
             transform: scale(1.05);
-        }
-        .thumbnail.sold-out-thumb {
-            opacity: 0.6;
-            position: relative;
-        }
-        .thumbnail.sold-out-thumb::after {
-            content: 'Sold Out';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(220, 38, 38, 0.8);
-            color: white;
-            font-size: 8px;
-            text-align: center;
-            border-radius: 0 0 4px 4px;
         }
         
         .cat-btn {
@@ -304,17 +281,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 max-height: none;
                 overflow-y: visible;
             }
-        }
-        #selectedProducts::-webkit-scrollbar {
-            width: 4px;
-        }
-        #selectedProducts::-webkit-scrollbar-track {
-            background: #e5e7eb;
-            border-radius: 4px;
-        }
-        #selectedProducts::-webkit-scrollbar-thumb {
-            background: #D4AF37;
-            border-radius: 4px;
         }
         
         .selected-product-item {
@@ -464,11 +430,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             font-size: 12px;
             margin-right: 5px;
         }
-        .offer-price {
-            color: #D4AF37;
-            font-weight: bold;
-            font-size: 14px;
-        }
         
         .container-custom {
             max-width: 1200px;
@@ -484,18 +445,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             background-color: white;
             font-size: 14px;
             cursor: pointer;
-            color: #6b7280;
-        }
-        .delivery-select:focus {
-            outline: none;
-            border-color: #D4AF37;
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
-        }
-        .delivery-select option {
-            color: #1a1a1a;
-        }
-        .delivery-select option:first-child {
-            color: #6b7280;
         }
         
         .order-now-btn {
@@ -517,7 +466,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         .order-now-btn:disabled {
             background-color: #9ca3af;
             cursor: not-allowed;
-            opacity: 0.7;
         }
         
         .trending-order-btn {
@@ -535,10 +483,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             background-color: #D4AF37;
             color: #0A1F44;
         }
-        .trending-order-btn:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-        }
         
         .slider-order-btn {
             display: inline-block;
@@ -549,14 +493,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             border-radius: 8px;
             transition: all 0.3s;
             cursor: pointer;
-        }
-        .slider-order-btn:hover:not(:disabled) {
-            background-color: #e6c456;
-        }
-        .slider-order-btn:disabled {
-            background-color: #9ca3af;
-            color: white;
-            cursor: not-allowed;
         }
         
         .trending-item {
@@ -585,12 +521,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             100% { transform: rotate(360deg); }
         }
 
-        /* Active state for hash links */
         .section-active {
             scroll-margin-top: 80px;
         }
 
-        /* Flash animation for order form */
         @keyframes flash {
             0%, 50%, 100% { opacity: 1; }
             25%, 75% { opacity: 0.5; background-color: rgba(212, 175, 55, 0.2); }
@@ -601,32 +535,14 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             border-radius: 12px;
         }
 
-        /* Flash animation for delivery area */
         @keyframes field-flash {
-            0%, 50%, 100% { 
-                border-color: #ef4444;
-                box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
-            }
-            25%, 75% { 
-                border-color: #D4AF37;
-                box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
-            }
+            0%, 50%, 100% { border-color: #ef4444; }
+            25%, 75% { border-color: #D4AF37; }
         }
         .delivery-flash {
             animation: field-flash 1s ease-in-out 3;
         }
 
-        /* Focus style for inputs */
-        #name:focus,
-        #phone:focus,
-        #address:focus,
-        #deliveryArea:focus {
-            border-color: #D4AF37;
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
-            outline: none;
-        }
-
-        /* Rating and sold container */
         .product-stats {
             display: flex;
             justify-content: space-between;
@@ -653,27 +569,8 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             color: #6b7280;
         }
 
-        /* Smooth image transition */
         .main-image {
             transition: opacity 0.2s ease-in-out;
-        }
-
-        /* Discount tag styles */
-        .discount-badge {
-            background: #ef4444;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        
-        .discount-text {
-            font-size: 11px;
-            color: #10b981;
-            font-weight: 600;
-            margin-top: 2px;
         }
     </style>
 </head>
@@ -722,8 +619,8 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 <div id="slider" class="relative h-full">
                     <div class="loader" id="sliderLoader"></div>
                 </div>
-                <button id="prevSlide" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-left text-sm md:text-base"></i></button>
-                <button id="nextSlide" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-right text-sm md:text-base"></i></button>
+                <button id="prevSlide" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-left"></i></button>
+                <button id="nextSlide" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </section>
@@ -858,7 +755,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         const API_URL = 'https://swift-bags.onrender.com/api';
         
         // State
-        let currentCat = 'all';
         let selectedForOrder = [];
         let currentDeliveryCharge = 0;
         let allProducts = [];
@@ -867,124 +763,136 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         let allTrending = [];
         let currentSlide = 0;
         let slideInterval;
+        
+        // Processing flags
+        let isOrderProcessing = false;
+        let isTrendingProcessing = false;
+        let isSliderProcessing = false;
+        let isAutoProcessing = false;
+        
+        // Popup timeout
+        let popupTimeout = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadAllData();
             setupEventListeners();
             checkHashAndScroll();
-            
-            // Listen for hash changes
             window.addEventListener('hashchange', checkHashAndScroll);
         });
 
-        // Check hash and scroll to appropriate section
+        // Popup functions
+        function showPopup(title, message, type, extraMessage = '') {
+            // Close any existing popup
+            if (document.getElementById('popup').classList.contains('active')) {
+                closePopup();
+                if (popupTimeout) {
+                    clearTimeout(popupTimeout);
+                    popupTimeout = null;
+                }
+            }
+            
+            // Small delay to ensure previous popup is closed
+            setTimeout(() => {
+                const popupTitle = document.getElementById('popupTitle');
+                const popupMessage = document.getElementById('popupMessage');
+                const popupExtraMessage = document.getElementById('popupExtraMessage');
+                
+                popupTitle.innerText = title;
+                popupMessage.innerText = message;
+                popupExtraMessage.innerText = extraMessage;
+                popupTitle.style.color = type === 'success' ? '#10b981' : '#ef4444';
+                
+                document.getElementById('popup').classList.add('active');
+                document.getElementById('popupOverlay').classList.add('active');
+                
+                // Auto close after 3 seconds
+                popupTimeout = setTimeout(() => {
+                    closePopup();
+                    popupTimeout = null;
+                }, 3000);
+            }, 100);
+        }
+
+        function closePopup() {
+            document.getElementById('popup').classList.remove('active');
+            document.getElementById('popupOverlay').classList.remove('active');
+            if (popupTimeout) {
+                clearTimeout(popupTimeout);
+                popupTimeout = null;
+            }
+        }
+
+        // Check hash and scroll
         function checkHashAndScroll() {
             const hash = window.location.hash;
             if (!hash) return;
             
-            // Remove the # symbol
             const hashValue = hash.substring(1);
             
-            // Check if it's a product hash (starts with 'product-')
             if (hashValue.startsWith('product-')) {
                 const productId = hashValue.replace('product-', '');
                 highlightProduct(productId);
             }
-            // Check if it's an image hash (starts with 'image-')
             else if (hashValue.startsWith('image-')) {
                 const [productId, imageIndex] = hashValue.replace('image-', '').split('-');
                 if (productId && imageIndex !== undefined) {
                     highlightProductImage(productId, parseInt(imageIndex));
                 }
             }
-            // Check if it's an order hash with specific image (starts with 'order-')
             else if (hashValue.startsWith('order-')) {
                 const [productId, imageIndex] = hashValue.replace('order-', '').split('-');
                 if (productId && imageIndex !== undefined) {
                     handleOrderHash(productId, parseInt(imageIndex));
                 }
             }
-            // Regular section scroll
             else {
                 const element = document.getElementById(hashValue);
                 if (element) {
                     element.scrollIntoView({ behavior: 'smooth' });
-                    
-                    // If it's order section, focus on name input
-                    if (hashValue === 'order') {
-                        setTimeout(() => {
-                            document.getElementById('name')?.focus();
-                        }, 500);
-                    }
                 }
             }
         }
 
-        // Handle order hash
         function handleOrderHash(productId, imageIndex) {
-            // First scroll to order section
             const orderSection = document.getElementById('order');
             if (orderSection) {
                 orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 
-                // Add flash effect to order form
                 setTimeout(() => {
                     const orderForm = document.getElementById('orderFormContainer');
                     if (orderForm) {
                         orderForm.classList.add('order-form-flash');
-                        
-                        // Remove flash after animation completes
                         setTimeout(() => {
                             orderForm.classList.remove('order-form-flash');
                         }, 3000);
                     }
                     
-                    // Check if delivery area is selected
-                    const deliveryArea = document.getElementById('deliveryArea');
-                    if (!deliveryArea.value) {
-                        // Flash the delivery area
-                        deliveryArea.classList.add('delivery-flash');
-                        deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        
-                        // Remove flash after animation
-                        setTimeout(() => {
-                            deliveryArea.classList.remove('delivery-flash');
-                        }, 3000);
-                        
-                        // Focus on delivery area
-                        setTimeout(() => {
-                            deliveryArea.focus();
-                        }, 500);
-                    } else {
-                        // Focus on name input
-                        const nameInput = document.getElementById('name');
-                        if (nameInput) {
-                            nameInput.focus();
-                            nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    }
-                    
-                    // Auto add product to order
                     autoAddToOrder(productId, imageIndex);
                 }, 500);
             }
         }
 
-        // Auto add product to order from URL hash
         function autoAddToOrder(productId, imageIndex) {
+            if (isAutoProcessing) return;
+            
+            isAutoProcessing = true;
+            
             const product = allProducts.find(p => p._id === productId);
-            if (!product) return;
+            if (!product) {
+                isAutoProcessing = false;
+                return;
+            }
             
             const variant = product.variants[0] || {};
             if (variant.stock === 0) {
                 showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                isAutoProcessing = false;
                 return;
             }
             
             const images = variant.images || [];
             const imageUrl = images[imageIndex]?.url || images[0]?.url || '';
             
-            // Check if product already exists in order
             const existingIndex = selectedForOrder.findIndex(p => 
                 p.id === productId + '-0' && p.imageIndex === imageIndex
             );
@@ -1002,15 +910,15 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 };
                 selectedForOrder.push(orderProduct);
                 showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-            } else {
-                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
-                return;
             }
             
             updateSelectedProducts();
+            
+            setTimeout(() => {
+                isAutoProcessing = false;
+            }, 1000);
         }
 
-        // Highlight specific product and scroll to it
         function highlightProduct(productId) {
             const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
             if (productCard) {
@@ -1022,17 +930,14 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             }
         }
 
-        // Highlight specific product image and scroll to it
         function highlightProductImage(productId, imageIndex) {
             const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
             if (productCard) {
                 productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 
-                // Find the thumbnail for this image index
                 const thumbnail = productCard.querySelector(`.thumbnail[data-image-index="${imageIndex}"]`);
                 if (thumbnail) {
                     setTimeout(() => {
-                        // Smoothly change the image without flash
                         handleThumbnailClick(thumbnail);
                     }, 500);
                 }
@@ -1060,11 +965,9 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 }
             } catch (error) {
                 console.error('Error loading sliders:', error);
-                showPopup('দুঃখিত!', 'স্লাইডার লোড করতে সমস্যা হয়েছে', 'error');
             }
         }
 
-        // Updated renderSliders function - slider buttons fixed
         function renderSliders() {
             const sliderContainer = document.getElementById('slider');
             if (!sliderContainer) return;
@@ -1092,34 +995,36 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             startSlideshow();
         }
 
-        // New function - handle slider order click
         function handleSliderOrderClick(btn) {
+            if (isSliderProcessing) return;
+            
+            isSliderProcessing = true;
+            
             const productData = JSON.parse(btn.dataset.product);
             
-            // Check if product data exists
             if (!productData || !productData.id) {
                 showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোন পণ্য সংযুক্ত নেই', 'error');
+                isSliderProcessing = false;
                 return;
             }
             
-            // Find product in allProducts
             const product = allProducts.find(p => p._id === productData.id);
             if (!product) {
                 showPopup('দুঃখিত!', 'পণ্যটি খুঁজে পাওয়া যায়নি', 'error');
+                isSliderProcessing = false;
                 return;
             }
             
             const variant = product.variants[0] || {};
             if (variant.stock === 0) {
                 showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                isSliderProcessing = false;
                 return;
             }
             
-            // Set image URL
             const images = variant.images || [];
             const imageUrl = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
             
-            // Check if product already exists in order
             const existingIndex = selectedForOrder.findIndex(p => 
                 p.id === product._id + '-0' && p.imageIndex === 0
             );
@@ -1139,37 +1044,29 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             } else {
                 showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                isSliderProcessing = false;
                 return;
             }
             
             updateSelectedProducts();
-            
-            // Scroll to order section
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
             
-            // Check if delivery area is selected
             setTimeout(() => {
                 const deliveryArea = document.getElementById('deliveryArea');
                 if (!deliveryArea.value) {
-                    // Flash the delivery area
                     deliveryArea.classList.add('delivery-flash');
                     deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Remove flash after animation
                     setTimeout(() => {
                         deliveryArea.classList.remove('delivery-flash');
                     }, 3000);
-                    
-                    // Focus on delivery area
-                    deliveryArea.focus();
-                } else {
-                    // Focus on name input
-                    document.getElementById('name')?.focus();
                 }
             }, 500);
             
-            // Update URL hash for order
             window.location.hash = `#order-${product._id}-0`;
+            
+            setTimeout(() => {
+                isSliderProcessing = false;
+            }, 1000);
         }
 
         async function loadCategories() {
@@ -1197,13 +1094,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                     allProducts = data.data;
                     renderProducts();
                     updateStructuredData();
-                    
-                    // Check if we need to highlight a product after loading
                     checkHashAndScroll();
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
-                showPopup('দুঃখিত!', 'পণ্য লোড করতে সমস্যা হয়েছে', 'error');
             }
         }
 
@@ -1281,18 +1175,11 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 const hasStock = variant.stock > 0;
                 const discount = variant.discount || '';
 
-                // Calculate discount percentage if not already in text
                 let discountPercent = '';
-                let discountAmount = 0;
-                
                 if (discount) {
                     const match = discount.match(/(\d+)%/);
                     if (match) {
                         discountPercent = match[1] + '% ছাড়';
-                        // Calculate actual discount amount
-                        if (product.originalPrice && product.price) {
-                            discountAmount = product.originalPrice - product.price;
-                        }
                     } else {
                         discountPercent = discount;
                     }
@@ -1349,7 +1236,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                                     `<span class="original-price">৳${product.originalPrice}</span>` : ''}
                             </div>
                             
-                            
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
                                     data-product-id="${product._id}" 
                                     data-variant-index="0" 
@@ -1364,7 +1250,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 `;
             }).join('');
 
-            // Attach thumbnail click handlers
             document.querySelectorAll('.thumbnail').forEach(thumb => {
                 thumb.addEventListener('click', handleThumbnailClick);
             });
@@ -1378,7 +1263,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             const productCard = thumb.closest('.product-card');
             if (!productCard) return;
 
-            // Smoothly update main image
             const mainImg = productCard.querySelector('.main-image');
             if (mainImg) {
                 mainImg.style.opacity = '0.5';
@@ -1390,42 +1274,45 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 }, 100);
             }
 
-            // Update image container link
             const imageContainer = productCard.querySelector('.product-image-container');
             if (imageContainer) {
                 imageContainer.setAttribute('onclick', `window.location.hash='#image-${productId}-${imageIndex}'`);
             }
 
-            // Update active thumbnail
             productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
 
-            // Update order button
             const orderBtn = productCard.querySelector('.order-now-btn');
             if (orderBtn) {
                 orderBtn.dataset.imageIndex = imageIndex;
                 orderBtn.dataset.imageUrl = imageUrl;
             }
 
-            // Update URL hash for image
             window.location.hash = `#image-${productId}-${imageIndex}`;
         }
 
         function handleOrderButtonClick(btn) {
+            if (isOrderProcessing) return;
+            
+            isOrderProcessing = true;
+            
             const productId = btn.dataset.productId;
             const imageIndex = parseInt(btn.dataset.imageIndex);
             const imageUrl = btn.dataset.imageUrl;
             
             const product = allProducts.find(p => p._id === productId);
-            if (!product) return;
+            if (!product) {
+                isOrderProcessing = false;
+                return;
+            }
             
             const variant = product.variants[0] || {};
             if (variant.stock === 0) {
                 showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                isOrderProcessing = false;
                 return;
             }
             
-            // Check if product already exists in order
             const existingIndex = selectedForOrder.findIndex(p => 
                 p.id === productId + '-0' && p.imageIndex === imageIndex
             );
@@ -1445,37 +1332,29 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             } else {
                 showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                isOrderProcessing = false;
                 return;
             }
             
             updateSelectedProducts();
-            
-            // Scroll to order section
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
             
-            // Check if delivery area is selected
             setTimeout(() => {
                 const deliveryArea = document.getElementById('deliveryArea');
                 if (!deliveryArea.value) {
-                    // Flash the delivery area
                     deliveryArea.classList.add('delivery-flash');
                     deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Remove flash after animation
                     setTimeout(() => {
                         deliveryArea.classList.remove('delivery-flash');
                     }, 3000);
-                    
-                    // Focus on delivery area
-                    deliveryArea.focus();
-                } else {
-                    // Focus on name input
-                    document.getElementById('name')?.focus();
                 }
             }, 500);
             
-            // Update URL hash for order
             window.location.hash = `#order-${productId}-${imageIndex}`;
+            
+            setTimeout(() => {
+                isOrderProcessing = false;
+            }, 1000);
         }
 
         function renderTrending() {
@@ -1490,16 +1369,11 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 const images = variant.images || [];
                 const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
                 
-                // Calculate discount info
                 let discountText = '';
-                let discountAmount = 0;
                 if (variant.discount) {
                     const match = variant.discount.match(/(\d+)%/);
                     if (match) {
                         discountText = match[1] + '% ছাড়';
-                        if (product.originalPrice && product.price) {
-                            discountAmount = product.originalPrice - product.price;
-                        }
                     } else {
                         discountText = variant.discount;
                     }
@@ -1525,9 +1399,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                                 ${product.originalPrice > product.price ? 
                                     `<span class="original-price">৳${product.originalPrice}</span>` : ''}
                             </div>
-                            ${discountText ? `
-                                <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
-                            ` : ''}
+                            ${discountText ? `<p class="text-xs text-green-600 font-bold">${discountText}</p>` : ''}
                             <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
                                     data-product='${JSON.stringify({
                                         id: product._id,
@@ -1545,6 +1417,60 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                     </div>
                 `;
             }).join('');
+        }
+
+        function handleTrendingOrder(btn) {
+            if (isTrendingProcessing) return;
+            
+            isTrendingProcessing = true;
+            
+            const product = JSON.parse(btn.dataset.product);
+            if (product.variantStock === 0) {
+                showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
+                isTrendingProcessing = false;
+                return;
+            }
+            
+            const existingIndex = selectedForOrder.findIndex(p => p.id === product.id);
+            
+            if (existingIndex === -1) {
+                const orderProduct = {
+                    id: product.id,
+                    name: product.name,
+                    img: product.img,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    variantIndex: 0,
+                    quantity: 1,
+                    imageIndex: 0
+                };
+                selectedForOrder.push(orderProduct);
+                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            } else {
+                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                isTrendingProcessing = false;
+                return;
+            }
+            
+            updateSelectedProducts();
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                }
+            }, 500);
+            
+            window.location.hash = `#order-${product.id}-0`;
+            
+            setTimeout(() => {
+                isTrendingProcessing = false;
+            }, 1000);
         }
 
         function renderReviews(reviews) {
@@ -1605,7 +1531,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             script.textContent = JSON.stringify(itemList);
         }
 
-        // Updated setupEventListeners function
         function setupEventListeners() {
             const menuBtn = document.getElementById('menuBtn');
             const mobileTopMenu = document.getElementById('mobileTopMenu');
@@ -1623,81 +1548,26 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 moveSlide(1);
             });
             
-            // Slider order button global click handler
-            document.addEventListener('click', function(e) {
-                // If clicked element has slider-order-btn class
-                if (e.target.classList.contains('slider-order-btn')) {
-                    // This event will already call handleSliderOrderClick via onclick attribute
-                    // So nothing extra needed here
-                }
-            });
-            
             document.getElementById('deliveryArea')?.addEventListener('change', function(e) {
                 currentDeliveryCharge = parseInt(e.target.value) || 0;
                 updateTotal();
-                // Remove flash class when selected
                 this.classList.remove('delivery-flash');
             });
+            
             document.getElementById('orderForm')?.addEventListener('submit', handleOrderSubmit);
             document.getElementById('reviewForm')?.addEventListener('submit', handleReviewSubmit);
+            
             document.querySelectorAll('.star-rating i').forEach(star => {
                 star.addEventListener('click', handleStarClick);
             });
+            
             document.getElementById('closePopup')?.addEventListener('click', closePopup);
             document.getElementById('popupOverlay')?.addEventListener('click', closePopup);
         }
 
-        function handleTrendingOrder(btn) {
-            const product = JSON.parse(btn.dataset.product);
-            if (product.variantStock === 0) {
-                showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
-                return;
-            }
-            
-            // Check if product already exists in order
-            const existingIndex = selectedForOrder.findIndex(p => p.id === product.id);
-            
-            if (existingIndex === -1) {
-                const orderProduct = {
-                    id: product.id,
-                    name: product.name,
-                    img: product.img,
-                    price: product.price,
-                    originalPrice: product.originalPrice,
-                    variantIndex: 0,
-                    quantity: 1,
-                    imageIndex: 0
-                };
-                selectedForOrder.push(orderProduct);
-                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-            } else {
-                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
-                return;
-            }
-            
-            updateSelectedProducts();
-            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-            
-            // Check if delivery area is selected
-            setTimeout(() => {
-                const deliveryArea = document.getElementById('deliveryArea');
-                if (!deliveryArea.value) {
-                    deliveryArea.classList.add('delivery-flash');
-                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    setTimeout(() => {
-                        deliveryArea.classList.remove('delivery-flash');
-                    }, 3000);
-                    deliveryArea.focus();
-                } else {
-                    document.getElementById('name')?.focus();
-                }
-            }, 500);
-            
-            window.location.hash = `#order-${product.id}-0`;
-        }
-
         async function handleOrderSubmit(e) {
             e.preventDefault();
+            
             const name = document.getElementById('name').value.trim();
             const phone = document.getElementById('phone').value.trim();
             const address = document.getElementById('address').value.trim();
@@ -1709,7 +1579,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             }
             if (!deliveryArea) {
                 showPopup('ব্যর্থ!', 'ডেলিভারি এলাকা নির্বাচন করুন', 'error');
-                // Flash the delivery area
                 const deliverySelect = document.getElementById('deliveryArea');
                 deliverySelect.classList.add('delivery-flash');
                 deliverySelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1726,6 +1595,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             
             const subtotal = selectedForOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
+            
             const orderData = {
                 customer: { name, phone, address },
                 items: selectedForOrder.map(item => ({
@@ -1768,6 +1638,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 
         async function handleReviewSubmit(e) {
             e.preventDefault();
+            
             const name = document.getElementById('reviewName').value.trim();
             const address = document.getElementById('reviewAddress').value.trim();
             const review = document.getElementById('reviewText').value.trim();
@@ -1778,7 +1649,12 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 return;
             }
             
-            const reviewData = { customerName: name, customerAddress: address, review, rating: parseInt(rating) };
+            const reviewData = { 
+                customerName: name, 
+                customerAddress: address, 
+                review, 
+                rating: parseInt(rating) 
+            };
             
             try {
                 const result = await fetch(`${API_URL}/reviews`, {
@@ -1817,13 +1693,12 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 return;
             }
 
-            container.innerHTML = ''; // Clear previous content
+            container.innerHTML = '';
 
             selectedForOrder.forEach((p, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'selected-product-item';
 
-                // Create HTML
                 itemDiv.innerHTML = `
                     <img src="${p.img}" alt="${p.name}">
                     <div class="product-info">
@@ -1846,7 +1721,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 container.appendChild(itemDiv);
             });
 
-            updateTotal(); // Update total
+            updateTotal();
         }
 
         window.changeQuantity = function(index, change) {
@@ -1854,7 +1729,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 const newQty = selectedForOrder[index].quantity + change;
                 if (newQty >= 1 && newQty <= 10) {
                     selectedForOrder[index].quantity = newQty;
-                    updateSelectedProducts(); // This will re-render
+                    updateSelectedProducts();
                 }
             }
         };
@@ -1868,14 +1743,18 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             const subtotalEl = document.getElementById('subtotalPrice');
             const deliveryChargeEl = document.getElementById('deliveryCharge');
             const totalEl = document.getElementById('totalPrice');
-            let subtotal = selectedForOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
+            
+            const subtotal = selectedForOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
+            
             subtotalEl.innerText = `৳${subtotal}`;
+            
             if (currentDeliveryCharge === 0) {
                 deliveryChargeEl.innerText = 'নির্বাচন করুন';
             } else {
                 deliveryChargeEl.innerText = delivery === 0 ? 'ফ্রি' : `৳${delivery}`;
             }
+            
             totalEl.innerText = `৳${subtotal + delivery}`;
         }
 
@@ -1908,27 +1787,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             for (let i = 1; i <= 5; i++) stars += i <= rating ? '★' : '☆';
             return stars;
         }
-
-        function showPopup(title, message, type, extraMessage = '') {
-            const popupTitle = document.getElementById('popupTitle');
-            const popupMessage = document.getElementById('popupMessage');
-            const popupExtraMessage = document.getElementById('popupExtraMessage');
-            popupTitle.innerText = title;
-            popupMessage.innerText = message;
-            popupExtraMessage.innerText = extraMessage;
-            popupTitle.style.color = type === 'success' ? '#10b981' : '#ef4444';
-            document.getElementById('popup').classList.add('active');
-            document.getElementById('popupOverlay').classList.add('active');
-        }
-
-        function closePopup() {
-            document.getElementById('popup').classList.remove('active');
-            document.getElementById('popupOverlay').classList.remove('active');
-        }
-
-        // Clear selectedForOrder for testing (remove this in production)
-        // selectedForOrder = [];
-        // updateSelectedProducts();
     </script>
 </body>
 </html>
