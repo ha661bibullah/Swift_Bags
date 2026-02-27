@@ -65,6 +65,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 
+
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-84MDZDEKLS"></script>
 <script>
@@ -884,15 +885,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             // Remove the # symbol
             const hashValue = hash.substring(1);
             
-            // Check if it's a category hash (starts with 'category-')
-            if (hashValue.startsWith('category-')) {
-                const categorySlug = hashValue.replace('category-', '');
-                // Load products for this category without scrolling
-                loadProducts(categorySlug);
-                setActiveCategory(categorySlug);
-                return;
-            }
-            
             // Check if it's a product hash (starts with 'product-')
             if (hashValue.startsWith('product-')) {
                 const productId = hashValue.replace('product-', '');
@@ -926,18 +918,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                     }
                 }
             }
-        }
-
-        // Set active category button
-        function setActiveCategory(slug) {
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                const btnSlug = btn.dataset.category || 'all';
-                if (btnSlug === slug) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
         }
 
         // Handle order hash
@@ -1156,6 +1136,30 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             updateSelectedProducts();
             showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             
+            // Scroll to order section
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Check if delivery area is selected
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    // Flash the delivery area
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove flash after animation
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    
+                    // Focus on delivery area
+                    deliveryArea.focus();
+                } else {
+                    // Focus on name input
+                    document.getElementById('name')?.focus();
+                }
+            }, 500);
+            
             // Update URL hash for order
             window.location.hash = `#order-${product._id}-0`;
         }
@@ -1236,14 +1240,21 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             const container = document.getElementById('categoryButtons');
             if (!container) return;
             container.innerHTML = `
-                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="all" onclick="window.location.hash='#category-all'">সকল পণ্য</button>
+                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" onclick="window.location.hash='#products'">সকল পণ্য</button>
                 ${allCategories.map(cat => `
-                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}" onclick="window.location.hash='#category-${cat.slug}'">
+                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}" onclick="window.location.hash='#products'">
                         ${cat.nameBn}
                     </button>
                 `).join('')}
             `;
-            // No extra click listeners – the hash change will handle loading and active state
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const category = this.dataset.category || 'all';
+                    loadProducts(category);
+                });
+            });
         }
 
         function renderProducts() {
@@ -1325,10 +1336,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                             </div>
                             
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="highlight-price">৳${product.price}</span>
-                                ${product.originalPrice > product.price ? 
-                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-                            </div>
+    <span class="highlight-price">৳${product.price}</span>
+    ${product.originalPrice > product.price ? 
+        `<span class="original-price">৳${product.originalPrice}</span>` : ''}
+</div>
                             
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
@@ -1425,7 +1436,31 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             }
             
             updateSelectedProducts();
-            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে။');
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            
+            // Scroll to order section
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Check if delivery area is selected
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    // Flash the delivery area
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove flash after animation
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    
+                    // Focus on delivery area
+                    deliveryArea.focus();
+                } else {
+                    // Focus on name input
+                    document.getElementById('name')?.focus();
+                }
+            }, 500);
             
             // Update URL hash for order
             window.location.hash = `#order-${productId}-${imageIndex}`;
@@ -1474,10 +1509,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                                 <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
                             </div>
                            <div class="flex items-center gap-2 mt-1">
-                                <span class="highlight-price">৳${product.price}</span>
-                                ${product.originalPrice > product.price ? 
-                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-                            </div>
+    <span class="highlight-price">৳${product.price}</span>
+    ${product.originalPrice > product.price ? 
+        `<span class="original-price">৳${product.originalPrice}</span>` : ''}
+</div>
                             ${discountText ? `
                                 <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
                             ` : ''}
@@ -1624,6 +1659,22 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             }
             updateSelectedProducts();
             showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Check if delivery area is selected
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    deliveryArea.focus();
+                } else {
+                    document.getElementById('name')?.focus();
+                }
+            }, 500);
             
             window.location.hash = `#order-${product.id}-0`;
         }
