@@ -675,6 +675,16 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             font-weight: 600;
             margin-top: 2px;
         }
+
+        /* Category link styles */
+        .cat-btn a {
+            color: inherit;
+            text-decoration: none;
+            display: block;
+        }
+        .cat-btn.active a {
+            color: white;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -733,7 +743,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         <div class="container-custom">
             <h2 class="text-2xl md:text-3xl font-bold text-primary mb-4 text-center">আমাদের পণ্য</h2>
             <div id="categoryButtons" class="flex justify-center gap-2 md:gap-4 mb-6 overflow-x-auto pb-2 px-2">
-                <div class="loader" style="width: 20px; height: 20px;"></div>
+                <!-- Dynamically filled by JavaScript -->
             </div>
             <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                 <div class="loader"></div>
@@ -868,6 +878,127 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         let currentSlide = 0;
         let slideInterval;
 
+        // ============= সমস্যা সমাধান - অর্ডার বাটন ফাংশন =============
+
+        // অর্ডার বাটন ক্লিক হ্যান্ডলার
+        window.handleOrderButtonClick = function(btn) {
+            const productId = btn.dataset.productId;
+            const imageIndex = parseInt(btn.dataset.imageIndex) || 0;
+            const imageUrl = btn.dataset.imageUrl;
+            
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) return;
+            
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                return;
+            }
+            
+            const orderProduct = {
+                id: productId + '-0',
+                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                img: imageUrl,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1,
+                imageIndex: imageIndex
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === productId + '-0');
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            
+            // Scroll to order section
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Check if delivery area is selected
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    deliveryArea.focus();
+                } else {
+                    document.getElementById('name')?.focus();
+                }
+            }, 500);
+            
+            // Update URL hash for order
+            window.location.hash = `#order-${productId}-${imageIndex}`;
+        };
+
+        // থাম্বনেইল ক্লিক হ্যান্ডলার
+        window.handleThumbnailClick = function(thumb) {
+            const productId = thumb.dataset.productId;
+            const imageIndex = parseInt(thumb.dataset.imageIndex);
+            const imageUrl = thumb.dataset.imageUrl;
+
+            const productCard = thumb.closest('.product-card');
+            if (!productCard) return;
+
+            const mainImg = productCard.querySelector('.main-image');
+            if (mainImg) {
+                mainImg.style.opacity = '0.5';
+                setTimeout(() => {
+                    mainImg.src = imageUrl;
+                    mainImg.dataset.imageIndex = imageIndex;
+                    mainImg.dataset.imageUrl = imageUrl;
+                    mainImg.style.opacity = '1';
+                }, 100);
+            }
+
+            const imageContainer = productCard.querySelector('.product-image-container');
+            if (imageContainer) {
+                imageContainer.setAttribute('onclick', `window.location.hash='#image-${productId}-${imageIndex}'`);
+            }
+
+            productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+
+            const orderBtn = productCard.querySelector('.order-now-btn');
+            if (orderBtn) {
+                orderBtn.dataset.imageIndex = imageIndex;
+                orderBtn.dataset.imageUrl = imageUrl;
+            }
+
+            window.location.hash = `#image-${productId}-${imageIndex}`;
+        };
+
+        // getStarRating ফাংশন
+        window.getStarRating = function(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(rating)) stars += '<i class="fas fa-star"></i>';
+                else if (i === Math.floor(rating) + 1 && rating % 1 >= 0.5) stars += '<i class="fas fa-star-half-alt"></i>';
+                else stars += '<i class="far fa-star"></i>';
+            }
+            return stars;
+        };
+
+        // showPopup ফাংশন
+        window.showPopup = function(title, message, type, extraMessage = '') {
+            const popupTitle = document.getElementById('popupTitle');
+            const popupMessage = document.getElementById('popupMessage');
+            const popupExtraMessage = document.getElementById('popupExtraMessage');
+            if (popupTitle) popupTitle.innerText = title;
+            if (popupMessage) popupMessage.innerText = message;
+            if (popupExtraMessage) popupExtraMessage.innerText = extraMessage;
+            if (popupTitle) popupTitle.style.color = type === 'success' ? '#10b981' : '#ef4444';
+            document.getElementById('popup')?.classList.add('active');
+            document.getElementById('popupOverlay')?.classList.add('active');
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             loadAllData();
             setupEventListeners();
@@ -902,6 +1033,13 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 const [productId, imageIndex] = hashValue.replace('order-', '').split('-');
                 if (productId && imageIndex !== undefined) {
                     handleOrderHash(productId, parseInt(imageIndex));
+                }
+            }
+            // Check if it's a category hash
+            else if (hashValue === 'men' || hashValue === 'women' || hashValue === 'kids' || hashValue === 'travel') {
+                const categoryBtn = document.querySelector(`.cat-btn[data-category="${hashValue}"]`);
+                if (categoryBtn) {
+                    categoryBtn.click();
                 }
             }
             // Regular section scroll
@@ -1060,7 +1198,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             }
         }
 
-        // Updated renderSliders function - slider buttons fixed
+        // Updated renderSliders function
         function renderSliders() {
             const sliderContainer = document.getElementById('slider');
             if (!sliderContainer) return;
@@ -1089,7 +1227,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         }
 
         // New function - handle slider order click
-        function handleSliderOrderClick(btn) {
+        window.handleSliderOrderClick = function(btn) {
             const productData = JSON.parse(btn.dataset.product);
             
             // Check if product data exists
@@ -1162,7 +1300,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             
             // Update URL hash for order
             window.location.hash = `#order-${product._id}-0`;
-        }
+        };
 
         async function loadCategories() {
             try {
@@ -1239,19 +1377,40 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         function renderCategories() {
             const container = document.getElementById('categoryButtons');
             if (!container) return;
+            
             container.innerHTML = `
-                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" onclick="window.location.hash='#products'">সকল পণ্য</button>
-                ${allCategories.map(cat => `
-                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}" onclick="window.location.hash='#products'">
-                        ${cat.nameBn}
-                    </button>
-                `).join('')}
+                <button class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="all">
+                    <a href="#products" class="no-underline">সকল পণ্য</a>
+                </button>
+                <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="men">
+                    <a href="#men" class="no-underline">পুরুষদের</a>
+                </button>
+                <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="women">
+                    <a href="#women" class="no-underline">মহিলাদের</a>
+                </button>
+                <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="kids">
+                    <a href="#kids" class="no-underline">শিশুদের</a>
+                </button>
+                <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="travel">
+                    <a href="#travel" class="no-underline">ভ্রমণ</a>
+                </button>
             `;
+            
+            // Add click handlers to category buttons
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     const category = this.dataset.category || 'all';
+                    
+                    // Update URL hash
+                    if (category === 'all') {
+                        window.location.hash = '#products';
+                    } else {
+                        window.location.hash = `#${category}`;
+                    }
+                    
                     loadProducts(category);
                 });
             });
@@ -1275,16 +1434,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 
                 // Calculate discount percentage if not already in text
                 let discountPercent = '';
-                let discountAmount = 0;
-                
                 if (discount) {
                     const match = discount.match(/(\d+)%/);
                     if (match) {
                         discountPercent = match[1] + '% ছাড়';
-                        // Calculate actual discount amount
-                        if (product.originalPrice && product.price) {
-                            discountAmount = product.originalPrice - product.price;
-                        }
                     } else {
                         discountPercent = discount;
                     }
@@ -1298,8 +1451,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                                  data-product-id="${product._id}" 
                                  data-variant-index="0" 
                                  data-image-index="${idx}"
-                                 data-image-url="${img.url}"
-                                 onclick="event.stopPropagation(); handleThumbnailClick(this)">
+                                 data-image-url="${img.url}">
                         `).join('')}
                     </div>
                 ` : '';
@@ -1336,11 +1488,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                             </div>
                             
                             <div class="flex items-center gap-2 mt-1">
-    <span class="highlight-price">৳${product.price}</span>
-    ${product.originalPrice > product.price ? 
-        `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-</div>
-                            
+                                <span class="text-gold font-bold">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
+                            </div>
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
                                     data-product-id="${product._id}" 
@@ -1358,112 +1509,11 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 
             // Attach thumbnail click handlers
             document.querySelectorAll('.thumbnail').forEach(thumb => {
-                thumb.addEventListener('click', handleThumbnailClick);
+                thumb.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    handleThumbnailClick(this);
+                });
             });
-        }
-
-        function handleThumbnailClick(thumb) {
-            const productId = thumb.dataset.productId;
-            const imageIndex = parseInt(thumb.dataset.imageIndex);
-            const imageUrl = thumb.dataset.imageUrl;
-
-            const productCard = thumb.closest('.product-card');
-            if (!productCard) return;
-
-            // Smoothly update main image
-            const mainImg = productCard.querySelector('.main-image');
-            if (mainImg) {
-                mainImg.style.opacity = '0.5';
-                setTimeout(() => {
-                    mainImg.src = imageUrl;
-                    mainImg.dataset.imageIndex = imageIndex;
-                    mainImg.dataset.imageUrl = imageUrl;
-                    mainImg.style.opacity = '1';
-                }, 100);
-            }
-
-            // Update image container link
-            const imageContainer = productCard.querySelector('.product-image-container');
-            if (imageContainer) {
-                imageContainer.setAttribute('onclick', `window.location.hash='#image-${productId}-${imageIndex}'`);
-            }
-
-            // Update active thumbnail
-            productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-            thumb.classList.add('active');
-
-            // Update order button
-            const orderBtn = productCard.querySelector('.order-now-btn');
-            if (orderBtn) {
-                orderBtn.dataset.imageIndex = imageIndex;
-                orderBtn.dataset.imageUrl = imageUrl;
-            }
-
-            // Update URL hash for image
-            window.location.hash = `#image-${productId}-${imageIndex}`;
-        }
-
-        function handleOrderButtonClick(btn) {
-            const productId = btn.dataset.productId;
-            const imageIndex = parseInt(btn.dataset.imageIndex);
-            const imageUrl = btn.dataset.imageUrl;
-            
-            const product = allProducts.find(p => p._id === productId);
-            if (!product) return;
-            
-            const variant = product.variants[0] || {};
-            if (variant.stock === 0) {
-                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
-                return;
-            }
-            
-            const orderProduct = {
-                id: productId + '-0',
-                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-                img: imageUrl,
-                price: product.price,
-                originalPrice: product.originalPrice,
-                variantIndex: 0,
-                quantity: 1,
-                imageIndex: imageIndex
-            };
-            
-            const existing = selectedForOrder.find(p => p.id === productId + '-0');
-            if (!existing) {
-                selectedForOrder.push(orderProduct);
-            } else {
-                existing.quantity += 1;
-            }
-            
-            updateSelectedProducts();
-            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-            
-            // Scroll to order section
-            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-            
-            // Check if delivery area is selected
-            setTimeout(() => {
-                const deliveryArea = document.getElementById('deliveryArea');
-                if (!deliveryArea.value) {
-                    // Flash the delivery area
-                    deliveryArea.classList.add('delivery-flash');
-                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Remove flash after animation
-                    setTimeout(() => {
-                        deliveryArea.classList.remove('delivery-flash');
-                    }, 3000);
-                    
-                    // Focus on delivery area
-                    deliveryArea.focus();
-                } else {
-                    // Focus on name input
-                    document.getElementById('name')?.focus();
-                }
-            }, 500);
-            
-            // Update URL hash for order
-            window.location.hash = `#order-${productId}-${imageIndex}`;
         }
 
         function renderTrending() {
@@ -1480,14 +1530,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 
                 // Calculate discount info
                 let discountText = '';
-                let discountAmount = 0;
                 if (variant.discount) {
                     const match = variant.discount.match(/(\d+)%/);
                     if (match) {
                         discountText = match[1] + '% ছাড়';
-                        if (product.originalPrice && product.price) {
-                            discountAmount = product.originalPrice - product.price;
-                        }
                     } else {
                         discountText = variant.discount;
                     }
@@ -1508,13 +1554,13 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                                 </div>
                                 <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
                             </div>
-                           <div class="flex items-center gap-2 mt-1">
-    <span class="highlight-price">৳${product.price}</span>
-    ${product.originalPrice > product.price ? 
-        `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-</div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-gold font-bold">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
+                            </div>
                             ${discountText ? `
-                                <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
+                                <p class="text-xs text-green-600 font-bold">${discountText}</p>
                             ` : ''}
                             <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
                                     data-product='${JSON.stringify({
@@ -1611,15 +1657,6 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 moveSlide(1);
             });
             
-            // Slider order button global click handler
-            document.addEventListener('click', function(e) {
-                // If clicked element has slider-order-btn class
-                if (e.target.classList.contains('slider-order-btn')) {
-                    // This event will already call handleSliderOrderClick via onclick attribute
-                    // So nothing extra needed here
-                }
-            });
-            
             document.getElementById('deliveryArea')?.addEventListener('change', function(e) {
                 currentDeliveryCharge = parseInt(e.target.value) || 0;
                 updateTotal();
@@ -1642,8 +1679,8 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 return;
             }
             const orderProduct = {
-                id: product.id,
-                name: product.name,
+                id: product.id + '-0',
+                name: product.name + (product.discount ? ' (' + product.discount + ')' : ''),
                 img: product.img,
                 price: product.price,
                 originalPrice: product.originalPrice,
@@ -1651,7 +1688,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                 quantity: 1,
                 imageIndex: 0
             };
-            const existing = selectedForOrder.find(p => p.id === product.id);
+            const existing = selectedForOrder.find(p => p.id === product.id + '-0');
             if (!existing) {
                 selectedForOrder.push(orderProduct);
             } else {
@@ -1813,7 +1850,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                             <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
                         </div>
                         <div class="price-info">
-                           <span class="current-price highlight-price text-xs">৳${p.price}</span>
+                            <span class="current-price text-xs">৳${p.price}</span>
                             <span class="original-price-small">৳${p.originalPrice}</span>
                         </div>
                     </div>
@@ -1870,32 +1907,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             slides[currentSlide].style.opacity = '1';
         }
 
-        function getStarRating(rating) {
-            let stars = '';
-            for (let i = 1; i <= 5; i++) {
-                if (i <= Math.floor(rating)) stars += '<i class="fas fa-star"></i>';
-                else if (i === Math.floor(rating) + 1 && rating % 1 >= 0.5) stars += '<i class="fas fa-star-half-alt"></i>';
-                else stars += '<i class="far fa-star"></i>';
-            }
-            return stars;
-        }
-
         function getStars(rating) {
             let stars = '';
             for (let i = 1; i <= 5; i++) stars += i <= rating ? '★' : '☆';
             return stars;
-        }
-
-        function showPopup(title, message, type, extraMessage = '') {
-            const popupTitle = document.getElementById('popupTitle');
-            const popupMessage = document.getElementById('popupMessage');
-            const popupExtraMessage = document.getElementById('popupExtraMessage');
-            popupTitle.innerText = title;
-            popupMessage.innerText = message;
-            popupExtraMessage.innerText = extraMessage;
-            popupTitle.style.color = type === 'success' ? '#10b981' : '#ef4444';
-            document.getElementById('popup').classList.add('active');
-            document.getElementById('popupOverlay').classList.add('active');
         }
 
         function closePopup() {
