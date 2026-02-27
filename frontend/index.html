@@ -65,7 +65,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 
-
+TEST6624
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-84MDZDEKLS"></script>
 <script>
@@ -885,8 +885,13 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             // Remove the # symbol
             const hashValue = hash.substring(1);
             
+            // Check if it's a category hash (starts with 'cat-')
+            if (hashValue.startsWith('cat-')) {
+                const categorySlug = hashValue.replace('cat-', '');
+                handleCategoryHash(categorySlug);
+            }
             // Check if it's a product hash (starts with 'product-')
-            if (hashValue.startsWith('product-')) {
+            else if (hashValue.startsWith('product-')) {
                 const productId = hashValue.replace('product-', '');
                 highlightProduct(productId);
             }
@@ -917,6 +922,51 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                         }, 500);
                     }
                 }
+            }
+        }
+
+        // Handle category hash
+        function handleCategoryHash(categorySlug) {
+            // First scroll to products section
+            const productsSection = document.getElementById('products');
+            if (productsSection) {
+                productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Find category button and activate it
+                setTimeout(() => {
+                    const catBtn = document.querySelector(`.cat-btn[data-category="${categorySlug}"]`);
+                    if (catBtn) {
+                        // Update active class
+                        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                        catBtn.classList.add('active');
+                        
+                        // Load products for this category
+                        currentCat = categorySlug;
+                        loadProducts(categorySlug);
+                        
+                        // Highlight the category button
+                        catBtn.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                        catBtn.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
+                        setTimeout(() => {
+                            catBtn.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
+                        }, 3000);
+                    } else if (categorySlug === 'all') {
+                        // Handle 'all' category
+                        const allBtn = document.getElementById('catAll');
+                        if (allBtn) {
+                            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                            allBtn.classList.add('active');
+                            currentCat = 'all';
+                            loadProducts('all');
+                            
+                            allBtn.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                            allBtn.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
+                            setTimeout(() => {
+                                allBtn.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
+                            }, 3000);
+                        }
+                    }
+                }, 500);
             }
         }
 
@@ -1239,20 +1289,42 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         function renderCategories() {
             const container = document.getElementById('categoryButtons');
             if (!container) return;
-            container.innerHTML = `
-                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" onclick="window.location.hash='#products'">সকল পণ্য</button>
-                ${allCategories.map(cat => `
-                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}" onclick="window.location.hash='#products'">
-                        ${cat.nameBn}
-                    </button>
-                `).join('')}
+            
+            // Create category buttons with proper hash links
+            let buttonsHtml = `
+                <a href="#cat-all" id="catAll" class="cat-btn ${currentCat === 'all' ? 'active' : ''} px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" 
+                   data-category="all" onclick="event.preventDefault(); window.location.hash='#cat-all';">
+                    সকল পণ্য
+                </a>
             `;
+            
+            allCategories.forEach(cat => {
+                buttonsHtml += `
+                    <a href="#cat-${cat.slug}" class="cat-btn ${currentCat === cat.slug ? 'active' : ''} px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" 
+                       data-category="${cat.slug}" onclick="event.preventDefault(); window.location.hash='#cat-${cat.slug}';">
+                        ${cat.nameBn}
+                    </a>
+                `;
+            });
+            
+            container.innerHTML = buttonsHtml;
+            
+            // Add click handlers for category links
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const category = this.dataset.category;
+                    
+                    // Update active class
                     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
-                    const category = this.dataset.category || 'all';
+                    
+                    // Update current category and load products
+                    currentCat = category;
                     loadProducts(category);
+                    
+                    // Update URL hash
+                    window.location.hash = `#cat-${category}`;
                 });
             });
         }
@@ -1336,11 +1408,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                             </div>
                             
                             <div class="flex items-center gap-2 mt-1">
-    <span class="highlight-price">৳${product.price}</span>
-    ${product.originalPrice > product.price ? 
-        `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-</div>
-                            
+                                <span class="text-gold font-bold text-sm md:text-base">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="original-price text-xs">৳${product.originalPrice}</span>` : ''}
+                            </div>
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
                                     data-product-id="${product._id}" 
@@ -1508,11 +1579,11 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                                 </div>
                                 <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
                             </div>
-                           <div class="flex items-center gap-2 mt-1">
-    <span class="highlight-price">৳${product.price}</span>
-    ${product.originalPrice > product.price ? 
-        `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-</div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-gold font-bold text-sm">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="original-price text-xs">৳${product.originalPrice}</span>` : ''}
+                            </div>
                             ${discountText ? `
                                 <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
                             ` : ''}
@@ -1813,7 +1884,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
                             <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
                         </div>
                         <div class="price-info">
-                           <span class="current-price highlight-price text-xs">৳${p.price}</span>
+                            <span class="current-price text-gold font-bold text-xs">৳${p.price}</span>
                             <span class="original-price-small">৳${p.originalPrice}</span>
                         </div>
                     </div>
