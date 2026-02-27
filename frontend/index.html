@@ -1793,49 +1793,53 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         }
 
         function updateSelectedProducts() {
-            const container = document.getElementById('selectedProducts');
-            if (selectedForOrder.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>';
-                updateTotal();
-                return;
-            }
-            container.innerHTML = '';
-            selectedForOrder.forEach((p, index) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'selected-product-item';
-                itemDiv.innerHTML = `
-                    <img src="${p.img}" alt="${p.name}">
-                    <div class="product-info">
-                        <span class="product-name">${p.name}</span>
-                        <div class="quantity-control">
-                            <span class="quantity-btn" onclick="changeQuantity(${index}, -1)">−</span>
-                            <span class="quantity-value">${p.quantity}</span>
-                            <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
-                        </div>
-                        <div class="price-info">
-                           <span class="current-price highlight-price text-xs">৳${p.price}</span>
-                            <span class="original-price-small">৳${p.originalPrice}</span>
-                        </div>
-                    </div>
-                    <button class="remove-item" onclick="removeFromOrder(${index})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                `;
-                container.appendChild(itemDiv);
-            });
-            updateTotal();
-        }
+    const container = document.getElementById('selectedProducts');
+    if (selectedForOrder.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">কোন পণ্য নির্বাচন করা হয়নি</p>';
+        updateTotal();
+        return;
+    }
 
+    container.innerHTML = ''; // আগের সব কিছু মুছে ফেলছি
+
+    selectedForOrder.forEach((p, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'selected-product-item';
+
+        // HTML তৈরি করছি
+        itemDiv.innerHTML = `
+            <img src="${p.img}" alt="${p.name}">
+            <div class="product-info">
+                <span class="product-name">${p.name}</span>
+                <div class="quantity-control">
+                    <span class="quantity-btn" onclick="changeQuantity(${index}, -1)">−</span>
+                    <span class="quantity-value">${p.quantity}</span>
+                    <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
+                </div>
+                <div class="price-info">
+                    <span class="current-price highlight-price text-xs">৳${p.price}</span>
+                    <span class="original-price-small">৳${p.originalPrice}</span>
+                </div>
+            </div>
+            <button class="remove-item" onclick="removeFromOrder(${index})">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+
+        container.appendChild(itemDiv);
+    });
+
+    updateTotal(); // টোটাল আপডেট
+}
         window.changeQuantity = function(index, change) {
-            if (selectedForOrder[index]) {
-                const newQty = selectedForOrder[index].quantity + change;
-                if (newQty >= 1 && newQty <= 10) {
-                    selectedForOrder[index].quantity = newQty;
-                    updateSelectedProducts();
-                }
-            }
-        };
-
+    if (selectedForOrder[index]) {
+        const newQty = selectedForOrder[index].quantity + change;
+        if (newQty >= 1 && newQty <= 10) {
+            selectedForOrder[index].quantity = newQty;
+            updateSelectedProducts(); // এটাই রি-রেন্ডার করবে
+        }
+    }
+};
         window.removeFromOrder = function(index) {
             selectedForOrder.splice(index, 1);
             updateSelectedProducts();
