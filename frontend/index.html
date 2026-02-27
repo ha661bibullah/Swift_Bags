@@ -1093,56 +1093,80 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 
         // New function - handle slider order click
         function handleSliderOrderClick(btn) {
-    const productData = JSON.parse(btn.dataset.product);
-    
-    if (!productData || !productData.id) {
-        showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোন পণ্য সংযুক্ত নেই', 'error');
-        return;
-    }
-    
-    const product = allProducts.find(p => p._id === productData.id);
-    if (!product) {
-        showPopup('দুঃখিত!', 'পণ্যটি খুঁজে পাওয়া যায়নি', 'error');
-        return;
-    }
-    
-    const variant = product.variants[0] || {};
-    if (variant.stock === 0) {
-        showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
-        return;
-    }
-    
-    const images = variant.images || [];
-    const imageUrl = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
-    
-    // চেক করুন ইতিমধ্যে আছে কিনা
-    const existingIndex = selectedForOrder.findIndex(p => 
-        p.id === product._id + '-0' && p.imageIndex === 0
-    );
-    
-    if (existingIndex === -1) {
-        const orderProduct = {
-            id: product._id + '-0',
-            name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-            img: imageUrl,
-            price: product.price,
-            originalPrice: product.originalPrice,
-            variantIndex: 0,
-            quantity: 1,
-            imageIndex: 0
-        };
-        selectedForOrder.push(orderProduct);
-    } else {
-        showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
-        return;
-    }
-    
-    updateSelectedProducts();
-    showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-    
-    document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-    window.location.hash = `#order-${product._id}-0`;
-}
+            const productData = JSON.parse(btn.dataset.product);
+            
+            // Check if product data exists
+            if (!productData || !productData.id) {
+                showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোন পণ্য সংযুক্ত নেই', 'error');
+                return;
+            }
+            
+            // Find product in allProducts
+            const product = allProducts.find(p => p._id === productData.id);
+            if (!product) {
+                showPopup('দুঃখিত!', 'পণ্যটি খুঁজে পাওয়া যায়নি', 'error');
+                return;
+            }
+            
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                return;
+            }
+            
+            // Set image URL
+            const images = variant.images || [];
+            const imageUrl = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+            
+            const orderProduct = {
+                id: product._id + '-0',
+                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                img: imageUrl,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1,
+                imageIndex: 0
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === product._id + '-0');
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            
+            // Scroll to order section
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Check if delivery area is selected
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    // Flash the delivery area
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove flash after animation
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    
+                    // Focus on delivery area
+                    deliveryArea.focus();
+                } else {
+                    // Focus on name input
+                    document.getElementById('name')?.focus();
+                }
+            }, 500);
+            
+            // Update URL hash for order
+            window.location.hash = `#order-${product._id}-0`;
+        }
+
         async function loadCategories() {
             try {
                 const response = await fetch(`${API_URL}/categories`);
