@@ -65,7 +65,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 
-
+TEST6624
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-84MDZDEKLS"></script>
 <script>
@@ -972,43 +972,40 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 
         // Auto add product to order from URL hash
         function autoAddToOrder(productId, imageIndex) {
-    const product = allProducts.find(p => p._id === productId);
-    if (!product) return;
-    
-    const variant = product.variants[0] || {};
-    if (variant.stock === 0) {
-        showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
-        return;
-    }
-    
-    const images = variant.images || [];
-    const imageUrl = images[imageIndex]?.url || images[0]?.url || '';
-    
-    // চেক করুন ইতিমধ্যে আছে কিনা
-    const existingIndex = selectedForOrder.findIndex(p => 
-        p.id === productId + '-0' && p.imageIndex === imageIndex
-    );
-    
-    if (existingIndex === -1) {
-        const orderProduct = {
-            id: productId + '-0',
-            name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-            img: imageUrl,
-            price: product.price,
-            originalPrice: product.originalPrice,
-            variantIndex: 0,
-            quantity: 1,
-            imageIndex: imageIndex
-        };
-        selectedForOrder.push(orderProduct);
-    } else {
-        showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
-        return;
-    }
-    
-    updateSelectedProducts();
-    showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-}
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) return;
+            
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                return;
+            }
+            
+            const images = variant.images || [];
+            const imageUrl = images[imageIndex]?.url || images[0]?.url || '';
+            
+            const orderProduct = {
+                id: productId + '-0',
+                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                img: imageUrl,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1,
+                imageIndex: imageIndex
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === productId + '-0');
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+        }
+
         // Highlight specific product and scroll to it
         function highlightProduct(productId) {
             const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
@@ -1407,59 +1404,68 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         }
 
         function handleOrderButtonClick(btn) {
-    const productId = btn.dataset.productId;
-    const imageIndex = parseInt(btn.dataset.imageIndex);
-    const imageUrl = btn.dataset.imageUrl;
-    
-    const product = allProducts.find(p => p._id === productId);
-    if (!product) return;
-    
-    const variant = product.variants[0] || {};
-    if (variant.stock === 0) {
-        showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
-        return;
-    }
-    
-    // ইউনিক আইডি তৈরি করুন
-    const uniqueId = `${productId}-0-${imageIndex}`; // productId + variantIndex + imageIndex
-    
-    // চেক করুন এই প্রোডাক্টটি আগে থেকে আছে কিনা
-    const existingIndex = selectedForOrder.findIndex(p => 
-        p.id === productId + '-0' && p.imageIndex === imageIndex
-    );
-    
-    if (existingIndex === -1) {
-        // নতুন পণ্য যোগ করুন
-        const orderProduct = {
-            id: productId + '-0',
-            name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-            img: imageUrl,
-            price: product.price,
-            originalPrice: product.originalPrice,
-            variantIndex: 0,
-            quantity: 1, // শুরুতে 1
-            imageIndex: imageIndex
-        };
-        selectedForOrder.push(orderProduct);
-    } else {
-        // আগে থাকলে quantity 1-এর বেশি হলে বাড়ান, না হলে কিছু করবেন না
-        if (selectedForOrder[existingIndex].quantity < 1) {
-            selectedForOrder[existingIndex].quantity = 1;
-        } else {
-            showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
-            return;
+            const productId = btn.dataset.productId;
+            const imageIndex = parseInt(btn.dataset.imageIndex);
+            const imageUrl = btn.dataset.imageUrl;
+            
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) return;
+            
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                return;
+            }
+            
+            const orderProduct = {
+                id: productId + '-0',
+                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                img: imageUrl,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1,
+                imageIndex: imageIndex
+            };
+            
+            const existing = selectedForOrder.find(p => p.id === productId + '-0');
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            
+            // Scroll to order section
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Check if delivery area is selected
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    // Flash the delivery area
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove flash after animation
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    
+                    // Focus on delivery area
+                    deliveryArea.focus();
+                } else {
+                    // Focus on name input
+                    document.getElementById('name')?.focus();
+                }
+            }, 500);
+            
+            // Update URL hash for order
+            window.location.hash = `#order-${productId}-${imageIndex}`;
         }
-    }
-    
-    updateSelectedProducts();
-    showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-    
-    // Scroll to order section
-    document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-    
-    // Update URL hash for order
-    window.location.hash = `#order-${productId}-${imageIndex}`;
-}
+
         function renderTrending() {
             const container = document.getElementById('trendingItems');
             if (!container) return;
@@ -1630,36 +1636,49 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         }
 
         function handleTrendingOrder(btn) {
-    const product = JSON.parse(btn.dataset.product);
-    if (product.variantStock === 0) {
-        showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
-        return;
-    }
-    
-    // চেক করুন ইতিমধ্যে আছে কিনা
-    const existingIndex = selectedForOrder.findIndex(p => p.id === product.id);
-    
-    if (existingIndex === -1) {
-        const orderProduct = {
-            id: product.id,
-            name: product.name,
-            img: product.img,
-            price: product.price,
-            originalPrice: product.originalPrice,
-            variantIndex: 0,
-            quantity: 1,
-            imageIndex: 0
-        };
-        selectedForOrder.push(orderProduct);
-    } else {
-        showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
-        return;
-    }
-    
-    updateSelectedProducts();
-    showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-    document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-}
+            const product = JSON.parse(btn.dataset.product);
+            if (product.variantStock === 0) {
+                showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
+                return;
+            }
+            const orderProduct = {
+                id: product.id,
+                name: product.name,
+                img: product.img,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                variantIndex: 0,
+                quantity: 1,
+                imageIndex: 0
+            };
+            const existing = selectedForOrder.find(p => p.id === product.id);
+            if (!existing) {
+                selectedForOrder.push(orderProduct);
+            } else {
+                existing.quantity += 1;
+            }
+            updateSelectedProducts();
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            
+            // Check if delivery area is selected
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                    deliveryArea.focus();
+                } else {
+                    document.getElementById('name')?.focus();
+                }
+            }, 500);
+            
+            window.location.hash = `#order-${product.id}-0`;
+        }
+
         async function handleOrderSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('name').value.trim();
