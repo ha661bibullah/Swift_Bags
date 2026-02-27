@@ -65,7 +65,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 
-TEST6624
+
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-84MDZDEKLS"></script>
 <script>
@@ -984,26 +984,30 @@ TEST6624
             const images = variant.images || [];
             const imageUrl = images[imageIndex]?.url || images[0]?.url || '';
             
-            const orderProduct = {
-                id: productId + '-0',
-                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-                img: imageUrl,
-                price: product.price,
-                originalPrice: product.originalPrice,
-                variantIndex: 0,
-                quantity: 1,
-                imageIndex: imageIndex
-            };
+            // Check if product already exists in order
+            const existingIndex = selectedForOrder.findIndex(p => 
+                p.id === productId + '-0' && p.imageIndex === imageIndex
+            );
             
-            const existing = selectedForOrder.find(p => p.id === productId + '-0');
-            if (!existing) {
+            if (existingIndex === -1) {
+                const orderProduct = {
+                    id: productId + '-0',
+                    name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                    img: imageUrl,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    variantIndex: 0,
+                    quantity: 1,
+                    imageIndex: imageIndex
+                };
                 selectedForOrder.push(orderProduct);
+                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             } else {
-                existing.quantity += 1;
+                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                return;
             }
             
             updateSelectedProducts();
-            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
         }
 
         // Highlight specific product and scroll to it
@@ -1115,26 +1119,30 @@ TEST6624
             const images = variant.images || [];
             const imageUrl = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
             
-            const orderProduct = {
-                id: product._id + '-0',
-                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-                img: imageUrl,
-                price: product.price,
-                originalPrice: product.originalPrice,
-                variantIndex: 0,
-                quantity: 1,
-                imageIndex: 0
-            };
+            // Check if product already exists in order
+            const existingIndex = selectedForOrder.findIndex(p => 
+                p.id === product._id + '-0' && p.imageIndex === 0
+            );
             
-            const existing = selectedForOrder.find(p => p.id === product._id + '-0');
-            if (!existing) {
+            if (existingIndex === -1) {
+                const orderProduct = {
+                    id: product._id + '-0',
+                    name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                    img: imageUrl,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    variantIndex: 0,
+                    quantity: 1,
+                    imageIndex: 0
+                };
                 selectedForOrder.push(orderProduct);
+                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             } else {
-                existing.quantity += 1;
+                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                return;
             }
             
             updateSelectedProducts();
-            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             
             // Scroll to order section
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
@@ -1336,10 +1344,10 @@ TEST6624
                             </div>
                             
                             <div class="flex items-center gap-2 mt-1">
-    <span class="highlight-price">৳${product.price}</span>
-    ${product.originalPrice > product.price ? 
-        `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-</div>
+                                <span class="highlight-price">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
+                            </div>
                             
                             
                             <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
@@ -1417,26 +1425,30 @@ TEST6624
                 return;
             }
             
-            const orderProduct = {
-                id: productId + '-0',
-                name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-                img: imageUrl,
-                price: product.price,
-                originalPrice: product.originalPrice,
-                variantIndex: 0,
-                quantity: 1,
-                imageIndex: imageIndex
-            };
+            // Check if product already exists in order
+            const existingIndex = selectedForOrder.findIndex(p => 
+                p.id === productId + '-0' && p.imageIndex === imageIndex
+            );
             
-            const existing = selectedForOrder.find(p => p.id === productId + '-0');
-            if (!existing) {
+            if (existingIndex === -1) {
+                const orderProduct = {
+                    id: productId + '-0',
+                    name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                    img: imageUrl,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    variantIndex: 0,
+                    quantity: 1,
+                    imageIndex: imageIndex
+                };
                 selectedForOrder.push(orderProduct);
+                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             } else {
-                existing.quantity += 1;
+                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                return;
             }
             
             updateSelectedProducts();
-            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             
             // Scroll to order section
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
@@ -1509,10 +1521,10 @@ TEST6624
                                 <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
                             </div>
                            <div class="flex items-center gap-2 mt-1">
-    <span class="highlight-price">৳${product.price}</span>
-    ${product.originalPrice > product.price ? 
-        `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-</div>
+                                <span class="highlight-price">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? 
+                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
+                            </div>
                             ${discountText ? `
                                 <p class="text-xs text-green-600 font-bold">${discountText} ${discountAmount > 0 ? `(সাশ্রয় ৳${discountAmount})` : ''}</p>
                             ` : ''}
@@ -1641,24 +1653,29 @@ TEST6624
                 showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
                 return;
             }
-            const orderProduct = {
-                id: product.id,
-                name: product.name,
-                img: product.img,
-                price: product.price,
-                originalPrice: product.originalPrice,
-                variantIndex: 0,
-                quantity: 1,
-                imageIndex: 0
-            };
-            const existing = selectedForOrder.find(p => p.id === product.id);
-            if (!existing) {
+            
+            // Check if product already exists in order
+            const existingIndex = selectedForOrder.findIndex(p => p.id === product.id);
+            
+            if (existingIndex === -1) {
+                const orderProduct = {
+                    id: product.id,
+                    name: product.name,
+                    img: product.img,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    variantIndex: 0,
+                    quantity: 1,
+                    imageIndex: 0
+                };
                 selectedForOrder.push(orderProduct);
+                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             } else {
-                existing.quantity += 1;
+                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                return;
             }
+            
             updateSelectedProducts();
-            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
             
             // Check if delivery area is selected
@@ -1799,10 +1816,14 @@ TEST6624
                 updateTotal();
                 return;
             }
-            container.innerHTML = '';
+
+            container.innerHTML = ''; // Clear previous content
+
             selectedForOrder.forEach((p, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'selected-product-item';
+
+                // Create HTML
                 itemDiv.innerHTML = `
                     <img src="${p.img}" alt="${p.name}">
                     <div class="product-info">
@@ -1813,7 +1834,7 @@ TEST6624
                             <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
                         </div>
                         <div class="price-info">
-                           <span class="current-price highlight-price text-xs">৳${p.price}</span>
+                            <span class="current-price highlight-price text-xs">৳${p.price}</span>
                             <span class="original-price-small">৳${p.originalPrice}</span>
                         </div>
                     </div>
@@ -1821,9 +1842,11 @@ TEST6624
                         <i class="fas fa-trash"></i>
                     </button>
                 `;
+
                 container.appendChild(itemDiv);
             });
-            updateTotal();
+
+            updateTotal(); // Update total
         }
 
         window.changeQuantity = function(index, change) {
@@ -1831,7 +1854,7 @@ TEST6624
                 const newQty = selectedForOrder[index].quantity + change;
                 if (newQty >= 1 && newQty <= 10) {
                     selectedForOrder[index].quantity = newQty;
-                    updateSelectedProducts();
+                    updateSelectedProducts(); // This will re-render
                 }
             }
         };
@@ -1902,6 +1925,10 @@ TEST6624
             document.getElementById('popup').classList.remove('active');
             document.getElementById('popupOverlay').classList.remove('active');
         }
+
+        // Clear selectedForOrder for testing (remove this in production)
+        // selectedForOrder = [];
+        // updateSelectedProducts();
     </script>
 </body>
 </html>
