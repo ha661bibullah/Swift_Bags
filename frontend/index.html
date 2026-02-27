@@ -65,6 +65,7 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 
+TEST6624
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-84MDZDEKLS"></script>
 <script>
@@ -866,6 +867,8 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
         let allTrending = [];
         let currentSlide = 0;
         let slideInterval;
+        // Flag to ignore hash changes caused by our own order button clicks
+        let _ignoreHashOrder = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadAllData();
@@ -907,6 +910,11 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             }
             // Check if it's an order hash with specific image (starts with 'order-')
             else if (hashValue.startsWith('order-')) {
+                // If we just set this hash from a click, ignore it to avoid double addition
+                if (_ignoreHashOrder) {
+                    _ignoreHashOrder = false;
+                    return;
+                }
                 const [productId, imageIndex] = hashValue.replace('order-', '').split('-');
                 if (productId && imageIndex !== undefined) {
                     handleOrderHash(productId, parseInt(imageIndex));
@@ -1156,8 +1164,11 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             updateSelectedProducts();
             showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             
-            // Update URL hash for order
+            // Update URL hash for order, but ignore the resulting hash change
+            _ignoreHashOrder = true;
             window.location.hash = `#order-${product._id}-0`;
+            // Reset the flag after a short time in case something goes wrong
+            setTimeout(() => { _ignoreHashOrder = false; }, 1000);
         }
 
         async function loadCategories() {
@@ -1425,10 +1436,13 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             }
             
             updateSelectedProducts();
-            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে။');
+            showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             
-            // Update URL hash for order
+            // Update URL hash for order, but ignore the resulting hash change
+            _ignoreHashOrder = true;
             window.location.hash = `#order-${productId}-${imageIndex}`;
+            // Reset the flag after a short time
+            setTimeout(() => { _ignoreHashOrder = false; }, 1000);
         }
 
         function renderTrending() {
@@ -1625,7 +1639,10 @@ src="https://www.facebook.com/tr?id=1171761751445482&ev=PageView&noscript=1"
             updateSelectedProducts();
             showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
             
+            // Update URL hash for order, but ignore the resulting hash change
+            _ignoreHashOrder = true;
             window.location.hash = `#order-${product.id}-0`;
+            setTimeout(() => { _ignoreHashOrder = false; }, 1000);
         }
 
         async function handleOrderSubmit(e) {
