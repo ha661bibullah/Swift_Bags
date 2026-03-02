@@ -774,7 +774,18 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
         let popupTimeout = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadAllData();
+            // প্রথমে প্রোডাক্ট এবং ক্যাটাগরি লোড করুন (সমান্তরালে)
+            loadCategories(); // ক্যাটাগরি API কল শুরু
+            loadProducts();   // প্রোডাক্ট API কল শুরু → রেন্ডার হবে সাথে সাথে
+            
+            // বাকি ডাটা ব্যাকগ্রাউন্ডে লোড করুন (প্রোডাক্ট দেখানোর পর)
+            setTimeout(() => {
+                loadSliders();
+                loadTrending();
+                loadReviews();
+                loadContent();
+            }, 100); // ছোট ডেলেও দেওয়া যেতে পারে, তবে এগুলোও প্যারালালে চলবে
+
             setupEventListeners();
             checkHashAndScroll();
             window.addEventListener('hashchange', checkHashAndScroll);
@@ -944,17 +955,7 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
             }
         }
 
-        async function loadAllData() {
-            await Promise.all([
-                loadSliders(),
-                loadCategories(),
-                loadProducts(),
-                loadTrending(),
-                loadReviews(),
-                loadContent()
-            ]);
-        }
-
+        // আলাদা আলাদা লোড ফাংশন – এগুলো এখন একসাথে চলবে
         async function loadSliders() {
             try {
                 const response = await fetch(`${API_URL}/sliders`);
@@ -965,6 +966,8 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                 }
             } catch (error) {
                 console.error('Error loading sliders:', error);
+            } finally {
+                document.getElementById('sliderLoader')?.remove();
             }
         }
 
@@ -1092,12 +1095,18 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                 const data = await response.json();
                 if (data.success) {
                     allProducts = data.data;
-                    renderProducts();
+                    renderProducts();  // প্রোডাক্ট পাওয়া মাত্রই রেন্ডার
                     updateStructuredData();
                     checkHashAndScroll();
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
+            } finally {
+                // loader সরিয়ে ফেলুন (যদি প্রোডাক্ট না আসে)
+                const grid = document.getElementById('productGrid');
+                if (grid && allProducts.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
+                }
             }
         }
 
@@ -1171,7 +1180,11 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
             grid.innerHTML = allProducts.map(product => {
                 const variant = product.variants[0] || {};
                 const images = variant.images || [];
-                const primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+                // Cloudinary ইমেজ অপটিমাইজ করুন (w=300)
+                let primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+                if (primaryImage.includes('cloudinary.com')) {
+                    primaryImage = primaryImage.replace('/upload/', '/upload/w_300/');
+                }
                 const hasStock = variant.stock > 0;
                 const discount = variant.discount || '';
 
@@ -1187,15 +1200,20 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
 
                 const thumbnailsHtml = images.length > 1 ? `
                     <div class="thumbnail-container px-2 pb-1">
-                        ${images.map((img, idx) => `
-                            <img src="${img.url}" alt="${product.name} thumbnail" 
+                        ${images.map((img, idx) => {
+                            let thumbUrl = img.url;
+                            if (thumbUrl.includes('cloudinary.com')) {
+                                thumbUrl = thumbUrl.replace('/upload/', '/upload/w_60/');
+                            }
+                            return `
+                            <img src="${thumbUrl}" alt="${product.name} thumbnail" 
                                  class="thumbnail ${idx === 0 ? 'active' : ''}" 
                                  data-product-id="${product._id}" 
                                  data-variant-index="0" 
                                  data-image-index="${idx}"
                                  data-image-url="${img.url}"
                                  onclick="event.stopPropagation(); handleThumbnailClick(this)">
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 ` : '';
 
@@ -1367,7 +1385,10 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
             container.innerHTML = allTrending.map(product => {
                 const variant = product.variants[0] || {};
                 const images = variant.images || [];
-                const image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
+                let image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
+                if (image.includes('cloudinary.com')) {
+                    image = image.replace('/upload/', '/upload/w_200/');
+                }
                 
                 let discountText = '';
                 if (variant.discount) {
@@ -1382,7 +1403,7 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                 return `
                     <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
                          onclick="window.location.hash='#product-${product._id}'">
-                        <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover">
+                        <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover" loading="lazy">
                         <div class="flex-1">
                             <h4 class="font-bold text-primary">${product.name}</h4>
                             <div class="product-stats">
