@@ -12,14 +12,14 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://swiftbags.shop/">
-    <meta property="og:title" id="ogTitle" content="Swift Bags - আপনার স্বপ্নের ব্যাগ">
+    <meta property="og:title" content="Swift Bags - আপনার স্বপ্নের ব্যাগ">
     <meta property="og:description" content="প্রিমিয়াম কোয়ালিটির ব্যাগ ও এক্সেসরিজ। অর্ডার করুন এখনই।">
     <meta property="og:image" content="https://swiftbags.shop/img/og-image.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://swiftbags.shop/">
-    <meta property="twitter:title" id="twitterTitle" content="Swift Bags - আপনার স্বপ্নের ব্যাগ">
+    <meta property="twitter:title" content="Swift Bags - আপনার স্বপ্নের ব্যাগ">
     <meta property="twitter:description" content="প্রিমিয়াম কোয়ালিটির ব্যাগ ও এক্সেসরিজ। অর্ডার করুন এখনই।">
     <meta property="twitter:image" content="https://swiftbags.shop/img/og-image.jpg">
 
@@ -572,6 +572,67 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
         .main-image {
             transition: opacity 0.2s ease-in-out;
         }
+
+        /* ========== স্কেলটন স্টাইল ========== */
+        .skeleton-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+        .skeleton-image {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s linear infinite;
+        }
+        .skeleton-line {
+            height: 1rem;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 0.5rem 1rem;
+        }
+        .skeleton-line.short { width: 60%; }
+        .skeleton-line.medium { width: 80%; }
+        .skeleton-line.long { width: 100%; }
+        .skeleton-button {
+            height: 2.5rem;
+            background: #e0e0e0;
+            border-radius: 8px;
+            margin: 0.5rem 1rem 1rem;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .category-skeleton {
+            display: inline-block;
+            width: 80px;
+            height: 36px;
+            background: #e0e0e0;
+            border-radius: 30px;
+            margin: 0 4px;
+        }
+        .slider-skeleton {
+            width: 100%;
+            height: 400px;
+            background: #e0e0e0;
+            border-radius: 16px;
+        }
+        .review-skeleton {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .trending-skeleton {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -617,7 +678,7 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
         <div class="container-custom">
             <div class="relative rounded-2xl overflow-hidden shadow-xl" style="height: 400px;">
                 <div id="slider" class="relative h-full">
-                    <div class="loader" id="sliderLoader"></div>
+                    <!-- স্লাইডার স্কেলটন JS দিয়ে প্রতিস্থাপিত হবে -->
                 </div>
                 <button id="prevSlide" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-left"></i></button>
                 <button id="nextSlide" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-primary z-20"><i class="fas fa-chevron-right"></i></button>
@@ -630,10 +691,10 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
         <div class="container-custom">
             <h2 class="text-2xl md:text-3xl font-bold text-primary mb-4 text-center">আমাদের পণ্য</h2>
             <div id="categoryButtons" class="flex justify-center gap-2 md:gap-4 mb-6 overflow-x-auto pb-2 px-2">
-                <div class="loader" style="width: 20px; height: 20px;"></div>
+                <!-- ক্যাটাগরি স্কেলটন JS দিয়ে প্রতিস্থাপিত হবে -->
             </div>
             <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                <div class="loader"></div>
+                <!-- প্রোডাক্ট স্কেলটন JS দিয়ে প্রতিস্থাপিত হবে -->
             </div>
         </div>
     </section>
@@ -685,7 +746,7 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                 <div class="hidden md:block md:w-1/2 bg-primary p-6 rounded-2xl shadow-lg">
                     <h3 class="text-2xl font-bold text-gold mb-4">ট্রেন্ডিং এখন</h3>
                     <div id="trendingItems" class="trending-slider space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                        <div class="loader"></div>
+                        <!-- ট্রেন্ডিং স্কেলটন JS দিয়ে প্রতিস্থাপিত হবে -->
                     </div>
                 </div>
             </div>
@@ -721,7 +782,7 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                 <div class="md:w-1/2 bg-light p-4 md:p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">গ্রাহক রিভিউ</h3>
                     <div id="customerReviews" class="space-y-4 max-h-96 overflow-y-auto pr-2">
-                        <div class="loader"></div>
+                        <!-- রিভিউ স্কেলটন JS দিয়ে প্রতিস্থাপিত হবে -->
                     </div>
                 </div>
             </div>
@@ -751,236 +812,279 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
     </div>
 
     <script>
-        // API Configuration
-        const API_URL = 'https://swift-bags.onrender.com/api';
-        
-        // State
+        // ==================== কনফিগারেশন ====================
+        const API_URL = (() => {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:5000/api';
+            }
+            return 'https://swift-bags.onrender.com/api';
+        })();
+
+        console.log('API URL:', API_URL);
+
+        // ==================== ক্যাশ ম্যানেজার ====================
+        const cache = {
+            get(key) {
+                try {
+                    const item = localStorage.getItem(key);
+                    if (!item) return null;
+                    const { data, expiry } = JSON.parse(item);
+                    if (expiry < Date.now()) {
+                        localStorage.removeItem(key);
+                        return null;
+                    }
+                    return data;
+                } catch (e) {
+                    return null;
+                }
+            },
+            set(key, data, ttl = 5 * 60 * 1000) { // 5 মিনিট
+                try {
+                    const item = {
+                        data,
+                        expiry: Date.now() + ttl
+                    };
+                    localStorage.setItem(key, JSON.stringify(item));
+                } catch (e) {
+                    console.warn('Cache write failed', e);
+                }
+            }
+        };
+
+        // ==================== ইমেজ অপটিমাইজেশন ====================
+        function optimizeImageUrl(url, width = 300) {
+            if (!url || !url.includes('cloudinary.com')) return url;
+            return url.replace('/upload/', `/upload/w_${width},f_auto/`);
+        }
+
+        // ==================== গ্লোবাল ভেরিয়েবল ====================
         let selectedForOrder = [];
         let currentDeliveryCharge = 0;
         let allProducts = [];
         let allCategories = [];
         let allSliders = [];
         let allTrending = [];
+        let allReviews = [];
+        let contentData = {};
         let currentSlide = 0;
         let slideInterval;
-        
+
         // Processing flags
         let isOrderProcessing = false;
         let isTrendingProcessing = false;
         let isSliderProcessing = false;
         let isAutoProcessing = false;
-        
+
         // Popup timeout
         let popupTimeout = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // প্রথমে প্রোডাক্ট এবং ক্যাটাগরি লোড করুন (সমান্তরালে)
-            loadCategories(); // ক্যাটাগরি API কল শুরু
-            loadProducts();   // প্রোডাক্ট API কল শুরু → রেন্ডার হবে সাথে সাথে
-            
-            // বাকি ডাটা ব্যাকগ্রাউন্ডে লোড করুন (প্রোডাক্ট দেখানোর পর)
-            setTimeout(() => {
-                loadSliders();
-                loadTrending();
-                loadReviews();
-                loadContent();
-            }, 100); // ছোট ডেলেও দেওয়া যেতে পারে, তবে এগুলোও প্যারালালে চলবে
+        // ==================== স্কেলটন লোডার ফাংশন ====================
+        function showSkeletonLoaders() {
+            // ক্যাটাগরি স্কেলটন
+            document.getElementById('categoryButtons').innerHTML = `
+                <div class="category-skeleton"></div>
+                <div class="category-skeleton"></div>
+                <div class="category-skeleton"></div>
+                <div class="category-skeleton"></div>
+            `;
 
-            setupEventListeners();
-            checkHashAndScroll();
-            window.addEventListener('hashchange', checkHashAndScroll);
-        });
-
-        // Popup functions
-        function showPopup(title, message, type, extraMessage = '') {
-            // Close any existing popup
-            if (document.getElementById('popup').classList.contains('active')) {
-                closePopup();
-                if (popupTimeout) {
-                    clearTimeout(popupTimeout);
-                    popupTimeout = null;
-                }
+            // প্রোডাক্ট গ্রিড স্কেলটন (৮টি কার্ড)
+            let productGrid = document.getElementById('productGrid');
+            productGrid.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                productGrid.innerHTML += `
+                    <div class="skeleton-card">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-line short"></div>
+                        <div class="skeleton-line medium"></div>
+                        <div class="skeleton-line long"></div>
+                        <div class="skeleton-button"></div>
+                    </div>
+                `;
             }
-            
-            // Small delay to ensure previous popup is closed
-            setTimeout(() => {
-                const popupTitle = document.getElementById('popupTitle');
-                const popupMessage = document.getElementById('popupMessage');
-                const popupExtraMessage = document.getElementById('popupExtraMessage');
-                
-                popupTitle.innerText = title;
-                popupMessage.innerText = message;
-                popupExtraMessage.innerText = extraMessage;
-                popupTitle.style.color = type === 'success' ? '#10b981' : '#ef4444';
-                
-                document.getElementById('popup').classList.add('active');
-                document.getElementById('popupOverlay').classList.add('active');
-                
-                // Auto close after 3 seconds
-                popupTimeout = setTimeout(() => {
-                    closePopup();
-                    popupTimeout = null;
-                }, 3000);
-            }, 100);
+
+            // স্লাইডার স্কেলটন
+            document.getElementById('slider').innerHTML = `<div class="slider-skeleton"></div>`;
+
+            // ট্রেন্ডিং স্কেলটন
+            let trendingDiv = document.getElementById('trendingItems');
+            trendingDiv.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                trendingDiv.innerHTML += `
+                    <div class="trending-skeleton">
+                        <div class="flex items-center space-x-4">
+                            <div class="skeleton-image w-16 h-16 rounded-lg"></div>
+                            <div class="flex-1">
+                                <div class="skeleton-line short"></div>
+                                <div class="skeleton-line medium"></div>
+                                <div class="skeleton-line long"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // রিভিউ স্কেলটন
+            document.getElementById('customerReviews').innerHTML = `
+                <div class="review-skeleton">
+                    <div class="skeleton-line short"></div>
+                    <div class="skeleton-line medium"></div>
+                    <div class="skeleton-line long"></div>
+                </div>
+                <div class="review-skeleton">
+                    <div class="skeleton-line short"></div>
+                    <div class="skeleton-line medium"></div>
+                    <div class="skeleton-line long"></div>
+                </div>
+            `;
         }
 
-        function closePopup() {
-            document.getElementById('popup').classList.remove('active');
-            document.getElementById('popupOverlay').classList.remove('active');
-            if (popupTimeout) {
-                clearTimeout(popupTimeout);
-                popupTimeout = null;
-            }
+        // ==================== ডাটা অ্যাপ্লাই ফাংশন ====================
+        function applyInitialData(data) {
+            allProducts = data.products || [];
+            allCategories = data.categories || [];
+            allSliders = data.sliders || [];
+            allReviews = data.reviews || [];
+            contentData = data.content || {};
+
+            // ক্যাটাগরি রেন্ডার
+            renderCategories();
+
+            // প্রোডাক্ট রেন্ডার (সমস্ত প্রোডাক্ট)
+            renderProducts(allProducts);
+
+            // স্লাইডার রেন্ডার
+            renderSliders();
+
+            // ট্রেন্ডিং রেন্ডার
+            const trending = allProducts.filter(p => p.trending).slice(0, 5);
+            renderTrending(trending);
+
+            // রিভিউ রেন্ডার
+            renderReviews();
+
+            // কন্টেন্ট আপডেট
+            updateContent();
         }
 
-        // Check hash and scroll
-        function checkHashAndScroll() {
-            const hash = window.location.hash;
-            if (!hash) return;
-            
-            const hashValue = hash.substring(1);
-            
-            if (hashValue.startsWith('product-')) {
-                const productId = hashValue.replace('product-', '');
-                highlightProduct(productId);
-            }
-            else if (hashValue.startsWith('image-')) {
-                const [productId, imageIndex] = hashValue.replace('image-', '').split('-');
-                if (productId && imageIndex !== undefined) {
-                    highlightProductImage(productId, parseInt(imageIndex));
-                }
-            }
-            else if (hashValue.startsWith('order-')) {
-                const [productId, imageIndex] = hashValue.replace('order-', '').split('-');
-                if (productId && imageIndex !== undefined) {
-                    handleOrderHash(productId, parseInt(imageIndex));
-                }
-            }
-            else {
-                const element = document.getElementById(hashValue);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                }
-            }
-        }
+        // ==================== ডাটা লোড (প্রথমবার) ====================
+        async function loadInitialData() {
+            // প্রথমে স্কেলটন দেখাও
+            showSkeletonLoaders();
 
-        function handleOrderHash(productId, imageIndex) {
-            const orderSection = document.getElementById('order');
-            if (orderSection) {
-                orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
-                setTimeout(() => {
-                    const orderForm = document.getElementById('orderFormContainer');
-                    if (orderForm) {
-                        orderForm.classList.add('order-form-flash');
-                        setTimeout(() => {
-                            orderForm.classList.remove('order-form-flash');
-                        }, 3000);
-                    }
-                    
-                    autoAddToOrder(productId, imageIndex);
-                }, 500);
-            }
-        }
-
-        function autoAddToOrder(productId, imageIndex) {
-            if (isAutoProcessing) return;
-            
-            isAutoProcessing = true;
-            
-            const product = allProducts.find(p => p._id === productId);
-            if (!product) {
-                isAutoProcessing = false;
+            // ক্যাশ চেক
+            const cached = cache.get('swiftbags_initial');
+            if (cached) {
+                applyInitialData(cached);
+                // পটভূমিতে নতুন ডাটা ফেচ
+                fetch(`${API_URL}/initial-data`)
+                    .then(res => res.json())
+                    .then(response => {
+                        if (response.success) {
+                            cache.set('swiftbags_initial', response.data);
+                            applyInitialData(response.data);
+                        }
+                    })
+                    .catch(err => console.error('Background refresh failed', err));
                 return;
             }
-            
-            const variant = product.variants[0] || {};
-            if (variant.stock === 0) {
-                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
-                isAutoProcessing = false;
-                return;
-            }
-            
-            const images = variant.images || [];
-            const imageUrl = images[imageIndex]?.url || images[0]?.url || '';
-            
-            const existingIndex = selectedForOrder.findIndex(p => 
-                p.id === productId + '-0' && p.imageIndex === imageIndex
-            );
-            
-            if (existingIndex === -1) {
-                const orderProduct = {
-                    id: productId + '-0',
-                    name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-                    img: imageUrl,
-                    price: product.price,
-                    originalPrice: product.originalPrice,
-                    variantIndex: 0,
-                    quantity: 1,
-                    imageIndex: imageIndex
-                };
-                selectedForOrder.push(orderProduct);
-                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-            }
-            
-            updateSelectedProducts();
-            
-            setTimeout(() => {
-                isAutoProcessing = false;
-            }, 1000);
-        }
 
-        function highlightProduct(productId) {
-            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
-            if (productCard) {
-                productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                productCard.classList.add('ring-4', 'ring-gold', 'ring-opacity-50');
-                setTimeout(() => {
-                    productCard.classList.remove('ring-4', 'ring-gold', 'ring-opacity-50');
-                }, 3000);
-            }
-        }
-
-        function highlightProductImage(productId, imageIndex) {
-            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
-            if (productCard) {
-                productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                const thumbnail = productCard.querySelector(`.thumbnail[data-image-index="${imageIndex}"]`);
-                if (thumbnail) {
-                    setTimeout(() => {
-                        handleThumbnailClick(thumbnail);
-                    }, 500);
-                }
-            }
-        }
-
-        // আলাদা আলাদা লোড ফাংশন – এগুলো এখন একসাথে চলবে
-        async function loadSliders() {
+            // ক্যাশ না থাকলে API কল
             try {
-                const response = await fetch(`${API_URL}/sliders`);
-                const data = await response.json();
-                if (data.success) {
-                    allSliders = data.data;
-                    renderSliders();
+                const res = await fetch(`${API_URL}/initial-data`);
+                const response = await res.json();
+                if (response.success) {
+                    cache.set('swiftbags_initial', response.data);
+                    applyInitialData(response.data);
+                } else {
+                    console.error('API error:', response.message);
                 }
             } catch (error) {
-                console.error('Error loading sliders:', error);
-            } finally {
-                document.getElementById('sliderLoader')?.remove();
+                console.error('Initial data load error:', error);
+                document.getElementById('productGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-500">ডেটা লোড করতে সমস্যা হয়েছে। পৃষ্ঠা রিফ্রেশ করুন।</div>';
             }
+        }
+
+        // ==================== রেন্ডার ফাংশন ====================
+        function renderCategories() {
+            const container = document.getElementById('categoryButtons');
+            if (!container) return;
+            container.innerHTML = `
+                <button class="cat-btn active" data-category="all">সকল পণ্য</button>
+                ${allCategories.map(cat => `
+                    <button class="cat-btn" data-category="${cat.slug}">${cat.nameBn}</button>
+                `).join('')}
+            `;
+            // ইভেন্ট লিসেনার পুনরায় অ্যাটাচ করুন
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const category = this.dataset.category;
+                    if (category === 'all') {
+                        renderProducts(allProducts);
+                    } else {
+                        const filtered = allProducts.filter(p => p.categorySlug === category);
+                        renderProducts(filtered);
+                    }
+                });
+            });
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('productGrid');
+            if (!grid) return;
+
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য নেই</div>';
+                return;
+            }
+
+            grid.innerHTML = products.map(product => {
+                const variant = product.variants[0] || {};
+                const images = variant.images || [];
+                let primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300';
+                primaryImage = optimizeImageUrl(primaryImage, 300);
+                const hasStock = variant.stock > 0;
+                const discount = variant.discount || '';
+
+                return `
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" data-product-id="${product._id}">
+                        ${discount ? `<span class="product-badge">${discount}</span>` : ''}
+                        <div class="product-image-container" onclick="window.location.hash='#product-${product._id}'">
+                            <img src="${primaryImage}" alt="${product.name}" class="w-full h-full object-cover" loading="lazy">
+                        </div>
+                        <div class="p-2">
+                            <h4 class="font-bold text-primary text-sm">${product.name}</h4>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-gold font-bold">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? `<span class="original-price">৳${product.originalPrice}</span>` : ''}
+                            </div>
+                            <button class="order-now-btn w-full text-xs py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : ''}"
+                                    data-product-id="${product._id}" 
+                                    data-variant-index="0"
+                                    data-image-index="0"
+                                    data-image-url="${primaryImage}"
+                                    ${!hasStock ? 'disabled' : ''}
+                                    onclick="event.stopPropagation(); handleOrderButtonClick(this)">
+                                ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function renderSliders() {
             const sliderContainer = document.getElementById('slider');
             if (!sliderContainer) return;
             if (allSliders.length === 0) {
-                sliderContainer.innerHTML = '<div class="text-center text-white p-12">কোন স্লাইডার নেই</div>';
+                sliderContainer.innerHTML = '<div class="text-center p-12">কোন স্লাইডার নেই</div>';
                 return;
             }
             sliderContainer.innerHTML = allSliders.map((slider, index) => `
                 <div class="slider-item absolute inset-0 ${index === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 flex items-center justify-between p-6 md:p-12" 
-                     style="background-image: url('${slider.image}'); background-size: cover; background-position: center;"
+                     style="background-image: url('${optimizeImageUrl(slider.image, 1200)}'); background-size: cover; background-position: center;"
                      onclick="window.location.hash='#home'">
                     <div class="relative z-10 text-white max-w-lg">
                         <h2 class="text-2xl md:text-4xl font-bold text-gold">${slider.title}</h2>
@@ -998,430 +1102,42 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
             startSlideshow();
         }
 
-        function handleSliderOrderClick(btn) {
-            if (isSliderProcessing) return;
-            
-            isSliderProcessing = true;
-            
-            const productData = JSON.parse(btn.dataset.product);
-            
-            if (!productData || !productData.id) {
-                showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোন পণ্য সংযুক্ত নেই', 'error');
-                isSliderProcessing = false;
-                return;
-            }
-            
-            const product = allProducts.find(p => p._id === productData.id);
-            if (!product) {
-                showPopup('দুঃখিত!', 'পণ্যটি খুঁজে পাওয়া যায়নি', 'error');
-                isSliderProcessing = false;
-                return;
-            }
-            
-            const variant = product.variants[0] || {};
-            if (variant.stock === 0) {
-                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
-                isSliderProcessing = false;
-                return;
-            }
-            
-            const images = variant.images || [];
-            const imageUrl = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
-            
-            const existingIndex = selectedForOrder.findIndex(p => 
-                p.id === product._id + '-0' && p.imageIndex === 0
-            );
-            
-            if (existingIndex === -1) {
-                const orderProduct = {
-                    id: product._id + '-0',
-                    name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-                    img: imageUrl,
-                    price: product.price,
-                    originalPrice: product.originalPrice,
-                    variantIndex: 0,
-                    quantity: 1,
-                    imageIndex: 0
-                };
-                selectedForOrder.push(orderProduct);
-                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-            } else {
-                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
-                isSliderProcessing = false;
-                return;
-            }
-            
-            updateSelectedProducts();
-            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-            
-            setTimeout(() => {
-                const deliveryArea = document.getElementById('deliveryArea');
-                if (!deliveryArea.value) {
-                    deliveryArea.classList.add('delivery-flash');
-                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    setTimeout(() => {
-                        deliveryArea.classList.remove('delivery-flash');
-                    }, 3000);
-                }
-            }, 500);
-            
-            window.location.hash = `#order-${product._id}-0`;
-            
-            setTimeout(() => {
-                isSliderProcessing = false;
-            }, 1000);
+        function startSlideshow() {
+            const slides = document.querySelectorAll('.slider-item');
+            if (slides.length === 0) return;
+            slideInterval = setInterval(() => moveSlide(1), 5000);
         }
 
-        async function loadCategories() {
-            try {
-                const response = await fetch(`${API_URL}/categories`);
-                const data = await response.json();
-                if (data.success) {
-                    allCategories = data.data;
-                    renderCategories();
-                }
-            } catch (error) {
-                console.error('Error loading categories:', error);
-            }
+        function moveSlide(direction) {
+            const slides = document.querySelectorAll('.slider-item');
+            if (slides.length === 0) return;
+            slides[currentSlide].style.opacity = '0';
+            currentSlide = (currentSlide + direction + slides.length) % slides.length;
+            slides[currentSlide].style.opacity = '1';
         }
 
-        async function loadProducts(category = 'all') {
-            try {
-                let url = `${API_URL}/products`;
-                if (category !== 'all') {
-                    url += `?category=${category}`;
-                }
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.success) {
-                    allProducts = data.data;
-                    renderProducts();  // প্রোডাক্ট পাওয়া মাত্রই রেন্ডার
-                    updateStructuredData();
-                    checkHashAndScroll();
-                }
-            } catch (error) {
-                console.error('Error loading products:', error);
-            } finally {
-                // loader সরিয়ে ফেলুন (যদি প্রোডাক্ট না আসে)
-                const grid = document.getElementById('productGrid');
-                if (grid && allProducts.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
-                }
-            }
-        }
-
-        async function loadTrending() {
-            try {
-                const response = await fetch(`${API_URL}/products`);
-                const data = await response.json();
-                if (data.success) {
-                    allTrending = data.data.filter(p => p.trending).slice(0, 5);
-                    renderTrending();
-                }
-            } catch (error) {
-                console.error('Error loading trending:', error);
-            }
-        }
-
-        async function loadReviews() {
-            try {
-                const response = await fetch(`${API_URL}/reviews/approved`);
-                const data = await response.json();
-                if (data.success) {
-                    renderReviews(data.data);
-                }
-            } catch (error) {
-                console.error('Error loading reviews:', error);
-            }
-        }
-
-        async function loadContent() {
-            try {
-                const response = await fetch(`${API_URL}/contents`);
-                const data = await response.json();
-                if (data.success) {
-                    updateContent(data.data);
-                }
-            } catch (error) {
-                console.error('Error loading content:', error);
-            }
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('categoryButtons');
-            if (!container) return;
-            container.innerHTML = `
-                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" onclick="window.location.hash='#products'">সকল পণ্য</button>
-                ${allCategories.map(cat => `
-                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}" onclick="window.location.hash='#products'">
-                        ${cat.nameBn}
-                    </button>
-                `).join('')}
-            `;
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    const category = this.dataset.category || 'all';
-                    loadProducts(category);
-                });
-            });
-        }
-
-        function renderProducts() {
-            const grid = document.getElementById('productGrid');
-            if (!grid) return;
-
-            if (allProducts.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
-                return;
-            }
-
-            grid.innerHTML = allProducts.map(product => {
-                const variant = product.variants[0] || {};
-                const images = variant.images || [];
-                // Cloudinary ইমেজ অপটিমাইজ করুন (w=300)
-                let primaryImage = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
-                if (primaryImage.includes('cloudinary.com')) {
-                    primaryImage = primaryImage.replace('/upload/', '/upload/w_300/');
-                }
-                const hasStock = variant.stock > 0;
-                const discount = variant.discount || '';
-
-                let discountPercent = '';
-                if (discount) {
-                    const match = discount.match(/(\d+)%/);
-                    if (match) {
-                        discountPercent = match[1] + '% ছাড়';
-                    } else {
-                        discountPercent = discount;
-                    }
-                }
-
-                const thumbnailsHtml = images.length > 1 ? `
-                    <div class="thumbnail-container px-2 pb-1">
-                        ${images.map((img, idx) => {
-                            let thumbUrl = img.url;
-                            if (thumbUrl.includes('cloudinary.com')) {
-                                thumbUrl = thumbUrl.replace('/upload/', '/upload/w_60/');
-                            }
-                            return `
-                            <img src="${thumbUrl}" alt="${product.name} thumbnail" 
-                                 class="thumbnail ${idx === 0 ? 'active' : ''}" 
-                                 data-product-id="${product._id}" 
-                                 data-variant-index="0" 
-                                 data-image-index="${idx}"
-                                 data-image-url="${img.url}"
-                                 onclick="event.stopPropagation(); handleThumbnailClick(this)">
-                        `}).join('')}
-                    </div>
-                ` : '';
-
-                return `
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden" 
-                         data-product-id="${product._id}">
-                        
-                        ${discount && hasStock ? `<span class="product-badge" data-badge>${discountPercent || discount}</span>` : ''}
-                        
-                        <div class="product-image-container" onclick="window.location.hash='#image-${product._id}-0'">
-                            <img src="${primaryImage}" alt="${product.name}" 
-                                 class="main-image" 
-                                 data-product-id="${product._id}" 
-                                 data-variant-index="0"
-                                 data-image-index="0"
-                                 data-image-url="${primaryImage}">
-                        </div>
-                        
-                        ${thumbnailsHtml}
-                        
-                        <div class="p-2 md:p-3 flex-grow">
-                            <h4 class="font-bold text-primary text-sm md:text-base">${product.name}</h4>
-                            <p class="text-xs text-gray-600">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</p>
-                            
-                            <div class="product-stats">
-                                <div class="rating-container">
-                                    <div class="rating-stars text-xs">
-                                        ${getStarRating(variant.rating || 4.5)}
-                                    </div>
-                                    <span class="rating-number">(${variant.rating || 4.5})</span>
-                                </div>
-                                <span class="sold-count">বিক্রি: ${variant.sold || 0}টি</span>
-                            </div>
-                            
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="highlight-price">৳${product.price}</span>
-                                ${product.originalPrice > product.price ? 
-                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-                            </div>
-                            
-                            <button class="order-now-btn w-full text-xs md:text-sm py-2 rounded mt-2 ${!hasStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-gold hover:text-primary transition'}"
-                                    data-product-id="${product._id}" 
-                                    data-variant-index="0" 
-                                    data-image-index="0"
-                                    data-image-url="${primaryImage}"
-                                    ${!hasStock ? 'disabled' : ''}
-                                    onclick="event.stopPropagation(); handleOrderButtonClick(this)">
-                                ${!hasStock ? 'Sold Out' : 'অর্ডার করুন'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            document.querySelectorAll('.thumbnail').forEach(thumb => {
-                thumb.addEventListener('click', handleThumbnailClick);
-            });
-        }
-
-        function handleThumbnailClick(thumb) {
-            const productId = thumb.dataset.productId;
-            const imageIndex = parseInt(thumb.dataset.imageIndex);
-            const imageUrl = thumb.dataset.imageUrl;
-
-            const productCard = thumb.closest('.product-card');
-            if (!productCard) return;
-
-            const mainImg = productCard.querySelector('.main-image');
-            if (mainImg) {
-                mainImg.style.opacity = '0.5';
-                setTimeout(() => {
-                    mainImg.src = imageUrl;
-                    mainImg.dataset.imageIndex = imageIndex;
-                    mainImg.dataset.imageUrl = imageUrl;
-                    mainImg.style.opacity = '1';
-                }, 100);
-            }
-
-            const imageContainer = productCard.querySelector('.product-image-container');
-            if (imageContainer) {
-                imageContainer.setAttribute('onclick', `window.location.hash='#image-${productId}-${imageIndex}'`);
-            }
-
-            productCard.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-            thumb.classList.add('active');
-
-            const orderBtn = productCard.querySelector('.order-now-btn');
-            if (orderBtn) {
-                orderBtn.dataset.imageIndex = imageIndex;
-                orderBtn.dataset.imageUrl = imageUrl;
-            }
-
-            window.location.hash = `#image-${productId}-${imageIndex}`;
-        }
-
-        function handleOrderButtonClick(btn) {
-            if (isOrderProcessing) return;
-            
-            isOrderProcessing = true;
-            
-            const productId = btn.dataset.productId;
-            const imageIndex = parseInt(btn.dataset.imageIndex);
-            const imageUrl = btn.dataset.imageUrl;
-            
-            const product = allProducts.find(p => p._id === productId);
-            if (!product) {
-                isOrderProcessing = false;
-                return;
-            }
-            
-            const variant = product.variants[0] || {};
-            if (variant.stock === 0) {
-                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
-                isOrderProcessing = false;
-                return;
-            }
-            
-            const existingIndex = selectedForOrder.findIndex(p => 
-                p.id === productId + '-0' && p.imageIndex === imageIndex
-            );
-            
-            if (existingIndex === -1) {
-                const orderProduct = {
-                    id: productId + '-0',
-                    name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
-                    img: imageUrl,
-                    price: product.price,
-                    originalPrice: product.originalPrice,
-                    variantIndex: 0,
-                    quantity: 1,
-                    imageIndex: imageIndex
-                };
-                selectedForOrder.push(orderProduct);
-                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-            } else {
-                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
-                isOrderProcessing = false;
-                return;
-            }
-            
-            updateSelectedProducts();
-            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-            
-            setTimeout(() => {
-                const deliveryArea = document.getElementById('deliveryArea');
-                if (!deliveryArea.value) {
-                    deliveryArea.classList.add('delivery-flash');
-                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    setTimeout(() => {
-                        deliveryArea.classList.remove('delivery-flash');
-                    }, 3000);
-                }
-            }, 500);
-            
-            window.location.hash = `#order-${productId}-${imageIndex}`;
-            
-            setTimeout(() => {
-                isOrderProcessing = false;
-            }, 1000);
-        }
-
-        function renderTrending() {
+        function renderTrending(trending) {
             const container = document.getElementById('trendingItems');
             if (!container) return;
-            if (allTrending.length === 0) {
+            if (trending.length === 0) {
                 container.innerHTML = '<p class="text-white">কোন ট্রেন্ডিং পণ্য নেই</p>';
                 return;
             }
-            container.innerHTML = allTrending.map(product => {
+            container.innerHTML = trending.map(product => {
                 const variant = product.variants[0] || {};
                 const images = variant.images || [];
-                let image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200x200?text=No+Image';
-                if (image.includes('cloudinary.com')) {
-                    image = image.replace('/upload/', '/upload/w_200/');
-                }
-                
-                let discountText = '';
-                if (variant.discount) {
-                    const match = variant.discount.match(/(\d+)%/);
-                    if (match) {
-                        discountText = match[1] + '% ছাড়';
-                    } else {
-                        discountText = variant.discount;
-                    }
-                }
-                
+                let image = images.length > 0 ? images[0].url : 'https://via.placeholder.com/200';
+                image = optimizeImageUrl(image, 200);
                 return `
-                    <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" 
-                         onclick="window.location.hash='#product-${product._id}'">
-                        <img src="${image}" alt="${product.name}" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover" loading="lazy">
+                    <div class="trending-item bg-white p-4 rounded-lg flex items-center space-x-4" onclick="window.location.hash='#product-${product._id}'">
+                        <img src="${image}" alt="${product.name}" class="w-16 h-16 rounded-lg object-cover" loading="lazy">
                         <div class="flex-1">
                             <h4 class="font-bold text-primary">${product.name}</h4>
-                            <div class="product-stats">
-                                <div class="rating-container">
-                                    <div class="rating-stars text-xs md:text-sm text-yellow-500">
-                                        ${getStarRating(variant.rating || 4.5)}
-                                    </div>
-                                    <span class="rating-number text-gray-600">(${variant.rating || 4.5})</span>
-                                </div>
-                                <span class="sold-count text-xs text-gray-500">বিক্রি: ${variant.sold || 0}</span>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-gold font-bold">৳${product.price}</span>
+                                ${product.originalPrice > product.price ? `<span class="original-price">৳${product.originalPrice}</span>` : ''}
                             </div>
-                           <div class="flex items-center gap-2 mt-1">
-                                <span class="highlight-price">৳${product.price}</span>
-                                ${product.originalPrice > product.price ? 
-                                    `<span class="original-price">৳${product.originalPrice}</span>` : ''}
-                            </div>
-                            ${discountText ? `<p class="text-xs text-green-600 font-bold">${discountText}</p>` : ''}
-                            <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs md:text-sm mt-2 hover:bg-gold hover:text-primary transition" 
+                            <button class="trending-order-btn bg-primary text-white px-3 py-1 rounded-lg text-xs mt-2 hover:bg-gold hover:text-primary transition" 
                                     data-product='${JSON.stringify({
                                         id: product._id,
                                         name: product.name,
@@ -1440,20 +1156,138 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
             }).join('');
         }
 
+        function renderReviews() {
+            const container = document.getElementById('customerReviews');
+            if (!container) return;
+            if (allReviews.length === 0) {
+                container.innerHTML = '<p class="text-center py-4">কোন রিভিউ নেই</p>';
+                return;
+            }
+            container.innerHTML = allReviews.map(review => `
+                <div class="bg-white p-3 rounded-lg shadow">
+                    <p class="font-bold">${review.customerName} (${review.customerAddress})</p>
+                    <div class="text-yellow-500 text-sm">${getStars(review.rating)}</div>
+                    <p class="text-gray-700 text-sm">${review.review}</p>
+                </div>
+            `).join('');
+        }
+
+        function updateContent() {
+            if (contentData.footerText) document.getElementById('footerText').textContent = contentData.footerText;
+            if (contentData.address) document.getElementById('footerAddress').textContent = contentData.address;
+            if (contentData.siteTitle) document.getElementById('siteTitleTag').textContent = contentData.siteTitle;
+            if (contentData.siteSubtitle) document.getElementById('siteSubtitle').textContent = contentData.siteSubtitle;
+        }
+
+        // ==================== হেল্পার ফাংশন ====================
+        function getStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) stars += i <= rating ? '★' : '☆';
+            return stars;
+        }
+
+        function showPopup(title, message, type, extraMessage = '') {
+            if (document.getElementById('popup').classList.contains('active')) {
+                closePopup();
+                if (popupTimeout) {
+                    clearTimeout(popupTimeout);
+                    popupTimeout = null;
+                }
+            }
+            setTimeout(() => {
+                const popupTitle = document.getElementById('popupTitle');
+                const popupMessage = document.getElementById('popupMessage');
+                const popupExtraMessage = document.getElementById('popupExtraMessage');
+                popupTitle.innerText = title;
+                popupMessage.innerText = message;
+                popupExtraMessage.innerText = extraMessage;
+                popupTitle.style.color = type === 'success' ? '#10b981' : '#ef4444';
+                document.getElementById('popup').classList.add('active');
+                document.getElementById('popupOverlay').classList.add('active');
+                popupTimeout = setTimeout(() => {
+                    closePopup();
+                    popupTimeout = null;
+                }, 3000);
+            }, 100);
+        }
+
+        function closePopup() {
+            document.getElementById('popup').classList.remove('active');
+            document.getElementById('popupOverlay').classList.remove('active');
+            if (popupTimeout) {
+                clearTimeout(popupTimeout);
+                popupTimeout = null;
+            }
+        }
+
+        document.getElementById('closePopup').addEventListener('click', closePopup);
+        document.getElementById('popupOverlay').addEventListener('click', closePopup);
+
+        // ==================== অর্ডার ফাংশন ====================
+        function handleOrderButtonClick(btn) {
+            if (isOrderProcessing) return;
+            isOrderProcessing = true;
+            const productId = btn.dataset.productId;
+            const imageIndex = parseInt(btn.dataset.imageIndex);
+            const imageUrl = btn.dataset.imageUrl;
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) {
+                isOrderProcessing = false;
+                return;
+            }
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                isOrderProcessing = false;
+                return;
+            }
+            const existingIndex = selectedForOrder.findIndex(p => p.id === productId + '-0' && p.imageIndex === imageIndex);
+            if (existingIndex === -1) {
+                const orderProduct = {
+                    id: productId + '-0',
+                    name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                    img: imageUrl,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    variantIndex: 0,
+                    quantity: 1,
+                    imageIndex: imageIndex
+                };
+                selectedForOrder.push(orderProduct);
+                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            } else {
+                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                isOrderProcessing = false;
+                return;
+            }
+            updateSelectedProducts();
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
+                }
+            }, 500);
+            window.location.hash = `#order-${productId}-${imageIndex}`;
+            setTimeout(() => {
+                isOrderProcessing = false;
+            }, 1000);
+        }
+
         function handleTrendingOrder(btn) {
             if (isTrendingProcessing) return;
-            
             isTrendingProcessing = true;
-            
             const product = JSON.parse(btn.dataset.product);
             if (product.variantStock === 0) {
                 showPopup('দুঃখিত!', 'পণ্যটি Sold Out', 'error');
                 isTrendingProcessing = false;
                 return;
             }
-            
             const existingIndex = selectedForOrder.findIndex(p => p.id === product.id);
-            
             if (existingIndex === -1) {
                 const orderProduct = {
                     id: product.id,
@@ -1472,10 +1306,8 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                 isTrendingProcessing = false;
                 return;
             }
-            
             updateSelectedProducts();
             document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
-            
             setTimeout(() => {
                 const deliveryArea = document.getElementById('deliveryArea');
                 if (!deliveryArea.value) {
@@ -1486,224 +1318,70 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                     }, 3000);
                 }
             }, 500);
-            
             window.location.hash = `#order-${product.id}-0`;
-            
             setTimeout(() => {
                 isTrendingProcessing = false;
             }, 1000);
         }
 
-        function renderReviews(reviews) {
-            const container = document.getElementById('customerReviews');
-            if (!container) return;
-            if (reviews.length === 0) {
-                container.innerHTML = '<p class="text-center py-4">কোন রিভিউ নেই</p>';
+        function handleSliderOrderClick(btn) {
+            if (isSliderProcessing) return;
+            isSliderProcessing = true;
+            const productData = JSON.parse(btn.dataset.product);
+            if (!productData || !productData.id) {
+                showPopup('দুঃখিত!', 'এই স্লাইডারের সাথে কোন পণ্য সংযুক্ত নেই', 'error');
+                isSliderProcessing = false;
                 return;
             }
-            container.innerHTML = reviews.map(review => `
-                <div class="bg-white p-3 rounded-lg shadow">
-                    <p class="font-bold">${review.customerName} (${review.customerAddress})</p>
-                    <div class="product-stats">
-                        <div class="rating-container">
-                            <div class="rating-stars text-yellow-500">${getStars(review.rating)}</div>
-                            <span class="rating-number text-gray-600">(${review.rating})</span>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 text-sm">${review.review}</p>
-                </div>
-            `).join('');
-        }
-
-        function updateContent(content) {
-            if (content.footerText) document.getElementById('footerText').textContent = content.footerText;
-            if (content.address) document.getElementById('footerAddress').textContent = content.address;
-            if (content.siteTitle) {
-                document.getElementById('siteTitleTag').textContent = content.siteTitle;
-                document.getElementById('ogTitle').setAttribute('content', content.siteTitle);
-                document.getElementById('twitterTitle').setAttribute('content', content.siteTitle);
-            }
-            if (content.siteSubtitle) document.getElementById('siteSubtitle').textContent = content.siteSubtitle;
-        }
-
-        function updateStructuredData() {
-            const script = document.getElementById('structuredData');
-            if (!script) return;
-            const itemList = {
-                "@context": "https://schema.org",
-                "@type": "ItemList",
-                "itemListElement": allProducts.slice(0, 20).map((p, i) => ({
-                    "@type": "ListItem",
-                    "position": i + 1,
-                    "item": {
-                        "@type": "Product",
-                        "name": p.name,
-                        "description": p.description,
-                        "image": p.variants[0]?.images[0]?.url || '',
-                        "offers": {
-                            "@type": "Offer",
-                            "price": p.price,
-                            "priceCurrency": "BDT",
-                            "availability": p.variants[0]?.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
-                        }
-                    }
-                }))
-            };
-            script.textContent = JSON.stringify(itemList);
-        }
-
-        function setupEventListeners() {
-            const menuBtn = document.getElementById('menuBtn');
-            const mobileTopMenu = document.getElementById('mobileTopMenu');
-            menuBtn?.addEventListener('click', () => mobileTopMenu?.classList.toggle('active'));
-            document.querySelectorAll('.mobile-top-menu a').forEach(link => {
-                link.addEventListener('click', () => mobileTopMenu?.classList.remove('active'));
-            });
-
-            document.getElementById('prevSlide')?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                moveSlide(-1);
-            });
-            document.getElementById('nextSlide')?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                moveSlide(1);
-            });
-            
-            document.getElementById('deliveryArea')?.addEventListener('change', function(e) {
-                currentDeliveryCharge = parseInt(e.target.value) || 0;
-                updateTotal();
-                this.classList.remove('delivery-flash');
-            });
-            
-            document.getElementById('orderForm')?.addEventListener('submit', handleOrderSubmit);
-            document.getElementById('reviewForm')?.addEventListener('submit', handleReviewSubmit);
-            
-            document.querySelectorAll('.star-rating i').forEach(star => {
-                star.addEventListener('click', handleStarClick);
-            });
-            
-            document.getElementById('closePopup')?.addEventListener('click', closePopup);
-            document.getElementById('popupOverlay')?.addEventListener('click', closePopup);
-        }
-
-        async function handleOrderSubmit(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('name').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const deliveryArea = document.getElementById('deliveryArea').value;
-            
-            if (!name || !phone || !address) {
-                showPopup('ব্যর্থ!', 'সব ফিল্ড পূরণ করুন', 'error');
+            const product = allProducts.find(p => p._id === productData.id);
+            if (!product) {
+                showPopup('দুঃখিত!', 'পণ্যটি খুঁজে পাওয়া যায়নি', 'error');
+                isSliderProcessing = false;
                 return;
             }
-            if (!deliveryArea) {
-                showPopup('ব্যর্থ!', 'ডেলিভারি এলাকা নির্বাচন করুন', 'error');
-                const deliverySelect = document.getElementById('deliveryArea');
-                deliverySelect.classList.add('delivery-flash');
-                deliverySelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => {
-                    deliverySelect.classList.remove('delivery-flash');
-                }, 3000);
-                deliverySelect.focus();
+            const variant = product.variants[0] || {};
+            if (variant.stock === 0) {
+                showPopup('দুঃখিত!', 'এই ডিজাইনটি Sold Out', 'error');
+                isSliderProcessing = false;
                 return;
             }
-            if (selectedForOrder.length === 0) {
-                showPopup('ব্যর্থ!', 'কমপক্ষে একটি পণ্য নির্বাচন করুন', 'error');
+            const images = variant.images || [];
+            const imageUrl = images.length > 0 ? images[0].url : 'https://via.placeholder.com/300x300?text=No+Image';
+            const existingIndex = selectedForOrder.findIndex(p => p.id === product._id + '-0' && p.imageIndex === 0);
+            if (existingIndex === -1) {
+                const orderProduct = {
+                    id: product._id + '-0',
+                    name: product.name + (variant.discount ? ' (' + variant.discount + ')' : ''),
+                    img: imageUrl,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    variantIndex: 0,
+                    quantity: 1,
+                    imageIndex: 0
+                };
+                selectedForOrder.push(orderProduct);
+                showPopup('সফল!', 'পণ্যটি অর্ডার ফর্মে যোগ হয়েছে', 'success', 'অর্ডার সম্পন্ন হলে খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+            } else {
+                showPopup('ইতিমধ্যে যোগ করা হয়েছে!', 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডার লিস্টে আছে', 'info');
+                isSliderProcessing = false;
                 return;
             }
-            
-            const subtotal = selectedForOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
-            
-            const orderData = {
-                customer: { name, phone, address },
-                items: selectedForOrder.map(item => ({
-                    productId: item.id.split('-')[0],
-                    name: item.name,
-                    image: item.img,
-                    price: item.price,
-                    originalPrice: item.originalPrice,
-                    quantity: item.quantity,
-                    variant: { color: '', size: '' }
-                })),
-                subtotal,
-                deliveryCharge: delivery,
-                total: subtotal + delivery,
-                deliveryArea: deliveryArea === '80' ? 'ঢাকার মধ্যে' : 'ঢাকার বাইরে'
-            };
-            
-            try {
-                const result = await fetch(`${API_URL}/orders`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderData)
-                }).then(res => res.json());
-                
-                if (result.success) {
-                    showPopup('অর্ডার সফল!', 'আপনার অর্ডার নেওয়া হয়েছে', 'success', 'খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
-                    e.target.reset();
-                    selectedForOrder = [];
-                    currentDeliveryCharge = 0;
-                    document.getElementById('deliveryArea').value = '';
-                    updateSelectedProducts();
-                    window.location.hash = '#home';
-                } else {
-                    showPopup('ব্যর্থ!', result.message || 'অর্ডার নিতে সমস্যা হয়েছে', 'error');
+            updateSelectedProducts();
+            document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+                const deliveryArea = document.getElementById('deliveryArea');
+                if (!deliveryArea.value) {
+                    deliveryArea.classList.add('delivery-flash');
+                    deliveryArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        deliveryArea.classList.remove('delivery-flash');
+                    }, 3000);
                 }
-            } catch (error) {
-                showPopup('ব্যর্থ!', 'অর্ডার নিতে সমস্যা হয়েছে', 'error');
-            }
-        }
-
-        async function handleReviewSubmit(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('reviewName').value.trim();
-            const address = document.getElementById('reviewAddress').value.trim();
-            const review = document.getElementById('reviewText').value.trim();
-            const rating = document.getElementById('rating').value;
-            
-            if (!name || !address || !review || rating == 0) {
-                showPopup('ব্যর্থ!', 'সব তথ্য দিন এবং রেটিং দিন', 'error');
-                return;
-            }
-            
-            const reviewData = { 
-                customerName: name, 
-                customerAddress: address, 
-                review, 
-                rating: parseInt(rating) 
-            };
-            
-            try {
-                const result = await fetch(`${API_URL}/reviews`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(reviewData)
-                }).then(res => res.json());
-                
-                if (result.success) {
-                    showPopup('ধন্যবাদ!', 'আপনার রিভিউ জমা হয়েছে', 'success', 'এডমিন অ্যাপ্রুভ করার পর দেখানো হবে।');
-                    e.target.reset();
-                    document.getElementById('rating').value = 0;
-                    document.querySelectorAll('.star-rating i').forEach(i => i.className = 'far fa-star');
-                    window.location.hash = '#reviews';
-                } else {
-                    showPopup('ব্যর্থ!', result.message || 'রিভিউ জমা দিতে সমস্যা হয়েছে', 'error');
-                }
-            } catch (error) {
-                showPopup('ব্যর্থ!', 'রিভিউ জমা দিতে সমস্যা হয়েছে', 'error');
-            }
-        }
-
-        function handleStarClick() {
-            const rating = this.dataset.rating;
-            document.getElementById('rating').value = rating;
-            document.querySelectorAll('.star-rating i').forEach((s, idx) => {
-                s.className = idx < rating ? 'fas fa-star text-yellow-500' : 'far fa-star';
-            });
+            }, 500);
+            window.location.hash = `#order-${product._id}-0`;
+            setTimeout(() => {
+                isSliderProcessing = false;
+            }, 1000);
         }
 
         function updateSelectedProducts() {
@@ -1730,7 +1408,7 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                             <span class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</span>
                         </div>
                         <div class="price-info">
-                            <span class="current-price highlight-price text-xs">৳${p.price}</span>
+                            <span class="current-price text-xs">৳${p.price}</span>
                             <span class="original-price-small">৳${p.originalPrice}</span>
                         </div>
                     </div>
@@ -1764,50 +1442,178 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
             const subtotalEl = document.getElementById('subtotalPrice');
             const deliveryChargeEl = document.getElementById('deliveryCharge');
             const totalEl = document.getElementById('totalPrice');
-            
             const subtotal = selectedForOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
-            
             subtotalEl.innerText = `৳${subtotal}`;
-            
             if (currentDeliveryCharge === 0) {
                 deliveryChargeEl.innerText = 'নির্বাচন করুন';
             } else {
                 deliveryChargeEl.innerText = delivery === 0 ? 'ফ্রি' : `৳${delivery}`;
             }
-            
             totalEl.innerText = `৳${subtotal + delivery}`;
         }
 
-        function startSlideshow() {
-            const slides = document.querySelectorAll('.slider-item');
-            if (slides.length === 0) return;
-            slideInterval = setInterval(() => moveSlide(1), 5000);
-        }
+        document.getElementById('deliveryArea').addEventListener('change', function(e) {
+            currentDeliveryCharge = parseInt(e.target.value) || 0;
+            updateTotal();
+            this.classList.remove('delivery-flash');
+        });
 
-        function moveSlide(direction) {
-            const slides = document.querySelectorAll('.slider-item');
-            if (slides.length === 0) return;
-            slides[currentSlide].style.opacity = '0';
-            currentSlide = (currentSlide + direction + slides.length) % slides.length;
-            slides[currentSlide].style.opacity = '1';
-        }
+        // ==================== অর্ডার ফর্ম সাবমিট ====================
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const deliveryArea = document.getElementById('deliveryArea').value;
 
-        function getStarRating(rating) {
-            let stars = '';
-            for (let i = 1; i <= 5; i++) {
-                if (i <= Math.floor(rating)) stars += '<i class="fas fa-star"></i>';
-                else if (i === Math.floor(rating) + 1 && rating % 1 >= 0.5) stars += '<i class="fas fa-star-half-alt"></i>';
-                else stars += '<i class="far fa-star"></i>';
+            if (!name || !phone || !address) {
+                showPopup('ব্যর্থ!', 'সব ফিল্ড পূরণ করুন', 'error');
+                return;
             }
-            return stars;
-        }
+            if (!deliveryArea) {
+                showPopup('ব্যর্থ!', 'ডেলিভারি এলাকা নির্বাচন করুন', 'error');
+                const deliverySelect = document.getElementById('deliveryArea');
+                deliverySelect.classList.add('delivery-flash');
+                deliverySelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                    deliverySelect.classList.remove('delivery-flash');
+                }, 3000);
+                deliverySelect.focus();
+                return;
+            }
+            if (selectedForOrder.length === 0) {
+                showPopup('ব্যর্থ!', 'কমপক্ষে একটি পণ্য নির্বাচন করুন', 'error');
+                return;
+            }
 
-        function getStars(rating) {
-            let stars = '';
-            for (let i = 1; i <= 5; i++) stars += i <= rating ? '★' : '☆';
-            return stars;
-        }
+            const subtotal = selectedForOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const delivery = (subtotal >= 2000 && currentDeliveryCharge > 0) ? 0 : currentDeliveryCharge;
+
+            const orderData = {
+                customer: { name, phone, address },
+                items: selectedForOrder.map(item => ({
+                    productId: item.id.split('-')[0],
+                    name: item.name,
+                    image: item.img,
+                    price: item.price,
+                    originalPrice: item.originalPrice,
+                    quantity: item.quantity,
+                    variant: { color: '', size: '' }
+                })),
+                subtotal,
+                deliveryCharge: delivery,
+                total: subtotal + delivery,
+                deliveryArea: deliveryArea === '80' ? 'ঢাকার মধ্যে' : 'ঢাকার বাইরে'
+            };
+
+            try {
+                const result = await fetch(`${API_URL}/orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                }).then(res => res.json());
+
+                if (result.success) {
+                    showPopup('অর্ডার সফল!', 'আপনার অর্ডার নেওয়া হয়েছে', 'success', 'খুব দ্রুত আপনার সাথে যোগাযোগ করা হবে।');
+                    e.target.reset();
+                    selectedForOrder = [];
+                    currentDeliveryCharge = 0;
+                    document.getElementById('deliveryArea').value = '';
+                    updateSelectedProducts();
+                    window.location.hash = '#home';
+                } else {
+                    showPopup('ব্যর্থ!', result.message || 'অর্ডার নিতে সমস্যা হয়েছে', 'error');
+                }
+            } catch (error) {
+                showPopup('ব্যর্থ!', 'অর্ডার নিতে সমস্যা হয়েছে', 'error');
+            }
+        });
+
+        // ==================== রিভিউ ফর্ম সাবমিট ====================
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reviewName').value.trim();
+            const address = document.getElementById('reviewAddress').value.trim();
+            const review = document.getElementById('reviewText').value.trim();
+            const rating = document.getElementById('rating').value;
+
+            if (!name || !address || !review || rating == 0) {
+                showPopup('ব্যর্থ!', 'সব তথ্য দিন এবং রেটিং দিন', 'error');
+                return;
+            }
+
+            const reviewData = { 
+                customerName: name, 
+                customerAddress: address, 
+                review, 
+                rating: parseInt(rating) 
+            };
+
+            try {
+                const result = await fetch(`${API_URL}/reviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reviewData)
+                }).then(res => res.json());
+
+                if (result.success) {
+                    showPopup('ধন্যবাদ!', 'আপনার রিভিউ জমা হয়েছে', 'success', 'এডমিন অ্যাপ্রুভ করার পর দেখানো হবে।');
+                    e.target.reset();
+                    document.getElementById('rating').value = 0;
+                    document.querySelectorAll('.star-rating i').forEach(i => i.className = 'far fa-star');
+                    window.location.hash = '#reviews';
+                } else {
+                    showPopup('ব্যর্থ!', result.message || 'রিভিউ জমা দিতে সমস্যা হয়েছে', 'error');
+                }
+            } catch (error) {
+                showPopup('ব্যর্থ!', 'রিভিউ জমা দিতে সমস্যা হয়েছে', 'error');
+            }
+        });
+
+        // ==================== স্টার রেটিং ====================
+        document.querySelectorAll('.star-rating i').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                document.getElementById('rating').value = rating;
+                document.querySelectorAll('.star-rating i').forEach((s, idx) => {
+                    s.className = idx < rating ? 'fas fa-star text-yellow-500' : 'far fa-star';
+                });
+            });
+        });
+
+        // ==================== মেনু টগল ====================
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('mobileTopMenu').classList.toggle('active');
+        });
+        document.querySelectorAll('.mobile-top-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobileTopMenu').classList.remove('active');
+            });
+        });
+
+        // ==================== স্লাইডার নেভিগেশন ====================
+        document.getElementById('prevSlide').addEventListener('click', (e) => {
+            e.stopPropagation();
+            moveSlide(-1);
+            if (slideInterval) {
+                clearInterval(slideInterval);
+                startSlideshow();
+            }
+        });
+        document.getElementById('nextSlide').addEventListener('click', (e) => {
+            e.stopPropagation();
+            moveSlide(1);
+            if (slideInterval) {
+                clearInterval(slideInterval);
+                startSlideshow();
+            }
+        });
+
+        // ==================== DOMContentLoaded ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInitialData();
+        });
     </script>
 </body>
 </html>

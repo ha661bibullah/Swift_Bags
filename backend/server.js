@@ -585,6 +585,36 @@ async function createInitialContent() {
   }
 }
 
+// ============= COMBINED INITIAL DATA ENDPOINT =============
+app.get('/api/initial-data', async (req, res) => {
+  try {
+    const [sliders, categories, products, reviews, content] = await Promise.all([
+      Slider.find({ active: true }).sort({ order: 1 }),
+      Category.find({ active: true }).sort({ order: 1 }),
+      Product.find({ active: true }).populate('category').sort({ createdAt: -1 }),
+      Review.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(20),
+      Content.find()
+    ]);
+
+    const contentObj = {};
+    content.forEach(c => contentObj[c.key] = c.value);
+
+    res.json({
+      success: true,
+      data: {
+        sliders,
+        categories,
+        products,
+        reviews,
+        content: contentObj
+      }
+    });
+  } catch (error) {
+    console.error('Initial data error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ============= API ROUTES =============
 
 app.get('/health', (req, res) => {
@@ -637,6 +667,7 @@ app.get('/', (req, res) => {
       health: '/health',
       apiHealth: '/api/health',
       test: '/api/test',
+      initialData: '/api/initial-data',
       admin: '/api/admin/check',
       products: '/api/products',
       categories: '/api/categories',
@@ -953,7 +984,6 @@ app.post('/api/admin/products', authenticateToken, upload.array('images', 10), a
   }
 });
 
-// ============= FIXED: PRODUCT PUT ROUTE WITH DISCOUNT HANDLING =============
 app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -963,10 +993,8 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
 
     const productData = JSON.parse(req.body.data);
     
-    // Get removed images from request
     const removedImages = productData.removedImages || [];
     
-    // Handle new images if uploaded
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map((file, index) => ({
         url: file.path,
@@ -974,12 +1002,10 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
         isPrimary: index === 0 && (!product.variants[0]?.images || product.variants[0].images.length === 0)
       }));
       
-      // Get existing images that are not removed
       const existingImages = product.variants[0]?.images?.filter(img => 
         !removedImages.includes(img.cloudinaryId)
       ) || [];
       
-      // Combine existing images with new ones
       if (!productData.variants || productData.variants.length === 0) {
         productData.variants = [{
           images: [...existingImages, ...newImages],
@@ -994,7 +1020,6 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
         productData.variants[0].images = [...existingImages, ...newImages];
       }
       
-      // Delete removed images from Cloudinary
       for (const cloudinaryId of removedImages) {
         try {
           await cloudinary.uploader.destroy(cloudinaryId);
@@ -1003,9 +1028,7 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
         }
       }
     } else {
-      // No new images uploaded - just handle removed ones
       if (removedImages.length > 0) {
-        // Filter out removed images
         if (!productData.variants || productData.variants.length === 0) {
           productData.variants = [{
             ...product.variants[0]?.toObject(),
@@ -1021,7 +1044,6 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
           productData.variants[0].images = existingImages;
         }
         
-        // Delete removed images from Cloudinary
         for (const cloudinaryId of removedImages) {
           try {
             await cloudinary.uploader.destroy(cloudinaryId);
@@ -1030,18 +1052,15 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
           }
         }
       } else {
-        // No changes to images - preserve existing images and discount
         if (!productData.variants || productData.variants.length === 0) {
           productData.variants = [{
             ...product.variants[0]?.toObject(),
             discount: productData.discount || product.variants[0]?.discount || ''
           }];
         } else {
-          // Preserve images from existing product if not provided in update
           if (!productData.variants[0].images || productData.variants[0].images.length === 0) {
             productData.variants[0].images = product.variants[0]?.images || [];
           }
-          // Preserve discount if not provided
           if (!productData.variants[0].discount) {
             productData.variants[0].discount = product.variants[0]?.discount || '';
           }
@@ -1049,13 +1068,11 @@ app.put('/api/admin/products/:id', authenticateToken, upload.array('images', 10)
       }
     }
 
-    // Find category
     const category = await Category.findOne({ slug: productData.category });
     if (!category) {
       return res.status(400).json({ success: false, message: 'Category not found' });
     }
 
-    // Update product fields
     product.name = productData.name;
     product.description = productData.description;
     product.category = category._id;
@@ -1407,6 +1424,7 @@ const server = app.listen(PORT, () => {
   console.log(`📍 Health: http://localhost:${PORT}/health`);
   console.log(`📍 API Health: http://localhost:${PORT}/api/health`);
   console.log(`📍 Test: http://localhost:${PORT}/api/test`);
+  console.log(`📍 Initial Data: http://localhost:${PORT}/api/initial-data`);
   console.log(`📍 Admin check: http://localhost:${PORT}/api/admin/check`);
   console.log(`📍 Sitemap: http://localhost:${PORT}/sitemap.xml`);
   console.log('=====================================\n');
