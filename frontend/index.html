@@ -634,6 +634,7 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
             </div>
             <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                 <div class="loader"></div>
+                <p class="text-sm text-gray-500 mt-2 col-span-full text-center">সার্ভার জাগ্রত হচ্ছে, একটু অপেক্ষা করুন...</p>
             </div>
         </div>
     </section>
@@ -773,10 +774,50 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
         // Popup timeout
         let popupTimeout = null;
 
+        // ক্যাশ ব্যবস্থাপনা
+        const CACHE_DURATION = 5 * 60 * 1000; // ৫ মিনিট
+
+        function getCachedData(key) {
+            const cached = localStorage.getItem(key);
+            if (!cached) return null;
+            try {
+                const { timestamp, data } = JSON.parse(cached);
+                if (Date.now() - timestamp < CACHE_DURATION) {
+                    return data;
+                }
+                // মেয়াদ শেষ হলে মুছে ফেলি
+                localStorage.removeItem(key);
+                return null;
+            } catch {
+                return null;
+            }
+        }
+
+        function setCachedData(key, data) {
+            const cacheObj = {
+                timestamp: Date.now(),
+                data: data
+            };
+            localStorage.setItem(key, JSON.stringify(cacheObj));
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // প্রথমে প্রোডাক্ট এবং ক্যাটাগরি লোড করুন (সমান্তরালে)
-            loadCategories(); // ক্যাটাগরি API কল শুরু
-            loadProducts();   // প্রোডাক্ট API কল শুরু → রেন্ডার হবে সাথে সাথে
+            // প্রথমে ক্যাশ থেকে প্রোডাক্ট এবং ক্যাটাগরি লোড করুন (যদি থাকে)
+            const cachedCategories = getCachedData('swift_categories');
+            if (cachedCategories) {
+                allCategories = cachedCategories;
+                renderCategories();
+            }
+            const cachedProducts = getCachedData('swift_products_all');
+            if (cachedProducts) {
+                allProducts = cachedProducts;
+                renderProducts();
+                updateStructuredData();
+            }
+
+            // তারপর API কল করে আপডেট করুন (সমান্তরালে)
+            loadCategories();
+            loadProducts();
             
             // বাকি ডাটা ব্যাকগ্রাউন্ডে লোড করুন (প্রোডাক্ট দেখানোর পর)
             setTimeout(() => {
@@ -784,7 +825,7 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                 loadTrending();
                 loadReviews();
                 loadContent();
-            }, 100); // ছোট ডেলেও দেওয়া যেতে পারে, তবে এগুলোও প্যারালালে চলবে
+            }, 100);
 
             setupEventListeners();
             checkHashAndScroll();
@@ -955,13 +996,20 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
             }
         }
 
-        // আলাদা আলাদা লোড ফাংশন – এগুলো এখন একসাথে চলবে
+        // আলাদা আলাদা লোড ফাংশন – এগুলো এখন ক্যাশ ব্যবহার করবে
         async function loadSliders() {
+            const cached = getCachedData('swift_sliders');
+            if (cached) {
+                allSliders = cached;
+                renderSliders();
+            }
+
             try {
                 const response = await fetch(`${API_URL}/sliders`);
                 const data = await response.json();
                 if (data.success) {
                     allSliders = data.data;
+                    setCachedData('swift_sliders', allSliders);
                     renderSliders();
                 }
             } catch (error) {
@@ -1073,19 +1121,37 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
         }
 
         async function loadCategories() {
+            const container = document.getElementById('categoryButtons');
+            const cached = getCachedData('swift_categories');
+            if (cached) {
+                allCategories = cached;
+                renderCategories();
+            }
+
             try {
                 const response = await fetch(`${API_URL}/categories`);
                 const data = await response.json();
                 if (data.success) {
                     allCategories = data.data;
-                    renderCategories();
+                    setCachedData('swift_categories', allCategories);
+                    renderCategories(); // আপডেট রেন্ডার
                 }
             } catch (error) {
                 console.error('Error loading categories:', error);
+                if (!cached && container) container.innerHTML = '<div class="text-center">ক্যাটাগরি লোড হয়নি</div>';
             }
         }
 
         async function loadProducts(category = 'all') {
+            const grid = document.getElementById('productGrid');
+            const cacheKey = `swift_products_${category}`;
+
+            const cached = getCachedData(cacheKey);
+            if (cached) {
+                allProducts = cached;
+                renderProducts();
+            }
+
             try {
                 let url = `${API_URL}/products`;
                 if (category !== 'all') {
@@ -1095,27 +1161,32 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                 const data = await response.json();
                 if (data.success) {
                     allProducts = data.data;
-                    renderProducts();  // প্রোডাক্ট পাওয়া মাত্রই রেন্ডার
+                    setCachedData(cacheKey, allProducts);
+                    renderProducts();  // আপডেট রেন্ডার
                     updateStructuredData();
                     checkHashAndScroll();
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
-            } finally {
-                // loader সরিয়ে ফেলুন (যদি প্রোডাক্ট না আসে)
-                const grid = document.getElementById('productGrid');
-                if (grid && allProducts.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center py-8">কোন পণ্য পাওয়া যায়নি</div>';
+                if (!cached) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-8">পণ্য লোড হয়নি। আবার চেষ্টা করুন।</div>';
                 }
             }
         }
 
         async function loadTrending() {
+            const cached = getCachedData('swift_trending');
+            if (cached) {
+                allTrending = cached;
+                renderTrending();
+            }
+
             try {
                 const response = await fetch(`${API_URL}/products`);
                 const data = await response.json();
                 if (data.success) {
                     allTrending = data.data.filter(p => p.trending).slice(0, 5);
+                    setCachedData('swift_trending', allTrending);
                     renderTrending();
                 }
             } catch (error) {
@@ -1124,10 +1195,16 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
         }
 
         async function loadReviews() {
+            const cached = getCachedData('swift_reviews');
+            if (cached) {
+                renderReviews(cached);
+            }
+
             try {
                 const response = await fetch(`${API_URL}/reviews/approved`);
                 const data = await response.json();
                 if (data.success) {
+                    setCachedData('swift_reviews', data.data);
                     renderReviews(data.data);
                 }
             } catch (error) {
@@ -1136,10 +1213,16 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
         }
 
         async function loadContent() {
+            const cached = getCachedData('swift_content');
+            if (cached) {
+                updateContent(cached);
+            }
+
             try {
                 const response = await fetch(`${API_URL}/contents`);
                 const data = await response.json();
                 if (data.success) {
+                    setCachedData('swift_content', data.data);
                     updateContent(data.data);
                 }
             } catch (error) {
@@ -1229,7 +1312,8 @@ src="https://www.facebook.com/tr?id=26541182788810408&ev=PageView&noscript=1"
                                  data-product-id="${product._id}" 
                                  data-variant-index="0"
                                  data-image-index="0"
-                                 data-image-url="${primaryImage}">
+                                 data-image-url="${primaryImage}"
+                                 loading="lazy">
                         </div>
                         
                         ${thumbnailsHtml}
