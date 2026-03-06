@@ -865,7 +865,7 @@
         
         let popupTimeout = null;
 
-        const CACHE_DURATION = 5 * 60 * 1000;
+        const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
         function getCachedData(key) {
             const cached = localStorage.getItem(key);
@@ -891,6 +891,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // প্রথমে ক্যাশে থেকে ডেটা দেখাই
             const cachedCategories = getCachedData('swift_categories');
             if (cachedCategories) {
                 allCategories = cachedCategories;
@@ -902,21 +903,79 @@
                 renderProducts();
                 updateStructuredData();
             }
+            const cachedSliders = getCachedData('swift_sliders');
+            if (cachedSliders) {
+                allSliders = cachedSliders;
+                renderSliders();
+            }
+            const cachedTrending = getCachedData('swift_trending');
+            if (cachedTrending) {
+                allTrending = cachedTrending;
+                renderTrending();
+            }
+            const cachedReviews = getCachedData('swift_reviews');
+            if (cachedReviews) {
+                renderReviews(cachedReviews);
+            }
+            const cachedContent = getCachedData('swift_content');
+            if (cachedContent) {
+                updateContent(cachedContent);
+            }
 
-            loadCategories();
-            loadProducts();
-            
-            setTimeout(() => {
-                loadSliders();
-                loadTrending();
-                loadReviews();
-                loadContent();
-            }, 100);
+            // ব্যাকগ্রাউন্ডে নতুন ডেটা আনি (সমান্তরালে)
+            loadAllData();
 
             setupEventListeners();
             checkHashAndScroll();
             window.addEventListener('hashchange', checkHashAndScroll);
         });
+
+        async function loadAllData() {
+            try {
+                const [categories, products, sliders, trending, reviews, content] = await Promise.all([
+                    fetch(`${API_URL}/categories`).then(res => res.json()),
+                    fetch(`${API_URL}/products`).then(res => res.json()),
+                    fetch(`${API_URL}/sliders`).then(res => res.json()),
+                    fetch(`${API_URL}/products`).then(res => res.json()),
+                    fetch(`${API_URL}/reviews/approved`).then(res => res.json()),
+                    fetch(`${API_URL}/contents`).then(res => res.json())
+                ]);
+
+                if (categories.success) {
+                    allCategories = categories.data;
+                    setCachedData('swift_categories', allCategories);
+                    renderCategories();
+                }
+                if (products.success) {
+                    allProducts = products.data;
+                    setCachedData('swift_products_all', allProducts);
+                    renderProducts();
+                    updateStructuredData();
+                }
+                if (sliders.success) {
+                    allSliders = sliders.data;
+                    setCachedData('swift_sliders', allSliders);
+                    renderSliders();
+                }
+                if (trending.success) {
+                    allTrending = trending.data.filter(p => p.trending).slice(0, 5);
+                    setCachedData('swift_trending', allTrending);
+                    renderTrending();
+                }
+                if (reviews.success) {
+                    setCachedData('swift_reviews', reviews.data);
+                    renderReviews(reviews.data);
+                }
+                if (content.success) {
+                    setCachedData('swift_content', content.data);
+                    updateContent(content.data);
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            } finally {
+                document.getElementById('sliderLoader')?.remove();
+            }
+        }
 
         function showPopup(title, message, type, extraMessage = '') {
             if (document.getElementById('popup').classList.contains('active')) {
@@ -1077,28 +1136,6 @@
             }
         }
 
-        async function loadSliders() {
-            const cached = getCachedData('swift_sliders');
-            if (cached) {
-                allSliders = cached;
-                renderSliders();
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/sliders`);
-                const data = await response.json();
-                if (data.success) {
-                    allSliders = data.data;
-                    setCachedData('swift_sliders', allSliders);
-                    renderSliders();
-                }
-            } catch (error) {
-                console.error('Error loading sliders:', error);
-            } finally {
-                document.getElementById('sliderLoader')?.remove();
-            }
-        }
-
         function renderSliders() {
             const sliderContainer = document.getElementById('slider');
             if (!sliderContainer) return;
@@ -1200,26 +1237,25 @@
             }, 1000);
         }
 
-        async function loadCategories() {
+        function renderCategories() {
             const container = document.getElementById('categoryButtons');
-            const cached = getCachedData('swift_categories');
-            if (cached) {
-                allCategories = cached;
-                renderCategories();
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/categories`);
-                const data = await response.json();
-                if (data.success) {
-                    allCategories = data.data;
-                    setCachedData('swift_categories', allCategories);
-                    renderCategories();
-                }
-            } catch (error) {
-                console.error('Error loading categories:', error);
-                if (!cached && container) container.innerHTML = '<div class="text-center">ক্যাটাগরি লোড হয়নি</div>';
-            }
+            if (!container) return;
+            container.innerHTML = `
+                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" onclick="window.location.hash='#products'">সকল পণ্য</button>
+                ${allCategories.map(cat => `
+                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}" onclick="window.location.hash='#products'">
+                        ${cat.nameBn}
+                    </button>
+                `).join('')}
+            `;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const category = this.dataset.category || 'all';
+                    loadProducts(category);
+                });
+            });
         }
 
         async function loadProducts(category = 'all') {
@@ -1252,83 +1288,6 @@
                     grid.innerHTML = '<div class="col-span-full text-center py-8">পণ্য লোড হয়নি। আবার চেষ্টা করুন।</div>';
                 }
             }
-        }
-
-        async function loadTrending() {
-            const cached = getCachedData('swift_trending');
-            if (cached) {
-                allTrending = cached;
-                renderTrending();
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/products`);
-                const data = await response.json();
-                if (data.success) {
-                    allTrending = data.data.filter(p => p.trending).slice(0, 5);
-                    setCachedData('swift_trending', allTrending);
-                    renderTrending();
-                }
-            } catch (error) {
-                console.error('Error loading trending:', error);
-            }
-        }
-
-        async function loadReviews() {
-            const cached = getCachedData('swift_reviews');
-            if (cached) {
-                renderReviews(cached);
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/reviews/approved`);
-                const data = await response.json();
-                if (data.success) {
-                    setCachedData('swift_reviews', data.data);
-                    renderReviews(data.data);
-                }
-            } catch (error) {
-                console.error('Error loading reviews:', error);
-            }
-        }
-
-        async function loadContent() {
-            const cached = getCachedData('swift_content');
-            if (cached) {
-                updateContent(cached);
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/contents`);
-                const data = await response.json();
-                if (data.success) {
-                    setCachedData('swift_content', data.data);
-                    updateContent(data.data);
-                }
-            } catch (error) {
-                console.error('Error loading content:', error);
-            }
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('categoryButtons');
-            if (!container) return;
-            container.innerHTML = `
-                <button id="catAll" class="cat-btn active px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" onclick="window.location.hash='#products'">সকল পণ্য</button>
-                ${allCategories.map(cat => `
-                    <button class="cat-btn px-4 py-2 md:px-6 md:py-2 text-sm md:text-base" data-category="${cat.slug}" onclick="window.location.hash='#products'">
-                        ${cat.nameBn}
-                    </button>
-                `).join('')}
-            `;
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    const category = this.dataset.category || 'all';
-                    loadProducts(category);
-                });
-            });
         }
 
         function renderProducts() {
